@@ -479,5 +479,5 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 @media (max-width: 600px) {
   .nav__links { display: none; }
   .home__title { font-size: var(--size-xl); }
-  .product-grid { grid-template-columns: repeat(2, 1fr); gap: var(--gap) 1rem; }
+  .product-grid { grid-template-columns: 1fr; gap: var(--gap-lg) 1rem; }
 }
