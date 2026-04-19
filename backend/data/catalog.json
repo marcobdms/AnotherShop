@@ -1,0 +1,1591 @@
+{
+  "meta": {
+    "marca": "ANOTHER NPC SHOP",
+    "moneda": "EUR",
+    "whatsapp": "+34600000000",
+    "whatsapp_mensaje": "Hola, me interesa: ",
+    "paypal": "tu@paypal.com",
+    "recargo_paypal": "Los pagos vía PayPal incluyen una comisión del 3,4% aplicada directamente por PayPal."
+  },
+  "filtros": {
+    "tallas": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "generos": [
+      "hombre",
+      "mujer",
+      "unisex"
+    ]
+  },
+  "productos": [
+    {
+      "id": "001",
+      "meta_id": "25505323189139394",
+      "nombre": "CAMISA MANGA CORTA RAYAS STWD",
+      "precio": 8.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/001.jpg",
+      "descripcion": "S",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "002",
+      "meta_id": "25196209210080357",
+      "nombre": "TOP TIRANTES SOLES",
+      "precio": 2.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/002.jpg",
+      "descripcion": "Xs",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "003",
+      "meta_id": "25844431951912701",
+      "nombre": "TOP TIRANTES SOL",
+      "precio": 3.89,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/003.jpg",
+      "descripcion": "S",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "004",
+      "meta_id": "25424788433865795",
+      "nombre": "CAMISETA GRUESA 2.0 DE CALIDAD SUPERIOR",
+      "precio": 16.99,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/004.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": "Abercrombie"
+    },
+    {
+      "id": "005",
+      "meta_id": "25550630044633664",
+      "nombre": "CAMISETA GRUESA PREMIUM HANLEY 2.0 CON ICONO EXCLUSIVO",
+      "precio": 19.99,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/005.jpg",
+      "descripcion": "S, Marrón",
+      "disponible": true,
+      "marca": "Abercrombie"
+    },
+    {
+      "id": "006",
+      "meta_id": "25799504339743746",
+      "nombre": "CAMISETA GRUESA PREMIUM CON MICROLOGO",
+      "precio": 19.99,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/006.jpg",
+      "descripcion": "L, Blanco",
+      "disponible": true,
+      "marca": "Abercrombie"
+    },
+    {
+      "id": "007",
+      "meta_id": "25965854363081895",
+      "nombre": "CAMISETA GRUESA PREMIUM CON MICROLOGO",
+      "precio": 12.99,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/007.jpg",
+      "descripcion": "L, Azul",
+      "disponible": true,
+      "marca": "Abercrombie"
+    },
+    {
+      "id": "008",
+      "meta_id": "26198244456529366",
+      "nombre": "SUDADERA DE FELPA CON CAPUCHA E ICONO FRENCH TERRY",
+      "precio": 24.99,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/008.jpg",
+      "descripcion": "S, Negro",
+      "disponible": true,
+      "marca": "Abercrombie"
+    },
+    {
+      "id": "009",
+      "meta_id": "26350526831238940",
+      "nombre": "POLO CON ICONO INSIGNIA DON'T SWEAT IT",
+      "precio": 22.99,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/009.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": "Abercrombie"
+    },
+    {
+      "id": "010",
+      "meta_id": "26588206910803008",
+      "nombre": "SUDADERA DE FELPA CON CAPUCHA E ICONO FRENCH TERRY",
+      "precio": 24.99,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/010.jpg",
+      "descripcion": "XS, Zafiro",
+      "disponible": true,
+      "marca": "Abercrombie"
+    },
+    {
+      "id": "011",
+      "meta_id": "26783752317892712",
+      "nombre": "TANK TOP PRIMAVERA SOUND X PB",
+      "precio": 4.79,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/011.jpg",
+      "descripcion": "M",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "012",
+      "meta_id": "25577957235195997",
+      "nombre": "CAMISETA GRIS ÁNGELES",
+      "precio": 3.89,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/012.jpg",
+      "descripcion": "S",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "013",
+      "meta_id": "25655944737406805",
+      "nombre": "CAMISETA HONDA CIVIC",
+      "precio": 5.39,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/013.jpg",
+      "descripcion": "M",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "014",
+      "meta_id": "34372832325648788",
+      "nombre": "CROP TOP TIRANTES",
+      "precio": 2.09,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/014.jpg",
+      "descripcion": "M",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "015",
+      "meta_id": "25632738873051606",
+      "nombre": "CAMISETA BOXY",
+      "precio": 3.89,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/015.jpg",
+      "descripcion": "xl",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "016",
+      "meta_id": "25750463141306743",
+      "nombre": "POLO MANGA CORTA",
+      "precio": 4.79,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/016.jpg",
+      "descripcion": "M",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "017",
+      "meta_id": "33544768795167751",
+      "nombre": "CAMISETA GRAFICO",
+      "precio": 3.89,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/017.jpg",
+      "descripcion": "M",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "018",
+      "meta_id": "33363834529931285",
+      "nombre": "TOP HALTER ESPALDA DESCUBIERTA",
+      "precio": 3.89,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/018.jpg",
+      "descripcion": "L",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "019",
+      "meta_id": "26279780898294371",
+      "nombre": "CAMISETA SIN MANGAS LAVADA",
+      "precio": 2.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/019.jpg",
+      "descripcion": "S",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "020",
+      "meta_id": "26276314985308721",
+      "nombre": "CAMISA MANGA CORTA RAYAS STWD",
+      "precio": 17.98,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/020.jpg",
+      "descripcion": "M",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "021",
+      "meta_id": "25023273517345942",
+      "nombre": "CAMISETA ALGODÓN MANGA CORTA",
+      "precio": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/021.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "022",
+      "meta_id": "25525829207073436",
+      "nombre": "CAMISETA DE ALGODÓN LOGO",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/022.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "023",
+      "meta_id": "25534260112943373",
+      "nombre": "CAMISETA DE ALGODÓN LOGO",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/023.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "024",
+      "meta_id": "25555063860781931",
+      "nombre": "VESTIDO HALTER ESTAMPADO PALMERAS",
+      "precio": 9.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/024.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "025",
+      "meta_id": "25664951696494528",
+      "nombre": "CAMISETA DE RAYAS LOGO",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/025.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "026",
+      "meta_id": "25665412729784110",
+      "nombre": "TOP ENTALLADO TIRANTE ANCHOS",
+      "precio": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/026.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "027",
+      "meta_id": "25757383887204557",
+      "nombre": "CAMISETA ALGODÓN ESTAMPADA",
+      "precio": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/027.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "028",
+      "meta_id": "25905486475806885",
+      "nombre": "TARJETERO ESTAMPADO LOGO",
+      "precio": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/028.jpg",
+      "descripcion": "Talla unica",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "029",
+      "meta_id": "26155621380697173",
+      "nombre": "CAMISETA ALGODÓN ESTAMPADA",
+      "precio": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/029.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "030",
+      "meta_id": "26596835939903079",
+      "nombre": "TOP ENTALLADOO CREMALLERA",
+      "precio": 9.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/030.jpg",
+      "descripcion": "pendiente",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "031",
+      "meta_id": "26799701199629971",
+      "nombre": "CAMISETA DE ALGODÓN LOGO",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/031.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "032",
+      "meta_id": "26811447431779090",
+      "nombre": "TOP ENTALLADO TIRANTES ANCHOS",
+      "precio": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/032.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "033",
+      "meta_id": "33611164505165989",
+      "nombre": "TOP ABERTURA ESPALDA",
+      "precio": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/033.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "034",
+      "meta_id": "33720476790931350",
+      "nombre": "TOP ASIMÉTRICO RIBETE CONTRASTE",
+      "precio": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/034.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "035",
+      "meta_id": "33971599565771971",
+      "nombre": "CAMISETA HOMBRERAS MANGA CORTA",
+      "precio": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/035.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "036",
+      "meta_id": "34097045156553516",
+      "nombre": "CAMISETA DE ALGODÓN LOGO",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/036.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "037",
+      "meta_id": "25435934449439316",
+      "nombre": "VESTIDO CORTO HALTER",
+      "precio": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/037.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "038",
+      "meta_id": "25474787365527035",
+      "nombre": "VESTIDO TERCIOPELO CUELLO ESCOTADO",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/038.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "039",
+      "meta_id": "25481784458160372",
+      "nombre": "CHALECO TERCIOPELO CROP",
+      "precio": 4.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/039.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "040",
+      "meta_id": "25561087733561037",
+      "nombre": "CAMISETA ALGODÓN ESTAMPADO",
+      "precio": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/040.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "041",
+      "meta_id": "25564059546596405",
+      "nombre": "VESTIDO TIRANTES PUNTO",
+      "precio": 3.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/041.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "042",
+      "meta_id": "25605151559140140",
+      "nombre": "CAMISETA ALGODÓN LOGO",
+      "precio": 4.49,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/042.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "043",
+      "meta_id": "25609021748793371",
+      "nombre": "BLUSA LENTEJUELAS HOMBROS DESCUBIERTOS",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/043.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "044",
+      "meta_id": "25622553320738963",
+      "nombre": "PASADOR LAZO BORDADO",
+      "precio": 1.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/044.jpg",
+      "descripcion": "Talla unica",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "045",
+      "meta_id": "25817166254586006",
+      "nombre": "VESTIDO MIDI DETALLE DRAPEADO",
+      "precio": 4.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/045.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "046",
+      "meta_id": "25908666012101512",
+      "nombre": "TOP SATINADO TIRANTES FINOS",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/046.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "047",
+      "meta_id": "25917756987819223",
+      "nombre": "TOP FRUNCIDO PALABRA DE HONOR",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/047.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "048",
+      "meta_id": "25931697119797925",
+      "nombre": "CAMISETA CROP RAYAS",
+      "precio": 3.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/048.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "049",
+      "meta_id": "26044964881808129",
+      "nombre": "TOP SATINADO TIRANTES FINOS",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/049.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "050",
+      "meta_id": "26143200852035266",
+      "nombre": "VESTIDO FORRO CORTO PALABRA DE HONOR",
+      "precio": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/050.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "051",
+      "meta_id": "26380574861591546",
+      "nombre": "FUNDA PORTÁTIL LOGO",
+      "precio": 3.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/051.jpg",
+      "descripcion": "Talla unica",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "052",
+      "meta_id": "26416294184638953",
+      "nombre": "TOP PUNTO DETALLES CONTRASTE",
+      "precio": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/052.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "053",
+      "meta_id": "26426315570305196",
+      "nombre": "CAMISETA ALGODÓN MENSAJE ESTAMPADO",
+      "precio": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/053.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "054",
+      "meta_id": "33334067559575261",
+      "nombre": "TOP BANDEAU RAYAS",
+      "precio": 3.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/054.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "055",
+      "meta_id": "33933671879564375",
+      "nombre": "CAMISA CROP RAYAS",
+      "precio": 6.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/055.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "056",
+      "meta_id": "34010935948520240",
+      "nombre": "VESTIDO ASIMÉTRICO STRASS",
+      "precio": 3.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/056.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "057",
+      "meta_id": "34413606118238049",
+      "nombre": "TOP TERCIOPELO ASIMÉTRICO STRASS",
+      "precio": 2.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/057.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "058",
+      "meta_id": "34642104878722178",
+      "nombre": "VESTIDO PUNTO CORTO",
+      "precio": 3.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/058.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "059",
+      "meta_id": "34713987794867198",
+      "nombre": "CAMISA RAYAS TEXTURA",
+      "precio": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/059.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "060",
+      "meta_id": "25545259995132401",
+      "nombre": "CAMISETA DOBLE EL JUEGO DEL CALAMAR",
+      "precio": 7.79,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/060.jpg",
+      "descripcion": "M",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "061",
+      "meta_id": "25884631481167321",
+      "nombre": "CAMISETA HONDA CIVIC",
+      "precio": 5.39,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/061.jpg",
+      "descripcion": "S",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "062",
+      "meta_id": "25667704766172587",
+      "nombre": "CAMISETA VERDE TEXTO",
+      "precio": 3.89,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/062.jpg",
+      "descripcion": "S",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "063",
+      "meta_id": "25672186162410693",
+      "nombre": "CAMISETA POLIAMIDA MANGA CORTA",
+      "precio": 2.69,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/063.jpg",
+      "descripcion": "L",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "064",
+      "meta_id": "25488213340801568",
+      "nombre": "FUNDA IPHONE ACOLCHADA STWD",
+      "precio": 2.39,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/064.jpg",
+      "descripcion": "14 Pro",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "065",
+      "meta_id": "26324815610456371",
+      "nombre": "CAMISA MANGA CORTA CORTA RAYAS STWD",
+      "precio": 15.58,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/065.jpg",
+      "descripcion": "L",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "066",
+      "meta_id": "25580692341631535",
+      "nombre": "CAMISETA MANGA CORTA ESTRUCTURADA",
+      "precio": 11.67,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/066.jpg",
+      "descripcion": "S",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "067",
+      "meta_id": "26018417797791930",
+      "nombre": "CAMISETA HEAVY WEIGHT",
+      "precio": 7.78,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/067.jpg",
+      "descripcion": "M",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "068",
+      "meta_id": "25645315658450664",
+      "nombre": "CROP TOP TIRANTES",
+      "precio": 2.09,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/068.jpg",
+      "descripcion": "S",
+      "disponible": false,
+      "marca": ""
+    },
+    {
+      "id": "069",
+      "meta_id": "24195538580144023",
+      "nombre": "CAMISETA VARSITY 50TH ANNIVERSARY",
+      "precio": 4.78,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/069.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "070",
+      "meta_id": "24951030314573901",
+      "nombre": "CAMISETA EFECTO LAVADO CARE BEARS",
+      "precio": 5.38,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/070.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "071",
+      "meta_id": "25202028322808901",
+      "nombre": "CAMISETA FLOR VOLUMEN",
+      "precio": 5.98,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/071.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "072",
+      "meta_id": "25409450852084008",
+      "nombre": "VESTIDO SARGA CRUZADO",
+      "precio": 8.39,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/072.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "073",
+      "meta_id": "25446699838364692",
+      "nombre": "TOP FORNITURA PICUETA",
+      "precio": 4.78,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/073.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "074",
+      "meta_id": "25447373358275345",
+      "nombre": "CAMISETA FLOR VOLUMEN",
+      "precio": 5.98,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/074.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "075",
+      "meta_id": "25717898661206744",
+      "nombre": "CAMISA FLUIDA BOLSILLO",
+      "precio": 6.88,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/075.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "076",
+      "meta_id": "25735006256163884",
+      "nombre": "VESTIDO PALABRA DE HONOR",
+      "precio": 8.39,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/076.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "077",
+      "meta_id": "25739947929002932",
+      "nombre": "CAMISETA VARSITY 50TH ANNIVERSARY",
+      "precio": 4.78,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/077.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "078",
+      "meta_id": "25773706742238551",
+      "nombre": "CAMISETA EFECTO LAVADO TEXAS",
+      "precio": 4.78,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/078.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "079",
+      "meta_id": "25822548267410345",
+      "nombre": "CAMISA CROP POPELÍN",
+      "precio": 5.98,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/079.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "080",
+      "meta_id": "25923594183930244",
+      "nombre": "CAMISETA TEXTO BORDADO",
+      "precio": 4.78,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/080.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "081",
+      "meta_id": "25944715865216782",
+      "nombre": "TOP TEXTURA VOLANTES",
+      "precio": 3.88,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/081.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "082",
+      "meta_id": "25983928951295012",
+      "nombre": "CAMISA MANGA CORTA LAZOS CON RAMO",
+      "precio": 5.19,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/082.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "083",
+      "meta_id": "26010962778593222",
+      "nombre": "CAMISETA VARSITY 50TH ANNIVERSARY",
+      "precio": 4.78,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/083.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "084",
+      "meta_id": "26146619531636891",
+      "nombre": "TOP LAZOS",
+      "precio": 5.98,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/084.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "085",
+      "meta_id": "26200334492893656",
+      "nombre": "TOP PALABRA DE HONOR LAZO",
+      "precio": 5.98,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/085.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "086",
+      "meta_id": "26212973234987572",
+      "nombre": "TOP ASIMÉTRICO FRUNCES",
+      "precio": 5.38,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/086.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "087",
+      "meta_id": "26389320907332139",
+      "nombre": "CAMISETA VARSITY 50TH ANNIVERSARY",
+      "precio": 4.78,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/087.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "088",
+      "meta_id": "26665024256418930",
+      "nombre": "TOP CAPA VOLANTES",
+      "precio": 5.38,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/088.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "089",
+      "meta_id": "26829500296750016",
+      "nombre": "CAMISETA HEAVY COTTON",
+      "precio": 5.98,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/089.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "090",
+      "meta_id": "34110915441855058",
+      "nombre": "CAMISA CROP POPELÍN",
+      "precio": 11.96,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/090.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "091",
+      "meta_id": "34124740567139714",
+      "nombre": "CAMISETA RIB",
+      "precio": 5.96,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/091.jpg",
+      "descripcion": "S",
+      "disponible": true,
+      "marca": ""
+    },
+    {
+      "id": "092",
+      "meta_id": "34539317332382693",
+      "nombre": "CAMISETA MANGA VOLANTES",
+      "precio": 3.88,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/092.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": ""
+    }
+  ]
+}
