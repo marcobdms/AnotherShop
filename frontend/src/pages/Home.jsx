@@ -16,7 +16,7 @@ export default function Home() {
     setIsFadingOut(true)
     setTimeout(() => {
       navigate('/catalogo')
-    }, 1200)
+    }, 700)
   }
 
   return (
