@@ -7,6 +7,7 @@
  *   GET /api/meta      → { marca, ... }
  */
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { fetchProducts, fetchFilters, fetchMeta } from '../api/catalog'
 import ProductCard from '../components/ProductCard'
 import FilterChips from '../components/FilterChips'
@@ -19,9 +20,22 @@ export default function Catalog() {
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState(null)
 
-  const [activeGenero, setActiveGenero] = useState(null)
-  const [activeTalla,  setActiveTalla]  = useState(null)
-  const [showTopBtn,   setShowTopBtn]   = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeGenero = searchParams.get('genero')
+  const activeTalla  = searchParams.get('talla')
+  const [showTopBtn, setShowTopBtn] = useState(false)
+
+  const setActiveGenero = (gen) => {
+    const params = new URLSearchParams(searchParams)
+    gen ? params.set('genero', gen) : params.delete('genero')
+    setSearchParams(params, { replace: true })
+  }
+
+  const setActiveTalla = (talla) => {
+    const params = new URLSearchParams(searchParams)
+    talla ? params.set('talla', talla) : params.delete('talla')
+    setSearchParams(params, { replace: true })
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,8 +65,8 @@ export default function Catalog() {
   if (loading) return <div className="page-state"></div>
   if (error)   return <div className="page-state">error: {error}</div>
 
-  // Filtrado en cliente (rápido, sin llamada extra al backend)
-  let lista = productos
+  // Filtrado y ordenamiento
+  let lista = [...productos]
   if (activeGenero) {
     lista = lista.filter(p => p.genero === activeGenero || p.genero === 'unisex')
   }
@@ -62,6 +76,12 @@ export default function Catalog() {
       return new RegExp(`\\b${activeTalla}\\b`, 'i').test(availableSizesText)
     })
   }
+
+  // Ordenar para enviar lo agotado al fondo
+  lista.sort((a, b) => {
+    if (a.disponible === b.disponible) return 0;
+    return a.disponible ? -1 : 1;
+  });
 
   return (
     <>

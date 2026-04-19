@@ -108,8 +108,13 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 }
 
 .home.fade-out {
-  opacity: 0;
+  animation: fadeOutToWhite 1.2s ease forwards;
   pointer-events: none;
+}
+
+@keyframes fadeOutToWhite {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
 }
 
 .home__logo {
