@@ -104,6 +104,11 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   text-align: center;
   padding: var(--gap-lg) var(--gap);
   gap: 2.5rem;
+  transition: opacity 0.5s ease;
+}
+
+.home.fade-out {
+  opacity: 0;
 }
 
 .home__logo {
@@ -538,5 +543,6 @@ button.size-tag--selected, button.size-tag--selected:hover {
 @media (max-width: 600px) {
   .nav__links { display: none; }
   .home__title { font-size: var(--size-xl); }
+  .home__logo { max-width: 286px; }
   .product-grid { grid-template-columns: 1fr; gap: var(--gap-lg) 1rem; }
 }
