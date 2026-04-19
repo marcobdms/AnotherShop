@@ -36,7 +36,7 @@ export default function Product() {
     setSelectedSize(null)
   }, [producto])
 
-  if (loading) return <div className="page-state">cargando.</div>
+  if (loading) return <div className="page-state"></div>
 
   if (error || !producto) {
     return (

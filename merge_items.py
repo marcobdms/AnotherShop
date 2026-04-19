@@ -14,49 +14,23 @@ with open(CSV_PATH, 'r', encoding='utf-8-sig') as f:
     reader = csv.DictReader(f, delimiter=';')
     rows = list(reader)
 
-grouped = {}
 for row in rows:
-    key = (row['nombre'].strip().upper(), row['precio'].strip())
-    if key not in grouped:
-        grouped[key] = []
-    grouped[key].append(row)
-
-merged_rows = []
-for key, group in grouped.items():
-    base = group[0].copy()
-    
-    # Merge descripciones
-    descs = []
-    for g in group:
-        d = g['descripcion'].strip()
-        if d and d not in descs:
-            descs.append(d)
-    base['descripcion'] = " | ".join(descs)
-    
     # Update tallas if S,M,L is present to be XS,S,M,L
-    tallas_str = base['tallas']
+    tallas_str = row['tallas']
     if 'S,M,L' in tallas_str and 'XS' not in tallas_str:
         tallas_str = 'XS,S,M,L'
-    base['tallas'] = tallas_str
-    
-    # If any variation is available, available = True
-    base['disponible'] = any(str(g['disponible']).strip().lower() == 'true' for g in group)
-    
-    merged_rows.append(base)
-
-# Sort by id just to be consistent
-merged_rows.sort(key=lambda x: str(x['id']).zfill(5))
+    row['tallas'] = tallas_str
 
 # 1. WRITE CSV
 fieldnames = rows[0].keys()
 with open(CSV_PATH, 'w', newline='', encoding='utf-8') as f:
     writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=';')
     writer.writeheader()
-    writer.writerows(merged_rows)
+    writer.writerows(rows)
 
 # 2. WRITE JSON
 json_data = []
-for r in merged_rows:
+for r in rows:
     tallas_arr = [t.strip() for t in r['tallas'].split(',') if t.strip()]
     disponible = str(r['disponible']).lower() == 'true'
     precio = float(r['precio'])
@@ -127,4 +101,4 @@ with open(INIT_SQL_PATH, 'w', encoding='utf-8') as f:
     f.write('\n'.join(inserts))
     f.write('\n')
 
-print(f"Merged from {len(rows)} to {len(merged_rows)} products.")
+print(f"Processed {len(rows)} products w/o merging.")
