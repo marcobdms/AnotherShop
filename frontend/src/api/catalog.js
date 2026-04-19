@@ -4,7 +4,7 @@
  * Si cambias la URL del backend, solo tocas este archivo.
  */
 
-const BASE = '/api'
+const BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
 
 export async function fetchCatalog() {
   const res = await fetch(`${BASE}/catalog`)

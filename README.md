@@ -1,87 +1,51 @@
 # ═══════════════════════════════════════════════════════════
-# ANOTHER NPC SHOP — Cómo arrancar el proyecto
+# ANOTHER NPC SHOP — MONOREPO (React + FastAPI)
 # ═══════════════════════════════════════════════════════════
 
-## Estructura final del monorepo
+## Estructura actual
 
 ```
 anothershop/
-├── package.json          ← scripts raíz
-├── catalog.py            ← sync Meta → genera backend/data/catalog.json
+├── package.json          ← Scripts raíz (npm run dev)
+├── init.sql              ← Base de datos SQL lista para Supabase/Coolify
 │
 ├── backend/
 │   ├── app/
-│   │   └── main.py       ← FastAPI (puerto 8000)
+│   │   └── main.py       ← FastAPI (API)
 │   ├── data/
-│   │   └── catalog.json  ← fuente de verdad
+│   │   └── catalog.json  ← Fuente de verdad (Local)
+│   ├── scripts/          ← Utilísimos (SQL Generator, Meta Sync)
 │   └── requirements.txt
 │
 └── frontend/
     ├── src/
-    │   ├── api/           ← capa de datos (catalog.js)
-    │   ├── components/    ← Nav, Footer, ProductCard, FilterChips ← STITCH va aquí
-    │   ├── hooks/         ← useCatalog.js
-    │   └── pages/         ← Home, Catalog, Product, About
-    ├── public/images/     ← fotos de productos
-    ├── package.json
-    └── vite.config.js     ← proxy /api → localhost:8000
+    │   ├── api/           ← Capa de conexión
+    │   ├── components/    ← Nav, ProductCard, FilterChips (Listos para Stitch)
+    │   └── pages/         ← Vistas (Home, Catalog, Product, About)
+    ├── public/images/     ← Físicos de las fotos
+    └── vite.config.js     ← Proxy de dev
 ```
 
-## Primera vez — Instalar dependencias
+## Setup de Desarrollo (Local)
 
-### Terminal 1 (Python backend)
+1. Abre la raíz del proyecto.
+2. Levanta TODO de un solo golpe corriendo:
 ```powershell
-cd C:\Users\Marco\Desktop\proyectos\anothershop
-pip install -r backend/requirements.txt
-```
-
-### Terminal 2 (React frontend)
-```powershell
-cd C:\Users\Marco\Desktop\proyectos\anothershop\frontend
-npm install
-```
-
-## Arrancar en desarrollo (dos terminales)
-
-### Terminal 1 — Backend (FastAPI)
-```powershell
-cd C:\Users\Marco\Desktop\proyectos\anothershop
-uvicorn backend.app.main:app --reload --port 8000
-```
-→ API disponible en: http://localhost:8000/api/catalog
-
-### Terminal 2 — Frontend (Vite + React)
-```powershell
-cd C:\Users\Marco\Desktop\proyectos\anothershop\frontend
 npm run dev
 ```
-→ Sitio disponible en: http://localhost:3000
+*(Este comando usa `concurrently` para correr el backend en el puerto 8000 y el frontend de Vite en el 5173).*
 
-## Sincronizar catálogo desde Meta
+El sitio web cargará directamente en: `http://localhost:5173` o `http://localhost:3000` dependiendo de tu puerto local.
 
-```powershell
-cd C:\Users\Marco\Desktop\proyectos\anothershop
-python catalog.py
-```
-Genera `backend/data/catalog.json` automáticamente.
+## Guía de Despliegue (Coolify + Vercel)
 
-## Endpoints del backend
+### Backend (Coolify)
+- **Directorio:** `/backend`
+- **Build:** `pip install -r requirements.txt`
+- **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+- **Puertos:** `8000` (Pon esto en "Ports Exposes"). No pongas "Port Mappings" (déjalo vacío). Coolify conectará su proxy inverso (internivel) y no chocarás con ningún puerto tuyo ni crearás conflictos.
 
-| Endpoint | Descripción |
-|---|---|
-| `GET /api/catalog` | Catálogo completo |
-| `GET /api/products` | Lista de productos |
-| `GET /api/products/{id}` | Producto por ID |
-| `GET /api/meta` | Metadatos (WhatsApp, PayPal) |
-| `GET /api/filters` | Opciones de filtros |
-| Docs interactivas | http://localhost:8000/docs |
-
-## Enchufar componentes de Stitch
-
-Los archivos a reemplazar son:
-- `frontend/src/components/ProductCard.jsx` ← el principal
-- `frontend/src/components/FilterChips.jsx`
-- `frontend/src/components/Nav.jsx`
-- `frontend/src/components/Footer.jsx`
-
-Cada componente tiene una cabecera con `// LISTO PARA STITCH` indicando qué props acepta.
+### Frontend (Vercel)
+- **Directorio:** `/frontend`
+- **Variables de Entorno:** Añade en Vercel -> `VITE_API_URL = https://api.tu-dominio-coolify.com`
+El código React ya está programado para ignorar el proxy local si consigue leer esa variable y atacar directo a Coolify de una.
