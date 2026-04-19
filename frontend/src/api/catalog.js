@@ -42,9 +42,10 @@ export function formatPrice(price) {
   return price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
 }
 
-export function buildWhatsAppLink(meta, producto) {
+export function buildWhatsAppLink(meta, producto, selectedSize = null) {
   const numero = meta.whatsapp.replace(/\D/g, '')
-  const texto  = encodeURIComponent(`${meta.whatsapp_mensaje}${producto.nombre} — Ref. ${producto.id}`)
+  const sizeText = selectedSize ? ` (Talla: ${selectedSize})` : ''
+  const texto  = encodeURIComponent(`${meta.whatsapp_mensaje}${producto.nombre}${sizeText} — Ref. ${producto.id}`)
   return `https://wa.me/${numero}?text=${texto}`
 }
 

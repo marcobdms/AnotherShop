@@ -373,12 +373,35 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 
 .product-page__sizes-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
-.size-tag {
+button.size-tag {
   font-size: var(--size-xs);
   letter-spacing: 0.1em;
   padding: 0.35rem 0.7rem;
   border: 1px solid var(--grey-200);
+  background: transparent;
   color: var(--grey-600);
+  transition: all var(--transition);
+}
+
+button.size-tag--available {
+  cursor: pointer;
+  border-color: var(--grey-400);
+  color: var(--black);
+}
+
+button.size-tag--available:hover {
+  background: var(--grey-100);
+}
+
+button.size-tag--unavailable {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+button.size-tag--selected, button.size-tag--selected:hover {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
 }
 
 /* Botones de contacto */

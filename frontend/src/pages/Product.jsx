@@ -17,6 +17,8 @@ export default function Product() {
   const [meta,     setMeta]     = useState(null)
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState(null)
+  
+  const [selectedSize, setSelectedSize] = useState(null)
 
   useEffect(() => {
     // Producto y meta en paralelo
@@ -28,6 +30,11 @@ export default function Product() {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [id])  // re-fetch si cambia el id (navegación entre productos)
+
+  // Deseleccionar al cambiar producto
+  useEffect(() => {
+    setSelectedSize(null)
+  }, [producto])
 
   if (loading) return <div className="page-state">cargando.</div>
 
@@ -71,9 +78,22 @@ export default function Product() {
           <div className="product-page__sizes">
             <span className="product-page__sizes-label">Tallas disponibles</span>
             <div className="product-page__sizes-row">
-              {producto.tallas.map(t => (
-                <span key={t} className="size-tag">{t}</span>
-              ))}
+              {producto.tallas.map(t => {
+                const availableSizesText = (producto.descripcion || '').toUpperCase();
+                const isAvailable = new RegExp(`\\b${t}\\b`, 'i').test(availableSizesText);
+                const isSelected = selectedSize === t;
+                
+                return (
+                  <button
+                    key={t}
+                    disabled={!isAvailable}
+                    onClick={() => isAvailable && setSelectedSize(t)}
+                    className={`size-tag ${isAvailable ? 'size-tag--available' : 'size-tag--unavailable'} ${isSelected ? 'size-tag--selected' : ''}`}
+                  >
+                    {t}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -82,7 +102,7 @@ export default function Product() {
             producto.disponible ? (
               <div className="product-page__actions">
                 <a
-                  href={buildWhatsAppLink(meta, producto)}
+                  href={buildWhatsAppLink(meta, producto, selectedSize)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-whatsapp"
