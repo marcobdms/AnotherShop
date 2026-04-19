@@ -42,6 +42,7 @@ class ProductoTarjeta(BaseModel):
     disponible: bool
     genero: str
     tallas: list[str]
+    descripcion: str
 
 
 class ProductoDetalle(BaseModel):
