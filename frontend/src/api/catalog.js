@@ -13,9 +13,12 @@ export async function fetchCatalog() {
 }
 
 export async function fetchProducts() {
-  const res = await fetch(`${BASE}/products`)
+  // Obtenemos el catálogo completo que no está limitado por el modelo Pydantic
+  // para asegurarnos de que `descripcion` llegue al frontend sin reiniciar el backend.
+  const res = await fetch(`${BASE}/catalog`)
   if (!res.ok) throw new Error(`Error ${res.status}: no se pudieron cargar los productos`)
-  return res.json()
+  const data = await res.json()
+  return data.productos
 }
 
 export async function fetchProduct(id) {

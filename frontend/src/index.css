@@ -104,11 +104,12 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   text-align: center;
   padding: var(--gap-lg) var(--gap);
   gap: 2.5rem;
-  transition: opacity 0.5s ease;
+  transition: opacity 1.2s ease-in-out;
 }
 
 .home.fade-out {
   opacity: 0;
+  pointer-events: none;
 }
 
 .home__logo {
@@ -307,7 +308,7 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 }
 
 .catalog-page {
-  animation: slowFadeIn 0.8s ease forwards;
+  animation: slowFadeIn 1.2s ease-in-out forwards;
 }
 
 .product-page, .home, .about-page {
