@@ -8,18 +8,26 @@ from pydantic import BaseModel
 import json
 from pathlib import Path
 
+from app.admin_router import router as admin_router
+
 app = FastAPI(
     title="Another NPC Shop API",
     description="Catálogo de ropa de Another NPC Shop",
     version="1.0.0",
 )
 
+# ── CORS ───────────────────────────────────────────────────────────────────────
+# allow_methods abre GET para el público y todos los métodos para el admin.
+# En producción podrías restringir allow_origins a tu dominio Vercel.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
+
+# ── Routers ────────────────────────────────────────────────────────────────────
+app.include_router(admin_router)
 
 CATALOG_PATH = Path(__file__).parent.parent / "data" / "catalog.json"
 
@@ -38,7 +46,7 @@ class ProductoTarjeta(BaseModel):
     id: str
     nombre: str
     precio: float
-    imagen: str       # URL completa (Meta CDN) o ruta relativa (/images/001.jpg)
+    imagen: str
     disponible: bool
     genero: str
     tallas: list[str]
@@ -71,7 +79,7 @@ class Filtros(BaseModel):
     generos: list[str]
 
 
-# ── Endpoints ──────────────────────────────────────────────────────────────────
+# ── Endpoints públicos ─────────────────────────────────────────────────────────
 
 @app.get(
     "/api/products",
@@ -80,7 +88,6 @@ class Filtros(BaseModel):
 )
 def get_products():
     productos = load_catalog()["productos"]
-    # Ordenar: disponibles primero (True va antes que False si ordenamos por 'not disponible')
     productos.sort(key=lambda p: not p.get("disponible", False))
     return [ProductoTarjeta(**p) for p in productos]
 

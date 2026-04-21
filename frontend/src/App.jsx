@@ -9,6 +9,7 @@ import Catalog from './pages/Catalog'
 import Product from './pages/Product'
 import About from './pages/About'
 import { useCatalog } from './hooks/useCatalog'
+import Admin from './pages/Admin'
 
 function AppLayout() {
   const { catalog } = useCatalog()
@@ -22,10 +23,11 @@ function AppLayout() {
       <Nav marca={marca} />
 
       <Routes>
-        <Route path="/"           element={<Home />} />
-        <Route path="/catalogo"   element={<Catalog />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/catalogo" element={<Catalog />} />
         <Route path="/producto/:id" element={<Product />} />
-        <Route path="/nosotros"   element={<About />} />
+        <Route path="/nosotros" element={<About />} />
+        <Route path="/admin" element={<Admin />} />
         {/* Fallback */}
         <Route path="*" element={<Home />} />
       </Routes>
