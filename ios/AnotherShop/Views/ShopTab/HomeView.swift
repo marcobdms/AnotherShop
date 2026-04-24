@@ -5,30 +5,44 @@ struct HomeView: View {
     @State private var appeared = false
 
     var body: some View {
+        
+        Spacer()
+        Spacer()
         ZStack {
             Color(.systemBackground).ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Spacer()
+                
+                VStack {                    
+                    Text("ANOTHER NPC SHOP")
+                        .font(.system(size: 10, weight: .regular))
+                        .tracking(5)
+                        .foregroundStyle(Color.primary)
+                    
+                    Divider().padding(.top, 5)
+                }
+                .padding(.bottom, 0)
 
-                // Logo
+                Spacer()
+                
                 Image("npc")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 170, height: 170)
-                    .padding(.bottom, 32)
+                    .frame(width: 280, height: 280)
+                    .padding(.top, 0)
+                    .padding(.bottom, 0)
 
                 // Marca
                 Text(catalogVM.meta?.marca ?? "ANOTHER NPC SHOP")
-                    .font(.system(size: 17, weight: .light))
+                    .font(.system(size: 25, weight: .light))
                     .tracking(5)
                     .textCase(.uppercase)
 
                 // Tagline
-                Text("Solo ropa. Solo existir.")
+                Text("Just Clothes and Good Styles")
                     .font(.system(size: 14, weight: .ultraLight))
                     .tracking(2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.primary)
                     .padding(.top, 8)
 
                 Spacer()

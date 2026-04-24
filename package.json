@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n BACK,FRONT -c \"bgBlue.bold,bgGreen.bold\" \"npm run backend\" \"npm run frontend\"",
-    "backend": "uvicorn backend.app.main:app --reload --port 8000",
+    "backend": "python3 -m uvicorn app.main:app --reload --port 8000 --app-dir backend",
     "frontend": "npm run dev --prefix frontend"
   },
   "devDependencies": {

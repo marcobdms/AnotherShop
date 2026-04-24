@@ -1,8 +1,12 @@
 {
-  "colors": [
+  "colors" : [
     {
-      "idiom": "universal"
+      "filename" : "Gemini_Generated_Image_kcni4zkcni4zkcni.png",
+      "idiom" : "universal"
     }
   ],
-  "info": { "author": "xcode", "version": 1 }
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
 }
