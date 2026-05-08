@@ -26,7 +26,7 @@
       "id": "001",
       "meta_id": "25505323189139394",
       "nombre": "CAMISA MANGA CORTA RAYAS STWD",
-      "precio": 10.79,
+      "precio": 10,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -44,7 +44,7 @@
       "id": "002",
       "meta_id": "25196209210080357",
       "nombre": "TOP TIRANTES SOLES",
-      "precio": 3.59,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -62,7 +62,7 @@
       "id": "003",
       "meta_id": "25844431951912701",
       "nombre": "TOP TIRANTES SOL",
-      "precio": 4.67,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -98,7 +98,7 @@
       "id": "005",
       "meta_id": "25550630044633664",
       "nombre": "CAMISETA GRUESA PREMIUM HANLEY 2.0 CON ICONO EXCLUSIVO",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "hombre",
       "tallas": [
@@ -116,7 +116,7 @@
       "id": "006",
       "meta_id": "25799504339743746",
       "nombre": "CAMISETA GRUESA PREMIUM CON MICROLOGO",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "hombre",
       "tallas": [
@@ -134,7 +134,7 @@
       "id": "007",
       "meta_id": "25965854363081895",
       "nombre": "CAMISETA GRUESA PREMIUM CON MICROLOGO",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "hombre",
       "tallas": [
@@ -152,7 +152,7 @@
       "id": "008",
       "meta_id": "26198244456529366",
       "nombre": "SUDADERA DE FELPA CON CAPUCHA E ICONO FRENCH TERRY",
-      "precio": 54.0,
+      "precio": 55,
       "categoria": "sin_categoria",
       "genero": "hombre",
       "tallas": [
@@ -170,7 +170,7 @@
       "id": "009",
       "meta_id": "26350526831238940",
       "nombre": "POLO CON ICONO INSIGNIA DON'T SWEAT IT",
-      "precio": 42.0,
+      "precio": 40,
       "categoria": "sin_categoria",
       "genero": "hombre",
       "tallas": [
@@ -188,7 +188,7 @@
       "id": "010",
       "meta_id": "26588206910803008",
       "nombre": "SUDADERA DE FELPA CON CAPUCHA E ICONO FRENCH TERRY",
-      "precio": 54.0,
+      "precio": 55,
       "categoria": "sin_categoria",
       "genero": "hombre",
       "tallas": [
@@ -206,7 +206,7 @@
       "id": "011",
       "meta_id": "26783752317892712",
       "nombre": "TANK TOP PRIMAVERA SOUND X PB",
-      "precio": 5.75,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -224,7 +224,7 @@
       "id": "012",
       "meta_id": "25577957235195997",
       "nombre": "CAMISETA GRIS ÁNGELES",
-      "precio": 4.67,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -242,7 +242,7 @@
       "id": "013",
       "meta_id": "25655944737406805",
       "nombre": "CAMISETA HONDA CIVIC",
-      "precio": 6.47,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -260,7 +260,7 @@
       "id": "014",
       "meta_id": "34372832325648788",
       "nombre": "CROP TOP TIRANTES",
-      "precio": 2.51,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -278,7 +278,7 @@
       "id": "015",
       "meta_id": "25632738873051606",
       "nombre": "CAMISETA BOXY",
-      "precio": 4.67,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -296,7 +296,7 @@
       "id": "016",
       "meta_id": "25750463141306743",
       "nombre": "POLO MANGA CORTA",
-      "precio": 5.75,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -314,7 +314,7 @@
       "id": "017",
       "meta_id": "33544768795167751",
       "nombre": "CAMISETA GRAFICO",
-      "precio": 4.67,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -332,7 +332,7 @@
       "id": "018",
       "meta_id": "33363834529931285",
       "nombre": "TOP HALTER ESPALDA DESCUBIERTA",
-      "precio": 4.67,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -350,7 +350,7 @@
       "id": "019",
       "meta_id": "26279780898294371",
       "nombre": "CAMISETA SIN MANGAS LAVADA",
-      "precio": 3.59,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -368,7 +368,7 @@
       "id": "020",
       "meta_id": "26276314985308721",
       "nombre": "CAMISA MANGA CORTA RAYAS STWD",
-      "precio": 21.58,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -386,7 +386,7 @@
       "id": "021",
       "meta_id": "25023273517345942",
       "nombre": "CAMISETA ALGODÓN MANGA CORTA",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -404,7 +404,7 @@
       "id": "022",
       "meta_id": "25525829207073436",
       "nombre": "CAMISETA DE ALGODÓN LOGO",
-      "precio": 19.2,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -422,7 +422,7 @@
       "id": "023",
       "meta_id": "25534260112943373",
       "nombre": "CAMISETA DE ALGODÓN LOGO",
-      "precio": 19.2,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -440,7 +440,7 @@
       "id": "024",
       "meta_id": "25555063860781931",
       "nombre": "VESTIDO HALTER ESTAMPADO PALMERAS",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -458,7 +458,7 @@
       "id": "025",
       "meta_id": "25664951696494528",
       "nombre": "CAMISETA DE RAYAS LOGO",
-      "precio": 19.2,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -476,7 +476,7 @@
       "id": "026",
       "meta_id": "25665412729784110",
       "nombre": "TOP ENTALLADO TIRANTE ANCHOS",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -494,7 +494,7 @@
       "id": "027",
       "meta_id": "25757383887204557",
       "nombre": "CAMISETA ALGODÓN ESTAMPADA",
-      "precio": 21.6,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -512,7 +512,7 @@
       "id": "028",
       "meta_id": "25905486475806885",
       "nombre": "TARJETERO ESTAMPADO LOGO",
-      "precio": 15.6,
+      "precio": 15,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -530,7 +530,7 @@
       "id": "029",
       "meta_id": "26155621380697173",
       "nombre": "CAMISETA ALGODÓN ESTAMPADA",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -548,7 +548,7 @@
       "id": "030",
       "meta_id": "26596835939903079",
       "nombre": "TOP ENTALLADOO CREMALLERA",
-      "precio": 26.4,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -566,7 +566,7 @@
       "id": "031",
       "meta_id": "26799701199629971",
       "nombre": "CAMISETA DE ALGODÓN LOGO",
-      "precio": 19.2,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -584,7 +584,7 @@
       "id": "032",
       "meta_id": "26811447431779090",
       "nombre": "TOP ENTALLADO TIRANTES ANCHOS",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -602,7 +602,7 @@
       "id": "033",
       "meta_id": "33611164505165989",
       "nombre": "TOP ABERTURA ESPALDA",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -620,7 +620,7 @@
       "id": "034",
       "meta_id": "33720476790931350",
       "nombre": "TOP ASIMÉTRICO RIBETE CONTRASTE",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -638,7 +638,7 @@
       "id": "035",
       "meta_id": "33971599565771971",
       "nombre": "CAMISETA HOMBRERAS MANGA CORTA",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -656,7 +656,7 @@
       "id": "036",
       "meta_id": "34097045156553516",
       "nombre": "CAMISETA DE ALGODÓN LOGO",
-      "precio": 19.2,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -674,7 +674,7 @@
       "id": "037",
       "meta_id": "25435934449439316",
       "nombre": "VESTIDO CORTO HALTER",
-      "precio": 21.6,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -692,7 +692,7 @@
       "id": "038",
       "meta_id": "25474787365527035",
       "nombre": "VESTIDO TERCIOPELO CUELLO ESCOTADO",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -710,7 +710,7 @@
       "id": "039",
       "meta_id": "25481784458160372",
       "nombre": "CHALECO TERCIOPELO CROP",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -728,7 +728,7 @@
       "id": "040",
       "meta_id": "25561087733561037",
       "nombre": "CAMISETA ALGODÓN ESTAMPADO",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -746,7 +746,7 @@
       "id": "041",
       "meta_id": "25564059546596405",
       "nombre": "VESTIDO TIRANTES PUNTO",
-      "precio": 21.6,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -764,7 +764,7 @@
       "id": "042",
       "meta_id": "25605151559140140",
       "nombre": "CAMISETA ALGODÓN LOGO",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -800,7 +800,7 @@
       "id": "044",
       "meta_id": "25622553320738963",
       "nombre": "PASADOR LAZO BORDADO",
-      "precio": 6.0,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -818,7 +818,7 @@
       "id": "045",
       "meta_id": "25817166254586006",
       "nombre": "VESTIDO MIDI DETALLE DRAPEADO",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -836,7 +836,7 @@
       "id": "046",
       "meta_id": "25908666012101512",
       "nombre": "TOP SATINADO TIRANTES FINOS",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -854,7 +854,7 @@
       "id": "047",
       "meta_id": "25917756987819223",
       "nombre": "TOP FRUNCIDO PALABRA DE HONOR",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -872,7 +872,7 @@
       "id": "048",
       "meta_id": "25931697119797925",
       "nombre": "CAMISETA CROP RAYAS",
-      "precio": 21.6,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -890,7 +890,7 @@
       "id": "049",
       "meta_id": "26044964881808129",
       "nombre": "TOP SATINADO TIRANTES FINOS",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -926,7 +926,7 @@
       "id": "051",
       "meta_id": "26380574861591546",
       "nombre": "FUNDA PORTÁTIL LOGO",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -962,7 +962,7 @@
       "id": "053",
       "meta_id": "26426315570305196",
       "nombre": "CAMISETA ALGODÓN MENSAJE ESTAMPADO",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -980,7 +980,7 @@
       "id": "054",
       "meta_id": "33334067559575261",
       "nombre": "TOP BANDEAU RAYAS",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -998,7 +998,7 @@
       "id": "055",
       "meta_id": "33933671879564375",
       "nombre": "CAMISA CROP RAYAS",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1016,7 +1016,7 @@
       "id": "056",
       "meta_id": "34010935948520240",
       "nombre": "VESTIDO ASIMÉTRICO STRASS",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1034,7 +1034,7 @@
       "id": "057",
       "meta_id": "34413606118238049",
       "nombre": "TOP TERCIOPELO ASIMÉTRICO STRASS",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1070,7 +1070,7 @@
       "id": "059",
       "meta_id": "34713987794867198",
       "nombre": "CAMISA RAYAS TEXTURA",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1088,7 +1088,7 @@
       "id": "060",
       "meta_id": "25545259995132401",
       "nombre": "CAMISETA DOBLE EL JUEGO DEL CALAMAR",
-      "precio": 9.35,
+      "precio": 10,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1106,7 +1106,7 @@
       "id": "061",
       "meta_id": "25884631481167321",
       "nombre": "CAMISETA HONDA CIVIC",
-      "precio": 6.47,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1124,7 +1124,7 @@
       "id": "062",
       "meta_id": "25667704766172587",
       "nombre": "CAMISETA VERDE TEXTO",
-      "precio": 4.67,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1142,7 +1142,7 @@
       "id": "063",
       "meta_id": "25672186162410693",
       "nombre": "CAMISETA POLIAMIDA MANGA CORTA",
-      "precio": 3.23,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1160,7 +1160,7 @@
       "id": "064",
       "meta_id": "25488213340801568",
       "nombre": "FUNDA IPHONE ACOLCHADA STWD",
-      "precio": 2.87,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1178,7 +1178,7 @@
       "id": "065",
       "meta_id": "26324815610456371",
       "nombre": "CAMISA MANGA CORTA CORTA RAYAS STWD",
-      "precio": 18.7,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1196,7 +1196,7 @@
       "id": "066",
       "meta_id": "25580692341631535",
       "nombre": "CAMISETA MANGA CORTA ESTRUCTURADA",
-      "precio": 14.0,
+      "precio": 15,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1214,7 +1214,7 @@
       "id": "067",
       "meta_id": "26018417797791930",
       "nombre": "CAMISETA HEAVY WEIGHT",
-      "precio": 9.34,
+      "precio": 10,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1232,7 +1232,7 @@
       "id": "068",
       "meta_id": "25645315658450664",
       "nombre": "CROP TOP TIRANTES",
-      "precio": 2.51,
+      "precio": 5,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1250,7 +1250,7 @@
       "id": "069",
       "meta_id": "24195538580144023",
       "nombre": "CAMISETA VARSITY 50TH ANNIVERSARY",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1268,7 +1268,7 @@
       "id": "070",
       "meta_id": "24951030314573901",
       "nombre": "CAMISETA EFECTO LAVADO CARE BEARS",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1304,7 +1304,7 @@
       "id": "072",
       "meta_id": "25409450852084008",
       "nombre": "VESTIDO SARGA CRUZADO",
-      "precio": 42.0,
+      "precio": 40,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1322,7 +1322,7 @@
       "id": "073",
       "meta_id": "25446699838364692",
       "nombre": "TOP FORNITURA PICUETA",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1358,7 +1358,7 @@
       "id": "075",
       "meta_id": "25717898661206744",
       "nombre": "CAMISA FLUIDA BOLSILLO",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1376,7 +1376,7 @@
       "id": "076",
       "meta_id": "25735006256163884",
       "nombre": "VESTIDO PALABRA DE HONOR",
-      "precio": 42.0,
+      "precio": 40,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1394,7 +1394,7 @@
       "id": "077",
       "meta_id": "25739947929002932",
       "nombre": "CAMISETA VARSITY 50TH ANNIVERSARY",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1412,7 +1412,7 @@
       "id": "078",
       "meta_id": "25773706742238551",
       "nombre": "CAMISETA EFECTO LAVADO TEXAS",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1448,7 +1448,7 @@
       "id": "080",
       "meta_id": "25923594183930244",
       "nombre": "CAMISETA TEXTO BORDADO",
-      "precio": 14.4,
+      "precio": 15,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1466,7 +1466,7 @@
       "id": "081",
       "meta_id": "25944715865216782",
       "nombre": "TOP TEXTURA VOLANTES",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1484,7 +1484,7 @@
       "id": "082",
       "meta_id": "25983928951295012",
       "nombre": "CAMISA MANGA CORTA LAZOS CON RAMO",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1502,7 +1502,7 @@
       "id": "083",
       "meta_id": "26010962778593222",
       "nombre": "CAMISETA VARSITY 50TH ANNIVERSARY",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1520,7 +1520,7 @@
       "id": "084",
       "meta_id": "26146619531636891",
       "nombre": "TOP LAZOS",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1538,7 +1538,7 @@
       "id": "085",
       "meta_id": "26200334492893656",
       "nombre": "TOP PALABRA DE HONOR LAZO",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1556,7 +1556,7 @@
       "id": "086",
       "meta_id": "26212973234987572",
       "nombre": "TOP ASIMÉTRICO FRUNCES",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1574,7 +1574,7 @@
       "id": "087",
       "meta_id": "26389320907332139",
       "nombre": "CAMISETA VARSITY 50TH ANNIVERSARY",
-      "precio": 24.0,
+      "precio": 25,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1592,7 +1592,7 @@
       "id": "088",
       "meta_id": "26665024256418930",
       "nombre": "TOP CAPA VOLANTES",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1628,7 +1628,7 @@
       "id": "090",
       "meta_id": "34110915441855058",
       "nombre": "CAMISA CROP POPELÍN",
-      "precio": 36.0,
+      "precio": 35,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1646,7 +1646,7 @@
       "id": "091",
       "meta_id": "34124740567139714",
       "nombre": "CAMISETA RIB",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
@@ -1664,7 +1664,7 @@
       "id": "092",
       "meta_id": "34539317332382693",
       "nombre": "CAMISETA MANGA VOLANTES",
-      "precio": 18.0,
+      "precio": 20,
       "categoria": "sin_categoria",
       "genero": "mujer",
       "tallas": [
