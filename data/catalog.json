@@ -91,7 +91,7 @@
       ],
       "imagen": "/images/004.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": "Abercrombie"
     },
     {
@@ -145,7 +145,7 @@
       ],
       "imagen": "/images/007.jpg",
       "descripcion": "L, Azul",
-      "disponible": true,
+      "disponible": false,
       "marca": "Abercrombie"
     },
     {
@@ -505,7 +505,7 @@
       ],
       "imagen": "/images/027.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -739,7 +739,7 @@
       ],
       "imagen": "/images/040.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -811,7 +811,7 @@
       ],
       "imagen": "/images/044.jpg",
       "descripcion": "Talla unica",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -973,7 +973,7 @@
       ],
       "imagen": "/images/053.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1261,7 +1261,7 @@
       ],
       "imagen": "/images/069.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1621,7 +1621,7 @@
       ],
       "imagen": "/images/089.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
