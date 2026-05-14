@@ -167,6 +167,20 @@
       "marca": "Abercrombie"
     },
     {
+      "id": "093",
+      "nombre": "Camiseta Nse Box The North Face",
+      "precio": 15,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "M"
+      ],
+      "imagen": "/images/093.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "The North Face"
+    },
+    {
       "id": "009",
       "meta_id": "26350526831238940",
       "nombre": "POLO CON ICONO INSIGNIA DON'T SWEAT IT",
