@@ -59,6 +59,20 @@
       "marca": ""
     },
     {
+      "id": "093",
+      "nombre": "Camiseta Nse Box The North Face",
+      "precio": 15,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "M"
+      ],
+      "imagen": "/images/093.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "The North Face"
+    },
+    {
       "id": "003",
       "meta_id": "25844431951912701",
       "nombre": "TOP TIRANTES SOL",
