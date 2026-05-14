@@ -10,6 +10,7 @@ import Product from './pages/Product'
 import About from './pages/About'
 import { useCatalog } from './hooks/useCatalog'
 import Admin from './pages/Admin'
+import TopBanner from './components/TopBanner'
 
 function AppLayout() {
   const { catalog } = useCatalog()
@@ -21,6 +22,7 @@ function AppLayout() {
     <>
       {/* Nav en todas las páginas */}
       <Nav marca={marca} />
+      <TopBanner />
 
       <Routes>
         <Route path="/" element={<Home />} />
