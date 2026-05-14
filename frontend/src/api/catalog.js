@@ -140,5 +140,5 @@ export function buildWhatsAppLink(meta, producto, selectedSize = null) {
 
 export function buildPayPalLink(meta, producto) {
   const nota = encodeURIComponent(`${producto.nombre} — Ref. ${producto.id}`)
-  return `https://paypal.me/${meta.paypal}/${producto.precio}EUR?note=${nota}`
+  return `https://paypal.me/${meta.paypal}/${producto.precio}USD?note=${nota}`
 }
