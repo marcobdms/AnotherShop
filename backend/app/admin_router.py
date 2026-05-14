@@ -67,7 +67,7 @@ class ProductoAdminOut(ProductoAdmin):
 
 class MetaAdmin(BaseModel):
     marca: str
-    moneda: str = "EUR"
+    moneda: str = "USD"
     whatsapp: str
     whatsapp_mensaje: str
     paypal: str
