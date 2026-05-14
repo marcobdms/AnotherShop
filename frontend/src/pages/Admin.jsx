@@ -665,7 +665,7 @@ function ProductoModal({ producto, onSave, onClose, saving }) {
           </div>
 
           <div className="form-group">
-            <label>Precio (€)</label>
+            <label>Precio ($)</label>
             <input className="form-input" type="number" step="0.01" value={form.precio} onChange={e => set('precio', e.target.value)} />
           </div>
 
