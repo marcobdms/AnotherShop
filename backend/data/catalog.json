@@ -1,7 +1,7 @@
 {
   "meta": {
     "marca": "ANOTHER NPC SHOP",
-    "moneda": "EUR",
+    "moneda": "USD",
     "whatsapp": "+34600000000",
     "whatsapp_mensaje": "Hola, me interesa: ",
     "paypal": "tu@paypal.com",
@@ -54,23 +54,9 @@
         "L"
       ],
       "imagen": "/images/002.jpg",
-      "descripcion": "Xs",
+      "descripcion": "XS",
       "disponible": false,
       "marca": ""
-    },
-    {
-      "id": "093",
-      "nombre": "Camiseta Nse Box The North Face",
-      "precio": 15,
-      "categoria": "sin_categoria",
-      "genero": "hombre",
-      "tallas": [
-        "M"
-      ],
-      "imagen": "/images/093.jpg",
-      "descripcion": "",
-      "disponible": true,
-      "marca": "The North Face"
     },
     {
       "id": "003",
@@ -302,7 +288,7 @@
         "L"
       ],
       "imagen": "/images/015.jpg",
-      "descripcion": "xl",
+      "descripcion": "XL",
       "disponible": false,
       "marca": ""
     },
@@ -1691,6 +1677,24 @@
       "descripcion": "M",
       "disponible": false,
       "marca": ""
+    },
+    {
+      "id": "093",
+      "meta_id": "34539317332382999",
+      "nombre": "Camiseta Nse Box The North Face",
+      "precio": 15.0,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L"
+      ],
+      "imagen": "/images/093.jpg",
+      "descripcion": "M",
+      "disponible": true,
+      "marca": "The North Face"
     }
   ]
 }
