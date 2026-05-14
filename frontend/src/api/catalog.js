@@ -126,9 +126,11 @@ export async function adminUpdateMeta(token, meta) {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 export function formatPrice(price) {
-  return price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
+  return price.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  })
 }
-
 export function buildWhatsAppLink(meta, producto, selectedSize = null) {
   const numero = meta.whatsapp.replace(/\D/g, '')
   const sizeText = selectedSize ? ` (Talla: ${selectedSize})` : ''
