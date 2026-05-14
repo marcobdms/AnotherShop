@@ -1,0 +1,34 @@
+.top-banner {
+  width: 100%;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  border-top: 1px solid #222;
+  border-bottom: 1px solid #222;
+  white-space: nowrap;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.top-banner-track {
+  display: flex;
+  width: max-content;
+  animation: scrollBanner 22s linear infinite;
+}
+
+.top-banner-track span {
+  font-size: 14px;
+  padding-right: 80px;
+  letter-spacing: 0.5px;
+}
+
+@keyframes scrollBanner {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
