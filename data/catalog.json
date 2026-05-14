@@ -109,7 +109,7 @@
       ],
       "imagen": "/images/005.jpg",
       "descripcion": "S, Marrón",
-      "disponible": true,
+      "disponible": false,
       "marca": "Abercrombie"
     },
     {
@@ -433,7 +433,7 @@
       ],
       "imagen": "/images/023.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1477,7 +1477,7 @@
       ],
       "imagen": "/images/081.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
