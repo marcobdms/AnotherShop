@@ -181,7 +181,7 @@
       ],
       "imagen": "/images/009.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": "Abercrombie"
     },
     {
@@ -415,7 +415,7 @@
       ],
       "imagen": "/images/022.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -451,7 +451,7 @@
       ],
       "imagen": "/images/024.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -469,7 +469,7 @@
       ],
       "imagen": "/images/025.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -541,7 +541,7 @@
       ],
       "imagen": "/images/029.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -577,7 +577,7 @@
       ],
       "imagen": "/images/031.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -595,7 +595,7 @@
       ],
       "imagen": "/images/032.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -613,7 +613,7 @@
       ],
       "imagen": "/images/033.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -667,7 +667,7 @@
       ],
       "imagen": "/images/036.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -685,7 +685,7 @@
       ],
       "imagen": "/images/037.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -703,7 +703,7 @@
       ],
       "imagen": "/images/038.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -721,7 +721,7 @@
       ],
       "imagen": "/images/039.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -757,7 +757,7 @@
       ],
       "imagen": "/images/041.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -775,7 +775,7 @@
       ],
       "imagen": "/images/042.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -793,7 +793,7 @@
       ],
       "imagen": "/images/043.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -847,7 +847,7 @@
       ],
       "imagen": "/images/046.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -865,7 +865,7 @@
       ],
       "imagen": "/images/047.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -901,7 +901,7 @@
       ],
       "imagen": "/images/049.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -919,7 +919,7 @@
       ],
       "imagen": "/images/050.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -991,7 +991,7 @@
       ],
       "imagen": "/images/054.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1027,7 +1027,7 @@
       ],
       "imagen": "/images/056.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1045,7 +1045,7 @@
       ],
       "imagen": "/images/057.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1081,7 +1081,7 @@
       ],
       "imagen": "/images/059.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1315,7 +1315,7 @@
       ],
       "imagen": "/images/072.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1333,7 +1333,7 @@
       ],
       "imagen": "/images/073.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1351,7 +1351,7 @@
       ],
       "imagen": "/images/074.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1387,7 +1387,7 @@
       ],
       "imagen": "/images/076.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1405,7 +1405,7 @@
       ],
       "imagen": "/images/077.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1423,7 +1423,7 @@
       ],
       "imagen": "/images/078.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1441,7 +1441,7 @@
       ],
       "imagen": "/images/079.jpg",
       "descripcion": "M",
-      "disponible": false,
+      "disponible": true,
       "marca": ""
     },
     {
@@ -1513,7 +1513,7 @@
       ],
       "imagen": "/images/083.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1549,7 +1549,7 @@
       ],
       "imagen": "/images/085.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1567,7 +1567,7 @@
       ],
       "imagen": "/images/086.jpg",
       "descripcion": "M",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1585,7 +1585,7 @@
       ],
       "imagen": "/images/087.jpg",
       "descripcion": "S",
-      "disponible": true,
+      "disponible": false,
       "marca": ""
     },
     {
@@ -1677,21 +1677,6 @@
       "descripcion": "M",
       "disponible": false,
       "marca": ""
-    },
-    {
-      "id": "093",
-      "meta_id": "34539317332382999",
-      "nombre": "Camiseta Nse Box The North Face",
-      "precio": 18.0,
-      "categoria": "sin_categoria",
-      "genero": "hombre",
-      "tallas": [
-        "M"
-      ],
-      "imagen": "/images/093.jpg",
-      "descripcion": "M",
-      "disponible": true,
-      "marca": "The North Face"
     }
   ]
 }
