@@ -547,6 +547,32 @@ button.size-tag--selected, button.size-tag--selected:hover {
   opacity: 0.9;
 }
 
+/* ── Search Bar ────────────────────────────────────────────────────────────── */
+.adm-search {
+  margin: 2rem auto 2.5rem auto;
+  padding: 0 var(--gap);
+  max-width: 1200px;
+  width: 100%;
+}
+.adm-search__input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.85rem 1rem;
+  font-family: var(--font);
+  font-size: var(--size-sm);
+  color: var(--black);
+  border: 1px solid var(--grey-200);
+  outline: none;
+  transition: border-color 200ms ease;
+}
+.adm-search__input:focus {
+  border-color: var(--black);
+}
+.adm-search__input::placeholder {
+  color: var(--grey-400);
+  letter-spacing: 0.05em;
+}
+
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .nav__links { display: none; }
