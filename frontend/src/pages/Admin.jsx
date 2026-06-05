@@ -363,6 +363,7 @@ function AdminPanel({ onLogout }) {
   const [history, setHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
   const [toast, setToast] = useState(null)
+  const [error, setError] = useState(null)
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type, key: Date.now() })
@@ -370,8 +371,14 @@ function AdminPanel({ onLogout }) {
 
   useEffect(() => {
     adminFetchProducts()
-      .then(data => setProductos(data))
-      .catch(e => showToast(e.message, 'error'))
+      .then(data => {
+        setProductos(data)
+        setError(null)
+      })
+      .catch(e => {
+        showToast(e.message, 'error')
+        setError(e.message)
+      })
       .finally(() => setLoading(false))
   }, [showToast])
 
@@ -471,6 +478,15 @@ function AdminPanel({ onLogout }) {
 
       {loading ? (
         <div className="page-state">Cargando catálogo…</div>
+      ) : error ? (
+        <main className="catalog-page" style={{ paddingTop: '2rem' }}>
+          <div className="no-results" style={{ color: '#c0392b' }}>
+            <p>Error de conexión con el servidor: {error}</p>
+            <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: 'var(--grey-400)' }}>
+              Asegúrate de que VITE_API_URL y VITE_ADMIN_TOKEN estén configurados correctamente en Vercel.
+            </p>
+          </div>
+        </main>
       ) : selectedProduct ? (
         // VISTA: DETALLE DE PRODUCTO (Clon del diseño de producción)
         <main className="product-page">
