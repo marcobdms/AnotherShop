@@ -4,15 +4,18 @@
  * Si cambias la URL del backend, solo tocas este archivo.
  */
 
-const BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
+const BASE       = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api`   : '/api'
 const ADMIN_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/admin` : '/admin'
+
+// Token del backend — viene de variable de entorno, nunca lo escribe el usuario
+const ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN ?? ''
 
 // ── Helpers internos ───────────────────────────────────────────────────────────
 
-function adminHeaders(token) {
+function adminHeaders() {
   return {
     'Content-Type': 'application/json',
-    'X-Admin-Token': token,
+    'X-Admin-Token': ADMIN_TOKEN,
   }
 }
 
@@ -25,7 +28,6 @@ async function handleResponse(res) {
     } catch (_) {}
     throw new Error(detail)
   }
-  // 204 No Content (DELETE) no tiene body
   if (res.status === 204) return null
   return res.json()
 }
@@ -65,60 +67,18 @@ export async function fetchFilters() {
 
 // ── Endpoints admin ────────────────────────────────────────────────────────────
 
-export async function adminFetchProducts(token) {
+export async function adminFetchProducts() {
   const res = await fetch(`${ADMIN_BASE}/products`, {
-    headers: adminHeaders(token),
+    headers: adminHeaders(),
   })
   return handleResponse(res)
 }
 
-export async function adminCreateProduct(token, producto) {
-  const res = await fetch(`${ADMIN_BASE}/products`, {
-    method: 'POST',
-    headers: adminHeaders(token),
-    body: JSON.stringify(producto),
-  })
-  return handleResponse(res)
-}
-
-export async function adminUpdateProduct(token, id, producto) {
-  const res = await fetch(`${ADMIN_BASE}/products/${id}`, {
-    method: 'PUT',
-    headers: adminHeaders(token),
-    body: JSON.stringify(producto),
-  })
-  return handleResponse(res)
-}
-
-export async function adminToggleDisponible(token, id, disponible) {
+export async function adminToggleDisponible(id, disponible) {
   const res = await fetch(`${ADMIN_BASE}/products/${id}/disponible`, {
     method: 'PATCH',
-    headers: adminHeaders(token),
+    headers: adminHeaders(),
     body: JSON.stringify({ disponible }),
-  })
-  return handleResponse(res)
-}
-
-export async function adminDeleteProduct(token, id) {
-  const res = await fetch(`${ADMIN_BASE}/products/${id}`, {
-    method: 'DELETE',
-    headers: adminHeaders(token),
-  })
-  return handleResponse(res)
-}
-
-export async function adminFetchMeta(token) {
-  const res = await fetch(`${ADMIN_BASE}/meta`, {
-    headers: adminHeaders(token),
-  })
-  return handleResponse(res)
-}
-
-export async function adminUpdateMeta(token, meta) {
-  const res = await fetch(`${ADMIN_BASE}/meta`, {
-    method: 'PUT',
-    headers: adminHeaders(token),
-    body: JSON.stringify(meta),
   })
   return handleResponse(res)
 }
@@ -131,6 +91,7 @@ export function formatPrice(price) {
     currency: 'USD'
   })
 }
+
 export function buildWhatsAppLink(meta, producto, selectedSize = null) {
   const numero = meta.whatsapp.replace(/\D/g, '')
   const sizeText = selectedSize ? ` (Talla: ${selectedSize})` : ''

@@ -17,12 +17,13 @@ function AppLayout() {
   const marca = catalog?.meta?.marca ?? 'ANOTHER NPC SHOP'
   const location = useLocation()
   const isHome = location.pathname === '/'
+  const isAdmin = location.pathname.toLowerCase().startsWith('/admin')
 
   return (
     <>
-      {/* Nav en todas las páginas */}
-      <Nav marca={marca} />
-      <TopBanner />
+      {/* Nav y Banner en todas las páginas excepto admin */}
+      {!isAdmin && <Nav marca={marca} />}
+      {!isAdmin && <TopBanner />}
 
       <Routes>
         <Route path="/" element={<Home />} />
