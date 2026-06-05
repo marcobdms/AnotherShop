@@ -23,6 +23,7 @@ export default function Catalog() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeGenero = searchParams.get('genero')
   const activeTalla  = searchParams.get('talla')
+  const [searchTerm, setSearchTerm] = useState('')
   const [showTopBtn, setShowTopBtn] = useState(false)
 
   const setActiveGenero = (gen) => {
@@ -65,8 +66,17 @@ export default function Catalog() {
   if (loading) return <div className="page-state"></div>
   if (error)   return <div className="page-state">error: {error}</div>
 
-  // Filtrado y ordenamiento
+  // Filtrado por buscador, género y talla
   let lista = [...productos]
+  
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase()
+    lista = lista.filter(p => 
+      (p.id && p.id.toLowerCase().includes(term)) || 
+      (p.nombre && p.nombre.toLowerCase().includes(term))
+    )
+  }
+
   if (activeGenero) {
     lista = lista.filter(p => p.genero === activeGenero || p.genero === 'unisex')
   }
@@ -94,6 +104,16 @@ export default function Catalog() {
           onGenero={setActiveGenero}
           onTalla={setActiveTalla}
         />
+
+        <div className="adm-search">
+          <input
+            type="text"
+            className="adm-search__input"
+            placeholder="Buscar por ID o Nombre..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
 
         {lista.length > 0 ? (
           <div className="product-grid">
