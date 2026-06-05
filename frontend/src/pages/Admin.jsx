@@ -5,9 +5,14 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { adminFetchProducts, adminToggleDisponible, formatPrice } from '../api/catalog'
+import { Link } from 'react-router-dom'
+import { adminFetchProducts, adminFetchHistory, adminPublishDraft, formatPrice } from '../api/catalog'
 
-const ADMIN_PASSWORD = 'Marco23.'
+const VALID_USERS = {
+  'Isol0105.': 'isol',
+  'Marco23.': 'marco',
+  'Stefy01.': 'stefy'
+}
 
 // ── Estilos específicos de Admin (login y toggle) ───────────────────────────────
 const css = `
@@ -124,6 +129,21 @@ const css = `
     font-family: var(--font);
   }
   .adm-header__logout:hover { color: var(--black); border-bottom-color: var(--black); }
+
+  .adm-header__save {
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: var(--size-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+    border-radius: 4px;
+    font-family: var(--font);
+  }
+  .adm-header__save:hover { opacity: 0.8; }
 
   /* Search Bar */
   .adm-search {
@@ -249,8 +269,22 @@ const css = `
     align-items: center;
     gap: 1rem;
   }
+  .adm-history__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .adm-history__user {
+    font-weight: 600;
+    text-transform: capitalize;
+    color: var(--black);
+  }
+  .adm-history__date {
+    font-size: 0.75rem;
+    color: var(--grey-400);
+  }
   .adm-history__text {
-    font-size: var(--size-sm);
+    font-size: var(--size-xs);
     color: var(--grey-600);
     line-height: 1.4;
   }
@@ -274,6 +308,19 @@ const css = `
     font-size: var(--size-sm);
     color: var(--grey-400);
   }
+  .adm-history__more {
+    display: block;
+    text-align: center;
+    padding: 1rem;
+    font-size: var(--size-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--black);
+    text-decoration: none;
+    background: var(--grey-100);
+    border-top: 1px solid var(--grey-200);
+  }
+  .adm-history__more:hover { background: var(--grey-200); }
 
   /* Toast */
   .adm-toast {
@@ -315,9 +362,10 @@ function LoginScreen({ onAuth }) {
   const [error, setError] = useState('')
 
   const handleSubmit = () => {
-    if (pwd === ADMIN_PASSWORD) {
-      sessionStorage.setItem('admin_auth', '1')
-      onAuth()
+    const usuario = VALID_USERS[pwd]
+    if (usuario) {
+      sessionStorage.setItem('admin_auth_user', usuario)
+      onAuth(usuario)
     } else {
       setError('Contraseña incorrecta')
       setPwd('')
@@ -355,12 +403,13 @@ function LoginScreen({ onAuth }) {
 }
 
 // ── Admin Panel (Contenedor Principal) ─────────────────────────────────────────
-function AdminPanel({ onLogout }) {
+function AdminPanel({ onLogout, usuario }) {
   const [productos, setProductos] = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [history, setHistory] = useState([])
+  const [pendingEvents, setPendingEvents] = useState([])
   const [showHistory, setShowHistory] = useState(false)
   const [toast, setToast] = useState(null)
   const [error, setError] = useState(null)
@@ -369,10 +418,19 @@ function AdminPanel({ onLogout }) {
     setToast({ msg, type, key: Date.now() })
   }, [])
 
+  const fetchHistory = useCallback(async () => {
+    try {
+      const data = await adminFetchHistory()
+      setHistory(data)
+    } catch (e) {
+      console.error("Error cargando historial", e)
+    }
+  }, [])
+
   useEffect(() => {
-    adminFetchProducts()
-      .then(data => {
-        setProductos(data)
+    Promise.all([adminFetchProducts(), fetchHistory()])
+      .then(([prods]) => {
+        setProductos(prods)
         setError(null)
       })
       .catch(e => {
@@ -380,52 +438,52 @@ function AdminPanel({ onLogout }) {
         setError(e.message)
       })
       .finally(() => setLoading(false))
-  }, [showToast])
+  }, [showToast, fetchHistory])
 
-  const handleToggle = useCallback(async (producto, nuevoEstado) => {
+  const handleToggle = useCallback((producto, nuevoEstado) => {
+    setProductos(prev =>
+      prev.map(p => p.id === producto.id ? { ...p, disponible: nuevoEstado } : p)
+    )
+    setSelectedProduct(prev => prev && prev.id === producto.id ? { ...prev, disponible: nuevoEstado } : prev)
+    
+    const accionText = nuevoEstado ? 'disponible' : 'agotada'
+    const newEvent = {
+      id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      productoId: producto.id,
+      nombre: producto.nombre,
+      estadoAnterior: producto.disponible,
+      nuevoEstado: nuevoEstado,
+      usuario: usuario,
+      fecha_hora: new Date().toISOString(),
+      mensaje: `${producto.nombre} marcada como ${accionText} (Borrador)`
+    }
+    setPendingEvents(prev => [newEvent, ...prev])
+    
+    showToast(`${producto.nombre} — ${accionText}`, 'success')
+  }, [showToast, usuario])
+
+  const handleUndo = useCallback((itemHistorial) => {
+    handleToggle({
+      id: itemHistorial.productoId,
+      nombre: itemHistorial.nombre,
+      disponible: itemHistorial.nuevoEstado
+    }, itemHistorial.estadoAnterior)
+  }, [handleToggle])
+
+  const handleSave = useCallback(async () => {
+    if (pendingEvents.length === 0) return
     try {
-      await adminToggleDisponible(producto.id, nuevoEstado)
-      setProductos(prev =>
-        prev.map(p => p.id === producto.id ? { ...p, disponible: nuevoEstado } : p)
-      )
-      // Si el producto seleccionado es el que acabamos de togglear, lo actualizamos también
-      setSelectedProduct(prev => prev && prev.id === producto.id ? { ...prev, disponible: nuevoEstado } : prev)
-      
-      const accionText = nuevoEstado ? 'disponible' : 'agotada'
-      
-      setHistory(prev => [
-        {
-          id: Date.now(),
-          productoId: producto.id,
-          nombre: producto.nombre,
-          estadoAnterior: !nuevoEstado,
-          nuevoEstado: nuevoEstado,
-          mensaje: `${producto.nombre} marcada como ${accionText}`,
-        },
-        ...prev
-      ])
-
-      showToast(`${producto.nombre} — ${accionText}`, 'success')
-    } catch (e) {
+      await adminPublishDraft(productos, pendingEvents)
+      setPendingEvents([])
+      await fetchHistory()
+      showToast('Cambios guardados en producción', 'success')
+      setShowHistory(false)
+    } catch(e) {
       showToast(e.message, 'error')
     }
-  }, [showToast])
+  }, [pendingEvents, productos, fetchHistory, showToast])
 
-  const handleUndo = useCallback(async (itemHistorial) => {
-    try {
-      await adminToggleDisponible(itemHistorial.productoId, itemHistorial.estadoAnterior)
-      setProductos(prev =>
-        prev.map(p => p.id === itemHistorial.productoId ? { ...p, disponible: itemHistorial.estadoAnterior } : p)
-      )
-      setSelectedProduct(prev => prev && prev.id === itemHistorial.productoId ? { ...prev, disponible: itemHistorial.estadoAnterior } : prev)
-      
-      setHistory(prev => prev.filter(h => h.id !== itemHistorial.id))
-      
-      showToast(`Deshecho: ${itemHistorial.nombre}`, 'success')
-    } catch (e) {
-      showToast(e.message, 'error')
-    }
-  }, [showToast])
+  const combinedHistory = [...pendingEvents, ...history]
 
   // Filtrar catálogo por ID o Nombre
   const listaFiltrada = productos.filter(p => {
@@ -446,8 +504,13 @@ function AdminPanel({ onLogout }) {
       <header className="adm-header" style={{ position: 'relative' }}>
         <span className="adm-header__brand">Another NPC Shop</span>
         <div className="adm-header__right">
+          {pendingEvents.length > 0 && (
+            <button className="adm-header__save" onClick={handleSave}>
+              Guardar ({pendingEvents.length})
+            </button>
+          )}
           <button className="adm-header__logout" onClick={() => setShowHistory(!showHistory)}>
-            Cambios ({history.length})
+            Cambios ({pendingEvents.length > 0 ? '*' : ''}{combinedHistory.length})
           </button>
           <button className="adm-header__logout" onClick={onLogout}>Salir</button>
         </div>
@@ -458,19 +521,31 @@ function AdminPanel({ onLogout }) {
               <span>Cambios</span>
               <button className="adm-history__close" onClick={() => setShowHistory(false)}>✕</button>
             </div>
-            {history.length === 0 ? (
+            {combinedHistory.length === 0 ? (
               <div className="adm-history__empty">No hay cambios recientes</div>
             ) : (
-              <ul className="adm-history__list">
-                {history.map(h => (
-                  <li key={h.id} className="adm-history__item">
-                    <span className="adm-history__text">{h.mensaje}</span>
-                    <button className="adm-history__undo" onClick={() => handleUndo(h)}>
-                      Deshacer
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="adm-history__list">
+                  {combinedHistory.slice(0, 10).map(h => {
+                    const dateObj = new Date(h.fecha_hora)
+                    const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    return (
+                      <li key={h.id} className="adm-history__item">
+                        <div className="adm-history__info">
+                          <span className="adm-history__text">
+                            <span className="adm-history__user">{h.usuario}</span>: {h.mensaje}
+                          </span>
+                          <span className="adm-history__date">{dateStr}</span>
+                        </div>
+                        <button className="adm-history__undo" onClick={() => handleUndo(h)}>
+                          Deshacer
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+                <Link to="/admin/cambios" className="adm-history__more">Ver historial completo →</Link>
+              </>
             )}
           </div>
         )}
@@ -605,21 +680,21 @@ function AdminPanel({ onLogout }) {
 
 // ── Componente principal ───────────────────────────────────────────────────────
 export default function Admin() {
-  const [authed, setAuthed] = useState(
-    () => sessionStorage.getItem('admin_auth') === '1'
+  const [authedUser, setAuthedUser] = useState(
+    () => sessionStorage.getItem('admin_auth_user')
   )
 
   const handleLogout = () => {
-    sessionStorage.removeItem('admin_auth')
-    setAuthed(false)
+    sessionStorage.removeItem('admin_auth_user')
+    setAuthedUser(null)
   }
 
   return (
     <>
       <style>{css}</style>
-      {authed
-        ? <AdminPanel onLogout={handleLogout} />
-        : <LoginScreen onAuth={() => setAuthed(true)} />
+      {authedUser
+        ? <AdminPanel onLogout={handleLogout} usuario={authedUser} />
+        : <LoginScreen onAuth={(user) => setAuthedUser(user)} />
       }
     </>
   )

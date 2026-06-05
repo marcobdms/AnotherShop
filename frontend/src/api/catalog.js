@@ -74,11 +74,18 @@ export async function adminFetchProducts() {
   return handleResponse(res)
 }
 
-export async function adminToggleDisponible(id, disponible) {
-  const res = await fetch(`${ADMIN_BASE}/products/${id}/disponible`, {
-    method: 'PATCH',
+export async function adminFetchHistory() {
+  const res = await fetch(`${ADMIN_BASE}/history`, {
     headers: adminHeaders(),
-    body: JSON.stringify({ disponible }),
+  })
+  return handleResponse(res)
+}
+
+export async function adminPublishDraft(productos, nuevos_eventos_historial) {
+  const res = await fetch(`${ADMIN_BASE}/publish`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({ productos, nuevos_eventos_historial }),
   })
   return handleResponse(res)
 }

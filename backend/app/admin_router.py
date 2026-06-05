@@ -7,6 +7,8 @@ import os
 import tempfile
 from pathlib import Path
 from typing import Optional
+from datetime import datetime
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
@@ -76,6 +78,23 @@ class MetaAdmin(BaseModel):
 
 class DisponibleToggle(BaseModel):
     disponible: bool
+    usuario: str
+
+
+class EventoHistorial(BaseModel):
+    id: str
+    productoId: str
+    nombre: str
+    estadoAnterior: bool
+    nuevoEstado: bool
+    usuario: str
+    fecha_hora: str
+    mensaje: str
+
+
+class PublishDraft(BaseModel):
+    productos: list[ProductoAdminOut]
+    nuevos_eventos_historial: list[EventoHistorial]
 
 
 # ── Router ─────────────────────────────────────────────────────────────────────
@@ -139,10 +158,65 @@ def admin_toggle_disponible(product_id: str, body: DisponibleToggle):
     catalog = load_catalog()
     for i, p in enumerate(catalog["productos"]):
         if p["id"] == product_id:
+            estado_anterior = p.get("disponible", False)
             catalog["productos"][i]["disponible"] = body.disponible
+            
+            # Registrar en el historial
+            if "historial" not in catalog:
+                catalog["historial"] = []
+            
+            accion = "disponible" if body.disponible else "agotada"
+            nuevo_evento = {
+                "id": str(uuid.uuid4()),
+                "productoId": product_id,
+                "nombre": p["nombre"],
+                "estadoAnterior": estado_anterior,
+                "nuevoEstado": body.disponible,
+                "usuario": body.usuario,
+                "fecha_hora": datetime.now().isoformat(),
+                "mensaje": f"{p['nombre']} marcada como {accion}"
+            }
+            
+            # Insertar al principio y mantener máximo 200 elementos
+            catalog["historial"].insert(0, nuevo_evento)
+            if len(catalog["historial"]) > 200:
+                catalog["historial"] = catalog["historial"][:200]
+                
             save_catalog(catalog)
             return catalog["productos"][i]
     raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+
+@router.post(
+    "/publish",
+    summary="Publicar los borradores a producción",
+    dependencies=[Depends(verify_token)],
+)
+def admin_publish_draft(body: PublishDraft):
+    catalog = load_catalog()
+    catalog["productos"] = [p.model_dump() for p in body.productos]
+    
+    if "historial" not in catalog:
+        catalog["historial"] = []
+        
+    nuevos = [e.model_dump() for e in body.nuevos_eventos_historial]
+    catalog["historial"] = nuevos + catalog["historial"]
+    
+    if len(catalog["historial"]) > 200:
+        catalog["historial"] = catalog["historial"][:200]
+        
+    save_catalog(catalog)
+    return {"status": "ok"}
+
+
+@router.get(
+    "/history",
+    summary="Obtener el historial de cambios",
+    dependencies=[Depends(verify_token)],
+)
+def admin_get_history():
+    catalog = load_catalog()
+    return catalog.get("historial", [])
 
 
 @router.delete(

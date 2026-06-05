@@ -1678,5 +1678,27 @@
       "disponible": false,
       "marca": ""
     }
+  ],
+  "historial": [
+    {
+      "id": "ea7fd8dd-8965-4f79-83ed-30e5a5136491",
+      "productoId": "022",
+      "nombre": "CAMISETA DE ALGODÓN LOGO",
+      "estadoAnterior": false,
+      "nuevoEstado": true,
+      "usuario": "isol",
+      "fecha_hora": "2026-06-05T18:16:51.027739",
+      "mensaje": "CAMISETA DE ALGODÓN LOGO marcada como disponible"
+    },
+    {
+      "id": "211051a3-561c-4adb-b15b-77e882bd1096",
+      "productoId": "022",
+      "nombre": "CAMISETA DE ALGODÓN LOGO",
+      "estadoAnterior": true,
+      "nuevoEstado": false,
+      "usuario": "isol",
+      "fecha_hora": "2026-06-05T18:16:33.693206",
+      "mensaje": "CAMISETA DE ALGODÓN LOGO marcada como agotada"
+    }
   ]
 }

@@ -10,6 +10,7 @@ import Product from './pages/Product'
 import About from './pages/About'
 import { useCatalog } from './hooks/useCatalog'
 import Admin from './pages/Admin'
+import AdminCambios from './pages/AdminCambios'
 import TopBanner from './components/TopBanner'
 
 function AppLayout() {
@@ -31,6 +32,7 @@ function AppLayout() {
         <Route path="/producto/:id" element={<Product />} />
         <Route path="/nosotros" element={<About />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/cambios" element={<AdminCambios />} />
         {/* Fallback */}
         <Route path="*" element={<Home />} />
       </Routes>
