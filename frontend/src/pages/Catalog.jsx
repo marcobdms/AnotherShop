@@ -7,8 +7,10 @@
  *   GET /api/meta      → { marca, ... }
  */
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { fetchProducts, fetchFilters, fetchMeta } from '../api/catalog'
+import { useAuth } from '../hooks/useAuth'
+import { useFavorites } from '../hooks/useFavorites'
 import ProductCard from '../components/ProductCard'
 import FilterChips from '../components/FilterChips'
 import Footer from '../components/Footer'
@@ -26,6 +28,10 @@ export default function Catalog() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showTopBtn, setShowTopBtn] = useState(false)
 
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { isFavorite, toggleFavorite } = useFavorites(user)
+
   const setActiveGenero = (gen) => {
     const params = new URLSearchParams(searchParams)
     gen ? params.set('genero', gen) : params.delete('genero')
@@ -40,12 +46,7 @@ export default function Catalog() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Mostrar si bajamos más de la mitad de la altura de la ventana
-      if (window.scrollY > window.innerHeight / 2) {
-        setShowTopBtn(true)
-      } else {
-        setShowTopBtn(false)
-      }
+      setShowTopBtn(window.scrollY > window.innerHeight / 2)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -63,16 +64,24 @@ export default function Catalog() {
       .finally(() => setLoading(false))
   }, [])
 
+  const handleFavoriteClick = async (producto) => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    await toggleFavorite(producto.id)
+  }
+
   if (loading) return <div className="page-state"></div>
   if (error)   return <div className="page-state">error: {error}</div>
 
   // Filtrado por buscador, género y talla
   let lista = [...productos]
-  
+
   if (searchTerm) {
     const term = searchTerm.toLowerCase()
-    lista = lista.filter(p => 
-      (p.id && p.id.toLowerCase().includes(term)) || 
+    lista = lista.filter(p =>
+      (p.id && p.id.toLowerCase().includes(term)) ||
       (p.nombre && p.nombre.toLowerCase().includes(term))
     )
   }
@@ -89,9 +98,9 @@ export default function Catalog() {
 
   // Ordenar para enviar lo agotado al fondo
   lista.sort((a, b) => {
-    if (a.disponible === b.disponible) return 0;
-    return a.disponible ? -1 : 1;
-  });
+    if (a.disponible === b.disponible) return 0
+    return a.disponible ? -1 : 1
+  })
 
   return (
     <>
@@ -103,34 +112,31 @@ export default function Catalog() {
           activeTalla={activeTalla}
           onGenero={setActiveGenero}
           onTalla={setActiveTalla}
+          searchTerm={searchTerm}
+          onSearch={setSearchTerm}
         />
-
-        <div className="adm-search">
-          <input
-            type="text"
-            className="adm-search__input"
-            placeholder="Buscar por ID o Nombre..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
-        </div>
 
         {lista.length > 0 ? (
           <div className="product-grid">
             {lista.map(p => (
-              <ProductCard key={p.id} producto={p} />
+              <ProductCard
+                key={p.id}
+                producto={p}
+                isFavorite={isFavorite(p.id)}
+                onFavoriteClick={handleFavoriteClick}
+              />
             ))}
           </div>
         ) : (
           <div className="no-results">
             <p>Sin resultados.</p>
-            <button onClick={() => { setActiveGenero(null); setActiveTalla(null) }}>
+            <button onClick={() => { setActiveGenero(null); setActiveTalla(null); setSearchTerm('') }}>
               Limpiar filtros
             </button>
           </div>
         )}
 
-        <button 
+        <button
           className={`back-to-top ${showTopBtn ? 'visible' : ''}`}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="Volver arriba"

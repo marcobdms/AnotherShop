@@ -94,6 +94,16 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .nav__links a:hover,
 .nav__links a.active { color: var(--black); }
 
+/* Icono de usuario en el nav */
+.nav__user-icon {
+  display: flex;
+  align-items: center;
+  color: var(--grey-600);
+  transition: color var(--transition);
+}
+.nav__user-icon:hover { color: var(--black); }
+
+
 /* ── Página: INICIO ────────────────────────────────────────────────────────── */
 .home {
   min-height: calc(100vh - 61px);
@@ -275,6 +285,40 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   text-transform: uppercase;
 }
 
+/* Botón de favorito sobre la imagen */
+.product-card__fav {
+  position: absolute;
+  bottom: 0.6rem;
+  right: 0.6rem;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  color: var(--grey-400);
+  transition: color var(--transition), background var(--transition), transform 150ms ease;
+  opacity: 0;
+  transform: scale(0.85);
+}
+.product-card:hover .product-card__fav {
+  opacity: 1;
+  transform: scale(1);
+}
+.product-card__fav--active {
+  color: #e53e3e;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+.product-card__fav:hover {
+  background: var(--white);
+  color: #e53e3e;
+}
+
+
 /* Sin resultados */
 .no-results {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -364,10 +408,40 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   line-height: 1.2;
 }
 
+/* Fila precio + corazón */
+.product-page__price-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .product-page__price {
   font-size: var(--size-lg);
   font-weight: 300;
   color: var(--grey-600);
+}
+
+/* Botón de favorito en la página de producto */
+.product-page__fav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--grey-100);
+  color: var(--grey-400);
+  transition: color var(--transition), background var(--transition), transform 150ms ease;
+  flex-shrink: 0;
+}
+.product-page__fav:hover {
+  background: var(--grey-200);
+  color: #e53e3e;
+  transform: scale(1.1);
+}
+.product-page__fav--active {
+  color: #e53e3e;
+  background: #fff0f0;
 }
 
 .product-page__description {
@@ -547,7 +621,49 @@ button.size-tag--selected, button.size-tag--selected:hover {
   opacity: 0.9;
 }
 
-/* ── Search Bar ────────────────────────────────────────────────────────────── */
+/* ── Buscador integrado en filtros ─────────────────────────────────────────── */
+.filter-search {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 300ms ease, opacity 250ms ease;
+}
+.filter-search--open {
+  max-width: 280px;
+  opacity: 1;
+}
+.filter-search__input {
+  /* Idéntico al .filter-chip pero sin border-radius */
+  font-family:    var(--font);
+  font-size:      var(--size-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding:        0.35rem 0.9rem;
+  border:         1px solid var(--grey-200);
+  color:          var(--grey-600);
+  background:     var(--white);
+  outline:        none;
+  width:          220px;
+  transition:     border-color var(--transition);
+}
+.filter-search__input:focus  { border-color: var(--black); color: var(--black); }
+.filter-search__input::placeholder {
+  color:          var(--grey-400);
+  text-transform: none;
+  letter-spacing: 0.05em;
+}
+.filter-search__clear {
+  font-size:      var(--size-xs);
+  color:          var(--grey-400);
+  padding:        0 0.5rem;
+  flex-shrink:    0;
+  transition:     color var(--transition);
+}
+.filter-search__clear:hover { color: var(--black); }
+
+/* ── Search Bar (Panel Admin) ───────────────────────────────────────────────── */
 .adm-search {
   margin: 2rem auto 2.5rem auto;
   padding: 0 var(--gap);
@@ -565,17 +681,13 @@ button.size-tag--selected, button.size-tag--selected:hover {
   outline: none;
   transition: border-color 200ms ease;
 }
-.adm-search__input:focus {
-  border-color: var(--black);
-}
-.adm-search__input::placeholder {
-  color: var(--grey-400);
-  letter-spacing: 0.05em;
-}
+.adm-search__input:focus { border-color: var(--black); }
+.adm-search__input::placeholder { color: var(--grey-400); letter-spacing: 0.05em; }
 
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .nav__links { display: none; }
+  .nav__user-icon { display: block; }
   .home__title { font-size: var(--size-xl); }
   .home__logo { max-width: 286px; }
   .product-grid { grid-template-columns: 1fr; gap: var(--gap-lg) 1rem; }

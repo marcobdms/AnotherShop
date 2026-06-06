@@ -6,22 +6,44 @@
  *   GET /api/meta           → { marca, whatsapp, paypal, recargo_paypal, ... }
  */
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { fetchProduct, fetchMeta, formatPrice, buildWhatsAppLink, buildPayPalLink } from '../api/catalog'
+import { useAuth } from '../hooks/useAuth'
+import { useFavorites } from '../hooks/useFavorites'
 import Footer from '../components/Footer'
+
+function HeartIcon({ filled }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  )
+}
 
 export default function Product() {
   const { id } = useParams()
+  const navigate = useNavigate()
 
   const [producto, setProducto] = useState(null)
   const [meta,     setMeta]     = useState(null)
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState(null)
-  
   const [selectedSize, setSelectedSize] = useState(null)
 
+  const { user } = useAuth()
+  const { isFavorite, toggleFavorite } = useFavorites(user)
+
   useEffect(() => {
-    // Producto y meta en paralelo
     Promise.all([fetchProduct(id), fetchMeta()])
       .then(([prod, met]) => {
         setProducto(prod)
@@ -29,12 +51,19 @@ export default function Product() {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }, [id])  // re-fetch si cambia el id (navegación entre productos)
+  }, [id])
 
-  // Deseleccionar al cambiar producto
   useEffect(() => {
     setSelectedSize(null)
   }, [producto])
+
+  const handleFavoriteClick = async () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    await toggleFavorite(producto.id)
+  }
 
   if (loading) return <div className="page-state"></div>
 
@@ -71,7 +100,21 @@ export default function Product() {
           <Link to="/catalogo" className="product-page__back">← Catálogo</Link>
 
           <h1 className="product-page__name">{producto.nombre}</h1>
-          <p className="product-page__price">{formatPrice(producto.precio)}</p>
+
+          {/* Precio + corazón */}
+          <div className="product-page__price-row">
+            <p className="product-page__price">{formatPrice(producto.precio)}</p>
+            {producto.disponible && (
+              <button
+                className={`product-page__fav ${isFavorite(producto.id) ? 'product-page__fav--active' : ''}`}
+                onClick={handleFavoriteClick}
+                aria-label={isFavorite(producto.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+              >
+                <HeartIcon filled={isFavorite(producto.id)} />
+              </button>
+            )}
+          </div>
+
           <p className="product-page__description">{producto.descripcion}</p>
 
           {/* Tallas */}
@@ -79,10 +122,10 @@ export default function Product() {
             <span className="product-page__sizes-label">Tallas disponibles</span>
             <div className="product-page__sizes-row">
               {producto.tallas.map(t => {
-                const availableSizesText = (producto.descripcion || '').toUpperCase();
-                const isAvailable = new RegExp(`\\b${t}\\b`, 'i').test(availableSizesText);
-                const isSelected = selectedSize === t;
-                
+                const availableSizesText = (producto.descripcion || '').toUpperCase()
+                const isAvailable = new RegExp(`\\b${t}\\b`, 'i').test(availableSizesText)
+                const isSelected = selectedSize === t
+
                 return (
                   <button
                     key={t}

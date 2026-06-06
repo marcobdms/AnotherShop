@@ -1,21 +1,44 @@
 /**
  * Admin.jsx — Panel de administración
  * Ruta: /admin
- * Auth: contraseña fija comparada en frontend (Marco23.)
+ * Auth: contraseña validada contra tabla 'admin_users' de Supabase
  */
 
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { adminFetchProducts, adminFetchHistory, adminPublishDraft, formatPrice } from '../api/catalog'
+import { supabase } from '../lib/supabase'
 
-const VALID_USERS = {
-  'Isol0105.': 'isol',
-  'Marco23.': 'marco',
-  'Stefy01.': 'stefy'
-}
-
-// ── Estilos específicos de Admin (login y toggle) ───────────────────────────────
+// ── Estilos específicos de Admin ────────────────────────────────────────────────
 const css = `
+  /* ── Cinta de Admin ───────────────────────────────────────────────────────── */
+  .adm-banner {
+    width: 100%;
+    overflow: hidden;
+    background: #111;
+    color: #f0c040;
+    border-bottom: 1px solid #333;
+    white-space: nowrap;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    font-family: var(--font);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+  }
+  .adm-banner-track {
+    display: flex;
+    width: max-content;
+    animation: admBannerScroll 18s linear infinite;
+  }
+  .adm-banner-track span {
+    padding-right: 80px;
+  }
+  @keyframes admBannerScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
   .adm-login {
     min-height: 100vh;
     display: flex;
@@ -147,7 +170,7 @@ const css = `
 
   /* Search Bar */
   .adm-search {
-    margin: 2rem auto 2.5rem auto; /* Añadido margin-bottom para separar de la imagen */
+    margin: 2rem auto 2.5rem auto;
     padding: 0 var(--gap);
     max-width: 1200px;
     width: 100%;
@@ -163,13 +186,8 @@ const css = `
     outline: none;
     transition: border-color 200ms ease;
   }
-  .adm-search__input:focus {
-    border-color: var(--black);
-  }
-  .adm-search__input::placeholder {
-    color: var(--grey-400);
-    letter-spacing: 0.05em;
-  }
+  .adm-search__input:focus { border-color: var(--black); }
+  .adm-search__input::placeholder { color: var(--grey-400); letter-spacing: 0.05em; }
 
   /* Toggle Switcher */
   .adm-toggle-container {
@@ -205,9 +223,7 @@ const css = `
     border-radius: 30px;
     transition: background 250ms ease;
   }
-  .adm-toggle input:checked + .adm-toggle__track {
-    background: #22c55e;
-  }
+  .adm-toggle input:checked + .adm-toggle__track { background: #22c55e; }
   .adm-toggle__thumb {
     position: absolute;
     top: 3px;
@@ -220,9 +236,7 @@ const css = `
     transition: transform 250ms ease;
     pointer-events: none;
   }
-  .adm-toggle input:checked ~ .adm-toggle__thumb {
-    transform: translateX(24px);
-  }
+  .adm-toggle input:checked ~ .adm-toggle__thumb { transform: translateX(24px); }
 
   /* Historial Dropdown */
   .adm-history {
@@ -256,11 +270,7 @@ const css = `
     color: var(--grey-400);
   }
   .adm-history__close:hover { color: var(--black); }
-  .adm-history__list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+  .adm-history__list { list-style: none; padding: 0; margin: 0; }
   .adm-history__item {
     padding: 1rem;
     border-bottom: 1px solid var(--grey-200);
@@ -269,25 +279,10 @@ const css = `
     align-items: center;
     gap: 1rem;
   }
-  .adm-history__info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-  .adm-history__user {
-    font-weight: 600;
-    text-transform: capitalize;
-    color: var(--black);
-  }
-  .adm-history__date {
-    font-size: 0.75rem;
-    color: var(--grey-400);
-  }
-  .adm-history__text {
-    font-size: var(--size-xs);
-    color: var(--grey-600);
-    line-height: 1.4;
-  }
+  .adm-history__info { display: flex; flex-direction: column; gap: 0.3rem; }
+  .adm-history__user { font-weight: 600; text-transform: capitalize; color: var(--black); }
+  .adm-history__date { font-size: 0.75rem; color: var(--grey-400); }
+  .adm-history__text { font-size: var(--size-xs); color: var(--grey-600); line-height: 1.4; }
   .adm-history__undo {
     background: none;
     border: 1px solid var(--grey-200);
@@ -298,10 +293,7 @@ const css = `
     cursor: pointer;
     transition: all 0.2s ease;
   }
-  .adm-history__undo:hover {
-    background: var(--grey-100);
-    border-color: var(--black);
-  }
+  .adm-history__undo:hover { background: var(--grey-100); border-color: var(--black); }
   .adm-history__empty {
     padding: 2rem 1rem;
     text-align: center;
@@ -347,6 +339,21 @@ const css = `
   }
 `
 
+// ── Cinta de administrador ──────────────────────────────────────────────────────
+function AdminBanner() {
+  const msg = '⚠ MODO ADMINISTRADOR'
+  return (
+    <div className="adm-banner">
+      <div className="adm-banner-track">
+        <span>{msg}</span>
+        <span>{msg}</span>
+        <span>{msg}</span>
+        <span>{msg}</span>
+      </div>
+    </div>
+  )
+}
+
 // ── Toast ──────────────────────────────────────────────────────────────────────
 function Toast({ msg, type, onDone }) {
   useEffect(() => {
@@ -360,15 +367,34 @@ function Toast({ msg, type, onDone }) {
 function LoginScreen({ onAuth }) {
   const [pwd, setPwd] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = () => {
-    const usuario = VALID_USERS[pwd]
-    if (usuario) {
-      sessionStorage.setItem('admin_auth_user', usuario)
-      onAuth(usuario)
-    } else {
-      setError('Contraseña incorrecta')
-      setPwd('')
+  const handleSubmit = async () => {
+    if (!pwd) return
+    setLoading(true)
+    setError('')
+
+    try {
+      // Validar contraseña contra la tabla admin_users en Supabase
+      const { data, error: sbError } = await supabase
+        .from('admin_users')
+        .select('username')
+        .eq('password', pwd)
+        .maybeSingle()
+
+      if (sbError) throw new Error(sbError.message)
+
+      if (data?.username) {
+        sessionStorage.setItem('admin_auth_user', data.username)
+        onAuth(data.username)
+      } else {
+        setError('Contraseña incorrecta')
+        setPwd('')
+      }
+    } catch (e) {
+      setError('Error de conexión. Inténtalo de nuevo.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -392,9 +418,9 @@ function LoginScreen({ onAuth }) {
         <button
           className="adm-login__btn"
           onClick={handleSubmit}
-          disabled={!pwd}
+          disabled={!pwd || loading}
         >
-          Acceder
+          {loading ? '...' : 'Acceder'}
         </button>
         {error && <p className="adm-login__error">{error}</p>}
       </div>
@@ -423,7 +449,7 @@ function AdminPanel({ onLogout, usuario }) {
       const data = await adminFetchHistory()
       setHistory(data)
     } catch (e) {
-      console.error("Error cargando historial", e)
+      console.error('Error cargando historial', e)
     }
   }, [])
 
@@ -445,7 +471,7 @@ function AdminPanel({ onLogout, usuario }) {
       prev.map(p => p.id === producto.id ? { ...p, disponible: nuevoEstado } : p)
     )
     setSelectedProduct(prev => prev && prev.id === producto.id ? { ...prev, disponible: nuevoEstado } : prev)
-    
+
     const accionText = nuevoEstado ? 'disponible' : 'agotada'
     const newEvent = {
       id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
@@ -458,7 +484,6 @@ function AdminPanel({ onLogout, usuario }) {
       mensaje: `${producto.nombre} marcada como ${accionText} (Borrador)`
     }
     setPendingEvents(prev => [newEvent, ...prev])
-    
     showToast(`${producto.nombre} — ${accionText}`, 'success')
   }, [showToast, usuario])
 
@@ -478,29 +503,28 @@ function AdminPanel({ onLogout, usuario }) {
       await fetchHistory()
       showToast('Cambios guardados en producción', 'success')
       setShowHistory(false)
-    } catch(e) {
+    } catch (e) {
       showToast(e.message, 'error')
     }
   }, [pendingEvents, productos, fetchHistory, showToast])
 
   const combinedHistory = [...pendingEvents, ...history]
 
-  // Filtrar catálogo por ID o Nombre
   const listaFiltrada = productos.filter(p => {
     if (!searchTerm) return true
     const term = searchTerm.toLowerCase()
-    return (p.id && p.id.toLowerCase().includes(term)) || 
-           (p.nombre && p.nombre.toLowerCase().includes(term))
+    return (p.id && p.id.toLowerCase().includes(term)) ||
+      (p.nombre && p.nombre.toLowerCase().includes(term))
   })
 
-  // Ordenar catálogo: agotados al final (igual que producción)
   const lista = [...listaFiltrada].sort((a, b) => {
-    if (a.disponible === b.disponible) return 0;
-    return a.disponible ? -1 : 1;
-  });
+    if (a.disponible === b.disponible) return 0
+    return a.disponible ? -1 : 1
+  })
 
   return (
     <>
+      <AdminBanner />
       <header className="adm-header" style={{ position: 'relative' }}>
         <span className="adm-header__brand">Another NPC Shop</span>
         <div className="adm-header__right">
@@ -514,7 +538,7 @@ function AdminPanel({ onLogout, usuario }) {
           </button>
           <button className="adm-header__logout" onClick={onLogout}>Salir</button>
         </div>
-        
+
         {showHistory && (
           <div className="adm-history">
             <div className="adm-history__header">
@@ -528,7 +552,7 @@ function AdminPanel({ onLogout, usuario }) {
                 <ul className="adm-history__list">
                   {combinedHistory.slice(0, 10).map(h => {
                     const dateObj = new Date(h.fecha_hora)
-                    const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     return (
                       <li key={h.id} className="adm-history__item">
                         <div className="adm-history__info">
@@ -563,7 +587,6 @@ function AdminPanel({ onLogout, usuario }) {
           </div>
         </main>
       ) : selectedProduct ? (
-        // VISTA: DETALLE DE PRODUCTO (Clon del diseño de producción)
         <main className="product-page">
           <div className={`product-page__img-wrap ${!selectedProduct.disponible ? 'sold-out' : ''}`}>
             <img
@@ -587,8 +610,8 @@ function AdminPanel({ onLogout, usuario }) {
               <span className="product-page__sizes-label">Tallas registradas</span>
               <div className="product-page__sizes-row">
                 {selectedProduct.tallas.map(t => {
-                  const availableSizesText = (selectedProduct.descripcion || '').toUpperCase();
-                  const isAvailable = new RegExp('\\b' + t + '\\b', 'i').test(availableSizesText);
+                  const availableSizesText = (selectedProduct.descripcion || '').toUpperCase()
+                  const isAvailable = new RegExp('\\b' + t + '\\b', 'i').test(availableSizesText)
                   return (
                     <button
                       key={t}
@@ -602,7 +625,6 @@ function AdminPanel({ onLogout, usuario }) {
               </div>
             </div>
 
-            {/* TOGGLE SWITCH - Reemplaza los botones de pago de producción */}
             <div className="adm-toggle-container">
               <span className="adm-toggle-label-text">¿Está disponible este artículo?</span>
               <label className="adm-toggle" aria-label="Disponible">
@@ -618,7 +640,6 @@ function AdminPanel({ onLogout, usuario }) {
           </div>
         </main>
       ) : (
-        // VISTA: CATÁLOGO (Clon del diseño de producción)
         <main className="catalog-page" style={{ paddingTop: '0' }}>
           <div className="adm-search">
             <input

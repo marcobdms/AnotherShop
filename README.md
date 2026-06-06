@@ -90,16 +90,20 @@ Esto arranca:
 
 ### Frontend (`frontend/.env.local`)
 
-| Variable          | Descripción                                              | Ejemplo                          |
-|-------------------|----------------------------------------------------------|----------------------------------|
-| `VITE_API_URL`    | URL base del backend en producción. Vacía = usa proxy.   | `https://api.midominio.com`      |
-| `VITE_ADMIN_TOKEN`| Token del panel admin. Debe coincidir con el backend.    | `mi-token-secreto`               |
+| Variable               | Descripción                                                   | Ejemplo                          |
+|------------------------|---------------------------------------------------------------|----------------------------------|
+| `VITE_API_URL`         | URL base del backend en producción. Vacía = usa proxy.        | `https://api.midominio.com`      |
+| `VITE_ADMIN_TOKEN`     | Token del panel admin. Debe coincidir con el backend.         | `mi-token-secreto`               |
+| `VITE_SUPABASE_URL`    | URL del proyecto Supabase (Project Settings → API).           | `https://xyz.supabase.co`        |
+| `VITE_SUPABASE_ANON_KEY` | Anon key pública de Supabase. Segura en el frontend (RLS). | `eyJ...`                         |
 
 ### Backend (variable de entorno del servidor)
 
 | Variable      | Descripción                        | Default              |
 |---------------|------------------------------------|----------------------|
 | `ADMIN_TOKEN` | Token que valida el header admin.  | `change-me-in-env`   |
+
+> En Vercel, añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` junto con las demás variables de entorno.
 
 ---
 
@@ -115,7 +119,54 @@ Esto arranca:
 ### Frontend — Vercel
 - **Directorio raíz:** `/frontend`
 - **Framework:** Vite (Vercel lo detecta automáticamente)
-- **Env en Vercel:** `VITE_API_URL` y `VITE_ADMIN_TOKEN`
+- **Env en Vercel:** `VITE_API_URL`, `VITE_ADMIN_TOKEN`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+
+---
+
+## Supabase — Setup del sistema de usuarios
+
+Ejecuta este SQL en **Supabase → SQL Editor** para crear las tablas necesarias:
+
+```sql
+-- Tabla de perfiles (se crea automáticamente al registrarse un usuario)
+create table public.profiles (
+  id uuid references auth.users on delete cascade primary key,
+  email text,
+  created_at timestamptz default now()
+);
+alter table public.profiles enable row level security;
+create policy "Solo el propio usuario"
+  on public.profiles for all using (auth.uid() = id);
+
+-- Trigger: crea el profile automáticamente tras el registro
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email) values (new.id, new.email);
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+-- Tabla de favoritos
+create table public.favorites (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users on delete cascade not null,
+  product_id text not null,
+  created_at timestamptz default now(),
+  unique(user_id, product_id)
+);
+alter table public.favorites enable row level security;
+create policy "Solo el propio usuario"
+  on public.favorites for all using (auth.uid() = user_id);
+```
+
+**Configuración recomendada en Supabase → Authentication → Settings:**
+- **Email confirmations:** ON (el usuario debe confirmar su email antes de entrar)
+- **Enable sign ups:** ON (los usuarios se registran solos; tú los ves en el panel)
 
 ---
 
@@ -145,9 +196,12 @@ python backend/scripts/update_and_sql.py
 catalog.json  ←→  FastAPI (backend)  ←→  React (frontend)
                       ↑
                  Panel /admin (escribe directamente al JSON)
+
+Supabase Auth + DB  ←→  React (frontend)
+  └─ favorites (por usuario)
 ```
 
-El `catalog.json` es la única base de datos. El panel de admin (ruta `/admin`) lee y escribe sobre él vía los endpoints protegidos.
+El `catalog.json` es la única base de datos del catálogo. El panel de admin (ruta `/admin`) lee y escribe sobre él vía los endpoints protegidos. Los favoritos de usuario se almacenan directamente en Supabase desde el frontend.
 
 ---
 
