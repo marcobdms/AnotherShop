@@ -1,1 +1,29 @@
-node_modules
+# Dependencias
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+
+# Entorno Python
+.venv/
+venv/
+*.egg-info/
+
+# Variables de entorno (nunca al repo)
+.env
+.env.local
+.env.*.local
+
+# Vite / build
+frontend/dist/
+
+# Datos sensibles de scripts
+backend/scripts/__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
