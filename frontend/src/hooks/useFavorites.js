@@ -24,7 +24,9 @@ export function useFavorites(user) {
       .select('product_id')
       .eq('user_id', user.id)
       .then(({ data, error }) => {
-        if (!error && data) {
+        if (error) {
+          console.error('[useFavorites] Error cargando favoritos:', error.message, error.details)
+        } else if (data) {
           setFavorites(new Set(data.map(r => r.product_id)))
         }
       })
@@ -41,7 +43,7 @@ export function useFavorites(user) {
 
     const alreadyFav = favorites.has(productId)
 
-    // Optimistic update
+    // Optimistic update — la UI responde de inmediato
     setFavorites(prev => {
       const next = new Set(prev)
       alreadyFav ? next.delete(productId) : next.add(productId)
@@ -56,8 +58,10 @@ export function useFavorites(user) {
         .eq('product_id', productId)
 
       if (error) {
+        console.error('[useFavorites] Error al eliminar favorito:', error.message)
         // Revertir si falla
         setFavorites(prev => { const next = new Set(prev); next.add(productId); return next })
+        return false
       }
     } else {
       const { error } = await supabase
@@ -65,7 +69,9 @@ export function useFavorites(user) {
         .insert({ user_id: user.id, product_id: productId })
 
       if (error) {
+        console.error('[useFavorites] Error al insertar favorito:', error.message)
         setFavorites(prev => { const next = new Set(prev); next.delete(productId); return next })
+        return false
       }
     }
 

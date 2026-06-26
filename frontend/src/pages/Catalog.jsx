@@ -6,7 +6,7 @@
  *   GET /api/filters   → { tallas, generos }
  *   GET /api/meta      → { marca, ... }
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { fetchProducts, fetchFilters, fetchMeta } from '../api/catalog'
 import { useAuth } from '../hooks/useAuth'
@@ -15,12 +15,29 @@ import ProductCard from '../components/ProductCard'
 import FilterChips from '../components/FilterChips'
 import Footer from '../components/Footer'
 
+// Toast compartido (mismo que en Product.jsx)
+function FavToast({ msg, onDone }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 2200)
+    return () => clearTimeout(t)
+  }, [onDone])
+  return (
+    <div className="fav-toast">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+      {msg}
+    </div>
+  )
+}
+
 export default function Catalog() {
   const [productos, setProductos] = useState([])
   const [filtros,   setFiltros]   = useState({ tallas: [], generos: [] })
   const [meta,      setMeta]      = useState({ marca: 'ANOTHER NPC SHOP' })
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState(null)
+  const [favToast,  setFavToast]  = useState(null)
 
   const [searchParams, setSearchParams] = useSearchParams()
   const activeGenero = searchParams.get('genero')
@@ -31,6 +48,10 @@ export default function Catalog() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
+
+  const showFavToast = useCallback((msg) => {
+    setFavToast({ msg, key: Date.now() })
+  }, [])
 
   const setActiveGenero = (gen) => {
     const params = new URLSearchParams(searchParams)
@@ -53,7 +74,6 @@ export default function Catalog() {
   }, [])
 
   useEffect(() => {
-    // Los tres fetch en paralelo — no bloqueamos uno por el otro
     Promise.all([fetchProducts(), fetchFilters(), fetchMeta()])
       .then(([prods, fils, met]) => {
         setProductos(prods)
@@ -69,7 +89,8 @@ export default function Catalog() {
       navigate('/login')
       return
     }
-    await toggleFavorite(producto.id)
+    const wasAdded = await toggleFavorite(producto.id)
+    showFavToast(wasAdded !== false ? 'Añadido a favoritos' : 'Eliminado de favoritos')
   }
 
   if (loading) return <div className="page-state"></div>
@@ -96,7 +117,6 @@ export default function Catalog() {
     })
   }
 
-  // Ordenar para enviar lo agotado al fondo
   lista.sort((a, b) => {
     if (a.disponible === b.disponible) return 0
     return a.disponible ? -1 : 1
@@ -144,6 +164,16 @@ export default function Catalog() {
           ↑
         </button>
       </main>
+
+      {/* Toast de favorito */}
+      {favToast && (
+        <FavToast
+          key={favToast.key}
+          msg={favToast.msg}
+          onDone={() => setFavToast(null)}
+        />
+      )}
+
       <Footer marca={meta.marca} />
     </>
   )

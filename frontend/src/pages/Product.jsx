@@ -5,7 +5,7 @@
  *   GET /api/products/{id}  → { id, nombre, precio, imagen, descripcion, tallas, genero, disponible }
  *   GET /api/meta           → { marca, whatsapp, paypal, recargo_paypal, ... }
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { fetchProduct, fetchMeta, formatPrice, buildWhatsAppLink, buildPayPalLink } from '../api/catalog'
 import { useAuth } from '../hooks/useAuth'
@@ -15,14 +15,10 @@ import Footer from '../components/Footer'
 function HeartIcon({ filled }) {
   return (
     <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
+      width="22" height="22" viewBox="0 0 24 24"
       fill={filled ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke="currentColor" strokeWidth="1.5"
+      strokeLinecap="round" strokeLinejoin="round"
       aria-hidden="true"
     >
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -30,15 +26,32 @@ function HeartIcon({ filled }) {
   )
 }
 
+// Pequeño toast de favorito
+function FavToast({ msg, onDone }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 2200)
+    return () => clearTimeout(t)
+  }, [onDone])
+  return (
+    <div className="fav-toast">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+      {msg}
+    </div>
+  )
+}
+
 export default function Product() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const [producto, setProducto] = useState(null)
-  const [meta,     setMeta]     = useState(null)
-  const [loading,  setLoading]  = useState(true)
-  const [error,    setError]    = useState(null)
+  const [producto, setProducto]   = useState(null)
+  const [meta,     setMeta]       = useState(null)
+  const [loading,  setLoading]    = useState(true)
+  const [error,    setError]      = useState(null)
   const [selectedSize, setSelectedSize] = useState(null)
+  const [favToast, setFavToast]   = useState(null) // { msg, key }
 
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
@@ -57,12 +70,17 @@ export default function Product() {
     setSelectedSize(null)
   }, [producto])
 
+  const showFavToast = useCallback((msg) => {
+    setFavToast({ msg, key: Date.now() })
+  }, [])
+
   const handleFavoriteClick = async () => {
     if (!user) {
       navigate('/login')
       return
     }
-    await toggleFavorite(producto.id)
+    const wasAdded = await toggleFavorite(producto.id)
+    showFavToast(wasAdded !== false ? 'Añadido a favoritos' : 'Eliminado de favoritos')
   }
 
   if (loading) return <div className="page-state"></div>
@@ -81,6 +99,8 @@ export default function Product() {
       </>
     )
   }
+
+  const favActive = isFavorite(producto.id)
 
   return (
     <>
@@ -106,11 +126,11 @@ export default function Product() {
             <p className="product-page__price">{formatPrice(producto.precio)}</p>
             {producto.disponible && (
               <button
-                className={`product-page__fav ${isFavorite(producto.id) ? 'product-page__fav--active' : ''}`}
+                className={`product-page__fav ${favActive ? 'product-page__fav--active' : ''}`}
                 onClick={handleFavoriteClick}
-                aria-label={isFavorite(producto.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                aria-label={favActive ? 'Quitar de favoritos' : 'Añadir a favoritos'}
               >
-                <HeartIcon filled={isFavorite(producto.id)} />
+                <HeartIcon filled={favActive} />
               </button>
             )}
           </div>
@@ -140,22 +160,20 @@ export default function Product() {
             </div>
           </div>
 
-          {/* Acciones — solo si hay meta cargado */}
+          {/* Acciones */}
           {meta && (
             producto.disponible ? (
               <div className="product-page__actions">
                 <a
                   href={buildWhatsAppLink(meta, producto, selectedSize)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target="_blank" rel="noopener noreferrer"
                   className="btn-whatsapp"
                 >
                   Preguntar por WhatsApp
                 </a>
                 <a
                   href={buildPayPalLink(meta, producto)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target="_blank" rel="noopener noreferrer"
                   className="btn-paypal"
                 >
                   Pagar con PayPal
@@ -168,6 +186,16 @@ export default function Product() {
           )}
         </div>
       </main>
+
+      {/* Toast de favorito */}
+      {favToast && (
+        <FavToast
+          key={favToast.key}
+          msg={favToast.msg}
+          onDone={() => setFavToast(null)}
+        />
+      )}
+
       <Footer marca={meta?.marca ?? 'ANOTHER NPC SHOP'} />
     </>
   )
