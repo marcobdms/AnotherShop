@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { adminFetchProducts, adminFetchHistory, adminPublishDraft, formatPrice } from '../api/catalog'
 import { supabase } from '../lib/supabase'
+import InventoryModal from '../components/InventoryModal'
 
 // ── Estilos específicos de Admin ────────────────────────────────────────────────
 const css = `
@@ -337,6 +338,36 @@ const css = `
     from { transform: translateY(8px); opacity: 0; }
     to   { transform: translateY(0);   opacity: 1; }
   }
+
+  /* Inventory button on product cards */
+  .adm-inv-btn {
+    position: absolute;
+    bottom: 0.6rem;
+    left: 0.6rem;
+    z-index: 10;
+    padding: 0.3rem 0.65rem;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--grey-200);
+    font-family: var(--font);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--black);
+    cursor: pointer;
+    transition: background 200ms ease, border-color 200ms ease;
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  .product-card:hover .adm-inv-btn {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 200ms ease, transform 200ms ease, background 200ms ease;
+  }
+  .adm-inv-btn:hover {
+    background: var(--white);
+    border-color: var(--black);
+  }
 `
 
 // ── Cinta de administrador ──────────────────────────────────────────────────────
@@ -439,6 +470,7 @@ function AdminPanel({ onLogout, usuario }) {
   const [showHistory, setShowHistory] = useState(false)
   const [toast, setToast] = useState(null)
   const [error, setError] = useState(null)
+  const [inventoryProduct, setInventoryProduct] = useState(null)
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type, key: Date.now() })
@@ -668,6 +700,12 @@ function AdminPanel({ onLogout, usuario }) {
                       onError={e => { e.target.style.visibility = 'hidden' }}
                     />
                     {!p.disponible && <div className="sold-out-overlay">Agotado</div>}
+                    <button
+                      className="adm-inv-btn"
+                      onClick={(e) => { e.stopPropagation(); setInventoryProduct(p) }}
+                    >
+                      Inventario
+                    </button>
                   </div>
                   <div className="product-card__info">
                     <p className="product-card__name">{p.nombre}</p>
@@ -693,6 +731,16 @@ function AdminPanel({ onLogout, usuario }) {
           msg={toast.msg}
           type={toast.type}
           onDone={() => setToast(null)}
+        />
+      )}
+
+      {inventoryProduct && (
+        <InventoryModal
+          product={inventoryProduct}
+          onClose={() => setInventoryProduct(null)}
+          onSaved={() => {
+            showToast(`Inventario de ${inventoryProduct.nombre} guardado`, 'success')
+          }}
         />
       )}
     </>

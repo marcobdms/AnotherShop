@@ -102,6 +102,23 @@ export default function Product() {
 
   const favActive = isFavorite(producto.id)
 
+  const hasVariantes = producto.variantes && producto.variantes.length > 0
+  const [selectedColor, setSelectedColor] = useState(null)
+
+  // Auto-select first color with stock when variants load
+  useEffect(() => {
+    if (hasVariantes) {
+      const firstWithStock = producto.variantes.find(v =>
+        Object.values(v.tallas || {}).some(s => s > 0)
+      )
+      setSelectedColor(firstWithStock?.color || producto.variantes[0]?.color || null)
+    }
+  }, [producto, hasVariantes])
+
+  const selectedVariante = hasVariantes
+    ? producto.variantes.find(v => v.color === selectedColor) || null
+    : null
+
   return (
     <>
       <main className="product-page">
@@ -137,26 +154,75 @@ export default function Product() {
 
           <p className="product-page__description">{producto.descripcion}</p>
 
+          {/* Colores — solo si hay variantes */}
+          {hasVariantes && (
+            <div className="product-page__colors">
+              <span className="product-page__sizes-label">Color</span>
+              <div className="product-page__colors-row">
+                {producto.variantes.map(v => {
+                  const colorStock = Object.values(v.tallas || {}).reduce((a, b) => a + b, 0)
+                  const isSelected = v.color === selectedColor
+                  return (
+                    <button
+                      key={v.color}
+                      className={`color-dot ${isSelected ? 'color-dot--selected' : ''} ${colorStock === 0 ? 'color-dot--empty' : ''}`}
+                      style={{ '--dot-color': v.hex }}
+                      onClick={() => setSelectedColor(v.color)}
+                      title={`${v.color}${colorStock === 0 ? ' (sin stock)' : ''}`}
+                      aria-label={v.color}
+                    >
+                      <span className="color-dot__inner" />
+                      {colorStock === 0 && <span className="color-dot__x">✕</span>}
+                    </button>
+                  )
+                })}
+              </div>
+              {selectedColor && (
+                <span className="product-page__color-name">{selectedColor}</span>
+              )}
+            </div>
+          )}
+
           {/* Tallas */}
           <div className="product-page__sizes">
             <span className="product-page__sizes-label">Tallas disponibles</span>
             <div className="product-page__sizes-row">
-              {producto.tallas.map(t => {
-                const availableSizesText = (producto.descripcion || '').toUpperCase()
-                const isAvailable = new RegExp(`\\b${t}\\b`, 'i').test(availableSizesText)
-                const isSelected = selectedSize === t
-
-                return (
-                  <button
-                    key={t}
-                    disabled={!isAvailable}
-                    onClick={() => isAvailable && setSelectedSize(t)}
-                    className={`size-tag ${isAvailable ? 'size-tag--available' : 'size-tag--unavailable'} ${isSelected ? 'size-tag--selected' : ''}`}
-                  >
-                    {t}
-                  </button>
-                )
-              })}
+              {hasVariantes && selectedVariante ? (
+                // Modo inventario: tallas con stock real
+                ['XS', 'S', 'M', 'L', 'XL'].map(t => {
+                  const stock = selectedVariante.tallas?.[t] ?? 0
+                  const isAvailable = stock > 0
+                  const isSelected = selectedSize === t
+                  return (
+                    <button
+                      key={t}
+                      disabled={!isAvailable}
+                      onClick={() => isAvailable && setSelectedSize(t)}
+                      className={`size-tag ${isAvailable ? 'size-tag--available' : 'size-tag--unavailable'} ${isSelected ? 'size-tag--selected' : ''}`}
+                      title={isAvailable ? `${stock} uds.` : 'Sin stock'}
+                    >
+                      {t}
+                    </button>
+                  )
+                })
+              ) : (
+                // Modo legacy: sin inventario, usar descripcion
+                producto.tallas.map(t => {
+                  const availableSizesText = (producto.descripcion || '').toUpperCase()
+                  const isAvailable = new RegExp(`\\b${t}\\b`, 'i').test(availableSizesText)
+                  const isSelected = selectedSize === t
+                  return (
+                    <button
+                      key={t}
+                      disabled={!isAvailable}
+                      onClick={() => isAvailable && setSelectedSize(t)}
+                      className={`size-tag ${isAvailable ? 'size-tag--available' : 'size-tag--unavailable'} ${isSelected ? 'size-tag--selected' : ''}`}
+                    >
+                      {t}
+                    </button>
+                  )
+                })
+              )}
             </div>
           </div>
 

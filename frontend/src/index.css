@@ -558,6 +558,72 @@ button.size-tag--selected, button.size-tag--selected:hover {
   border-color: var(--black);
 }
 
+/* ── Color dots (selector en página de producto) ───────────────────────────── */
+.product-page__colors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.product-page__colors-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.product-page__color-name {
+  font-size: var(--size-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--grey-600);
+}
+
+.color-dot {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color var(--transition), transform 150ms ease;
+  padding: 0;
+  background: none;
+}
+.color-dot__inner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--dot-color, #000);
+  border: 1px solid var(--grey-200);
+  transition: transform 150ms ease;
+}
+.color-dot:hover { transform: scale(1.15); }
+.color-dot--selected { border-color: var(--black); }
+.color-dot--selected .color-dot__inner { transform: scale(0.9); }
+.color-dot--empty { opacity: 0.4; cursor: default; }
+.color-dot__x {
+  position: absolute;
+  font-size: 0.55rem;
+  color: var(--grey-600);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* Color indicator dot on product cards (catalog) */
+.product-card__color-dot {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.9);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  z-index: 5;
+  pointer-events: none;
+}
+
 /* Botones de contacto */
 .product-page__actions { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; }
 

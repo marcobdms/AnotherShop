@@ -90,6 +90,22 @@ export async function adminPublishDraft(productos, nuevos_eventos_historial) {
   return handleResponse(res)
 }
 
+export async function adminFetchInventory(productId) {
+  const res = await fetch(`${ADMIN_BASE}/inventory/${productId}`, {
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function adminSaveInventory(productId, variantes) {
+  const res = await fetch(`${ADMIN_BASE}/inventory/${productId}`, {
+    method: 'PUT',
+    headers: adminHeaders(),
+    body: JSON.stringify({ variantes }),
+  })
+  return handleResponse(res)
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 export function formatPrice(price) {

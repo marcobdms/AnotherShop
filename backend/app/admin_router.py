@@ -15,6 +15,7 @@ from pydantic import BaseModel
 
 # ── Ruta al catálogo ───────────────────────────────────────────────────────────
 CATALOG_PATH = Path(__file__).parent.parent / "data" / "catalog.json"
+INVENTORY_PATH = Path(__file__).parent.parent / "data" / "inventory.json"
 
 # ── Auth ───────────────────────────────────────────────────────────────────────
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "change-me-in-env")
@@ -45,6 +46,22 @@ def next_id(productos: list) -> str:
         return "001"
     max_id = max(int(p["id"]) for p in productos if p["id"].isdigit())
     return str(max_id + 1).zfill(3)
+
+
+# ── Helpers Inventario ─────────────────────────────────────────────────────────
+def load_inventory() -> dict:
+    if not INVENTORY_PATH.exists():
+        return {}
+    with open(INVENTORY_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_inventory(data: dict) -> None:
+    """Escritura atómica del inventario."""
+    tmp_path = INVENTORY_PATH.with_suffix(".tmp")
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    tmp_path.replace(INVENTORY_PATH)
 
 
 # ── Schemas ────────────────────────────────────────────────────────────────────
@@ -256,3 +273,51 @@ def admin_update_meta(meta: MetaAdmin):
     catalog["meta"] = meta.model_dump()
     save_catalog(catalog)
     return meta
+
+
+# ── Schemas Inventario ─────────────────────────────────────────────────────────
+class VarianteColor(BaseModel):
+    color: str
+    hex: str = "#000000"
+    tallas: dict[str, int] = {}
+
+
+class InventarioProducto(BaseModel):
+    variantes: list[VarianteColor]
+
+
+# ── Endpoints Inventario ───────────────────────────────────────────────────────
+
+@router.get(
+    "/inventory/{product_id}",
+    summary="Obtener inventario de un producto",
+    dependencies=[Depends(verify_token)],
+)
+def admin_get_inventory(product_id: str):
+    inventory = load_inventory()
+    entry = inventory.get(product_id, {})
+    return {"variantes": entry.get("variantes", [])}
+
+
+@router.put(
+    "/inventory/{product_id}",
+    summary="Guardar inventario completo de un producto",
+    dependencies=[Depends(verify_token)],
+)
+def admin_save_inventory(product_id: str, body: InventarioProducto):
+    # Verificar que el producto existe
+    catalog = load_catalog()
+    found = any(p["id"] == product_id for p in catalog["productos"])
+    if not found:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+    inventory = load_inventory()
+    inventory[product_id] = {
+        "variantes": [v.model_dump() for v in body.variantes]
+    }
+    save_inventory(inventory)
+
+    total_stock = sum(
+        sum(v.tallas.values()) for v in body.variantes
+    )
+    return {"status": "ok", "total_stock": total_stock}

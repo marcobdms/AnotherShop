@@ -140,7 +140,7 @@ export default function Catalog() {
           <div className="product-grid">
             {lista.map(p => (
               <ProductCard
-                key={p.id}
+                key={p.variante_color ? `${p.id}-${p.variante_color}` : p.id}
                 producto={p}
                 isFavorite={isFavorite(p.id)}
                 onFavoriteClick={handleFavoriteClick}

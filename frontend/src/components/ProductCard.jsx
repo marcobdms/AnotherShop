@@ -55,6 +55,15 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
         />
         {!producto.disponible && <div className="sold-out-overlay">Agotado</div>}
 
+        {/* Indicador de color de variante */}
+        {producto.variante_hex && (
+          <span
+            className="product-card__color-dot"
+            style={{ background: producto.variante_hex }}
+            title={producto.variante_color || ''}
+          />
+        )}
+
         {/* Botón de favorito — solo si el producto está disponible */}
         {producto.disponible && (
           <button
