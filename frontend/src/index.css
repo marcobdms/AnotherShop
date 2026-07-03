@@ -578,33 +578,32 @@ button.size-tag--selected, button.size-tag--selected:hover {
 
 .color-dot {
   position: relative;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 0;
   border: 2px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color var(--transition), transform 150ms ease;
-  padding: 0;
+  transition: border-color 150ms ease;
+  padding: 2px;
   background: none;
 }
 .color-dot__inner {
-  width: 22px;
-  height: 22px;
-  border-radius: 3px;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
   background: var(--dot-color, #000);
-  border: 1px solid var(--grey-200);
-  transition: transform 150ms ease;
+  border: 1px solid rgba(0,0,0,0.12);
 }
-.color-dot:hover { transform: scale(1.15); }
+.color-dot:hover { border-color: var(--grey-300); }
 .color-dot--selected { border-color: var(--black); }
-.color-dot--selected .color-dot__inner { transform: scale(0.9); }
-.color-dot--empty { opacity: 0.4; cursor: default; }
+.color-dot--selected .color-dot__inner { border-color: transparent; }
+.color-dot--empty { opacity: 0.35; cursor: default; }
 .color-dot__x {
   position: absolute;
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   color: var(--grey-600);
   font-weight: 700;
   pointer-events: none;

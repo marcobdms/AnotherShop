@@ -299,35 +299,41 @@ const css = `
   }
   .imp-img-drop-label:hover { color: var(--black); }
 
-  /* Color selector — swatches */
+  /* Color selector — swatches compact inline */
   .imp-color-selector {
     display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    max-width: 140px;
+    flex-wrap: nowrap;
+    gap: 2px;
+    align-items: center;
+    overflow-x: auto;
+    max-width: 130px;
+    scrollbar-width: none;
   }
+  .imp-color-selector::-webkit-scrollbar { display: none; }
   .imp-color-swatch-btn {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 2px solid transparent;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1.5px solid transparent;
     cursor: pointer;
     padding: 0;
-    transition: transform 120ms ease, border-color 120ms ease;
+    transition: border-color 100ms ease;
     flex-shrink: 0;
   }
-  .imp-color-swatch-btn:hover { transform: scale(1.2); }
-  .imp-color-swatch-btn.selected { border-color: var(--black); transform: scale(1.15); }
+  .imp-color-swatch-btn:hover { border-color: var(--grey-400); }
+  .imp-color-swatch-btn.selected { border-color: var(--black); }
   .imp-color-swatch-btn--none {
     background: linear-gradient(135deg, #f5f5f5 40%, #ccc 40%);
     border-color: var(--grey-200);
   }
   .imp-color-name {
-    font-size: 0.6rem;
-    color: var(--grey-600);
-    letter-spacing: 0.05em;
-    margin-top: 1px;
-    min-height: 0.8rem;
+    font-size: 0.55rem;
+    color: var(--grey-400);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
   }
 
   /* Toggle cell */
@@ -583,6 +589,7 @@ export default function AdminImport() {
   const [result, setResult] = useState(null)
   const [isImported, setIsImported] = useState(false)
   const [loadingInitial, setLoadingInitial] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   // ── Carga inicial (Mirror del catálogo) ─────────────────────────────────────
   useEffect(() => {
@@ -908,7 +915,16 @@ export default function AdminImport() {
 
   const productosValidos = rowsToProductos().filter(p => p.nombre && p.ref)
 
-  const visibleRows = rows.filter(r => r._drop === selectedDrop)
+  const visibleRows = rows.filter(r => {
+    if (r._drop !== selectedDrop) return false
+    if (!searchTerm.trim()) return true
+    const term = searchTerm.trim().toLowerCase()
+    return (
+      (r.ref && r.ref.toLowerCase().includes(term)) ||
+      (r.nombre && r.nombre.toLowerCase().includes(term)) ||
+      (r.color && r.color.toLowerCase().includes(term))
+    )
+  })
   const visibleRefsUnicos = [...new Set(visibleRows.map(r => r.ref).filter(Boolean))]
   const visibleStock = visibleRows.reduce((acc, r) => acc + (parseInt(r.stock) || 0), 0)
 
@@ -1080,10 +1096,32 @@ export default function AdminImport() {
 
       {/* Stats */}
       <div className="imp-stats">
-        <div className="imp-stat">Filas ({selectedDrop}): <strong>{visibleRows.length}</strong></div>
+        <div className="imp-stat">Filas ({selectedDrop}): <strong>{rows.filter(r => r._drop === selectedDrop).length}</strong></div>
         <div className="imp-stat">REFs únicos: <strong>{visibleRefsUnicos.length}</strong></div>
         <div className="imp-stat">Stock total: <strong>{visibleStock}</strong></div>
         <div className="imp-stat">Total tienda: <strong>{productosValidos.length} productos</strong></div>
+        <div style={{ marginLeft: 'auto' }}>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Buscar REF, nombre o color..."
+            style={{
+              padding: '0.35rem 0.6rem',
+              fontSize: '0.65rem',
+              letterSpacing: '0.04em',
+              border: '1px solid var(--grey-200)',
+              fontFamily: 'var(--font)',
+              width: 200,
+              outline: 'none',
+              color: 'var(--black)',
+              background: searchTerm ? 'var(--white)' : 'var(--grey-100)',
+              transition: 'border-color 150ms ease',
+            }}
+            onFocus={e => e.target.style.borderColor = 'var(--black)'}
+            onBlur={e => e.target.style.borderColor = 'var(--grey-200)'}
+          />
+        </div>
       </div>
 
       {/* Table */}
