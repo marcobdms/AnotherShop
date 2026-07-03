@@ -265,7 +265,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "269",
+      "id": "306",
       "meta_id": "",
       "ref": "028",
       "nombre": "TARJETERO ESTAMPADO LOGO",
@@ -441,7 +441,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "273",
+      "id": "310",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -507,7 +507,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "266",
+      "id": "303",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -551,7 +551,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "268",
+      "id": "305",
       "meta_id": "",
       "ref": "044",
       "nombre": "PASADOR LAZO BORDADO",
@@ -727,7 +727,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "271",
+      "id": "308",
       "meta_id": "",
       "ref": "053",
       "nombre": "CAMISETA ALGODÓN MENSAJE ESTAMPADO",
@@ -1365,7 +1365,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "262",
+      "id": "299",
       "meta_id": "",
       "ref": "17061242Negra",
       "nombre": "CAMISETA RAYAS LOGO",
@@ -1387,7 +1387,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "274",
+      "id": "324",
       "meta_id": "",
       "ref": "17061242Negra",
       "nombre": "CAMISETA RAYAS LOGO",
@@ -1409,7 +1409,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "275",
+      "id": "325",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1431,7 +1431,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "276",
+      "id": "326",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1453,7 +1453,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "277",
+      "id": "327",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1475,7 +1475,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "278",
+      "id": "328",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1497,7 +1497,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "267",
+      "id": "304",
       "meta_id": "",
       "ref": "17071216Beige",
       "nombre": "TARJETERO EFECTO SAFIANO",
@@ -1519,7 +1519,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "279",
+      "id": "329",
       "meta_id": "",
       "ref": "17071216Beige",
       "nombre": "TARJETERO EFECTO SAFIANO",
@@ -1541,7 +1541,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "280",
+      "id": "330",
       "meta_id": "",
       "ref": "044",
       "nombre": "PASADOR LAZO BORDADO",
@@ -1585,7 +1585,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "281",
+      "id": "331",
       "meta_id": "",
       "ref": "028",
       "nombre": "TARJETERO ESTAMPADO LOGO",
@@ -1695,7 +1695,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "270",
+      "id": "307",
       "meta_id": "",
       "ref": "77070357Negro",
       "nombre": "TOP CROP BOTONES",
@@ -1717,7 +1717,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "282",
+      "id": "332",
       "meta_id": "",
       "ref": "77070357Negro",
       "nombre": "TOP CROP BOTONES",
@@ -1871,7 +1871,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "283",
+      "id": "333",
       "meta_id": "",
       "ref": "053",
       "nombre": "CAMISETA ALGODÓN MENSAJE ESTAMPADO",
@@ -1893,7 +1893,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "284",
+      "id": "334",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -1915,7 +1915,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "285",
+      "id": "335",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -2243,9 +2243,317 @@
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
+    },
+    {
+      "id": "320",
+      "meta_id": "",
+      "ref": "PB-0001",
+      "nombre": "CAMISETA RIB GRÁFICO",
+      "precio": 0.0,
+      "precio_coste": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0001.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "312",
+      "meta_id": "",
+      "ref": "PB-0002",
+      "nombre": "CAMISETA MANGA CORTA RANGLAN",
+      "precio": 0.0,
+      "precio_coste": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0002.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "316",
+      "meta_id": "",
+      "ref": "PB-0003",
+      "nombre": "CAMISA POPELÍN ENTALLADA PINZAS",
+      "precio": 0.0,
+      "precio_coste": 9.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0003.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "314",
+      "meta_id": "",
+      "ref": "PB-0004",
+      "nombre": "CAMISETA ESCOTE PUNTILLA",
+      "precio": 0.0,
+      "precio_coste": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0004.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "315",
+      "meta_id": "",
+      "ref": "PB-0005",
+      "nombre": "CAMISETA ROSA GRÁFICO FLOR HIBISCUS",
+      "precio": 0.0,
+      "precio_coste": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0005.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "336",
+      "meta_id": "",
+      "ref": "PB-0003",
+      "nombre": "CAMISA POPELÍN ENTALLADA PINZAS",
+      "precio": 0.0,
+      "precio_coste": 9.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0006.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "317",
+      "meta_id": "",
+      "ref": "PB-0007",
+      "nombre": "BANDANA LUNARES",
+      "precio": 0.0,
+      "precio_coste": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0007.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "322",
+      "meta_id": "",
+      "ref": "PB-0008",
+      "nombre": "TOP BAMBULA LAZADAS",
+      "precio": 0.0,
+      "precio_coste": 9.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0008.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "319",
+      "meta_id": "",
+      "ref": "PB-0009",
+      "nombre": "CAMISETA GRÁFICO FLOR",
+      "precio": 0.0,
+      "precio_coste": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0009.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "337",
+      "meta_id": "",
+      "ref": "PB-0001",
+      "nombre": "CAMISETA RIB GRÁFICO",
+      "precio": 0.0,
+      "precio_coste": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0010.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "321",
+      "meta_id": "",
+      "ref": "PB-0011",
+      "nombre": "TANK TOP",
+      "precio": 0.0,
+      "precio_coste": 3.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0011.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "338",
+      "meta_id": "",
+      "ref": "PB-0008",
+      "nombre": "TOP BAMBULA LAZADAS",
+      "precio": 0.0,
+      "precio_coste": 9.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0012.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "323",
+      "meta_id": "",
+      "ref": "PB-0013",
+      "nombre": "CAMISETA GRÁFICO LANGOSTA",
+      "precio": 0.0,
+      "precio_coste": 7.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/PB-0013.webp",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
     }
   ],
   "historial": [
+    {
+      "id": "4f33c6bf-f584-4d50-af1a-27b443c452ad",
+      "productoId": "sync-all",
+      "nombre": "Sincronización masiva",
+      "tipo": "importacion",
+      "estadoAnterior": false,
+      "nuevoEstado": true,
+      "usuario": "marco",
+      "fecha_hora": "2026-07-03T23:30:56.192940",
+      "mensaje": "Sincronización total — 15 creados, 99 actualizados"
+    },
+    {
+      "id": "cfc5e639-ac27-4d59-a3c3-48906bee9fce",
+      "productoId": "sync-all",
+      "nombre": "Sincronización masiva",
+      "tipo": "importacion",
+      "estadoAnterior": false,
+      "nuevoEstado": true,
+      "usuario": "marco",
+      "fecha_hora": "2026-07-03T23:22:28.169788",
+      "mensaje": "Sincronización total — 25 creados, 89 actualizados"
+    },
     {
       "id": "05a8aebf-3639-4c82-abc9-971872fe8cb2",
       "productoId": "sync-all",
