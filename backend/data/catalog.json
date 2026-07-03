@@ -265,7 +265,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "257",
+      "id": "269",
       "meta_id": "",
       "ref": "028",
       "nombre": "TARJETERO ESTAMPADO LOGO",
@@ -441,7 +441,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "261",
+      "id": "273",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -507,7 +507,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "254",
+      "id": "266",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -551,7 +551,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "256",
+      "id": "268",
       "meta_id": "",
       "ref": "044",
       "nombre": "PASADOR LAZO BORDADO",
@@ -727,7 +727,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "259",
+      "id": "271",
       "meta_id": "",
       "ref": "053",
       "nombre": "CAMISETA ALGODÓN MENSAJE ESTAMPADO",
@@ -1365,7 +1365,7 @@
       "drop": "Drop 1"
     },
     {
-      "id": "250",
+      "id": "262",
       "meta_id": "",
       "ref": "17061242Negra",
       "nombre": "CAMISETA RAYAS LOGO",
@@ -1387,7 +1387,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "262",
+      "id": "274",
       "meta_id": "",
       "ref": "17061242Negra",
       "nombre": "CAMISETA RAYAS LOGO",
@@ -1409,7 +1409,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "263",
+      "id": "275",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1431,7 +1431,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "264",
+      "id": "276",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1453,7 +1453,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "265",
+      "id": "277",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1475,7 +1475,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "266",
+      "id": "278",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1497,7 +1497,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "255",
+      "id": "267",
       "meta_id": "",
       "ref": "17071216Beige",
       "nombre": "TARJETERO EFECTO SAFIANO",
@@ -1519,7 +1519,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "267",
+      "id": "279",
       "meta_id": "",
       "ref": "17071216Beige",
       "nombre": "TARJETERO EFECTO SAFIANO",
@@ -1541,7 +1541,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "268",
+      "id": "280",
       "meta_id": "",
       "ref": "044",
       "nombre": "PASADOR LAZO BORDADO",
@@ -1585,7 +1585,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "269",
+      "id": "281",
       "meta_id": "",
       "ref": "028",
       "nombre": "TARJETERO ESTAMPADO LOGO",
@@ -1695,7 +1695,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "258",
+      "id": "270",
       "meta_id": "",
       "ref": "77070357Negro",
       "nombre": "TOP CROP BOTONES",
@@ -1717,7 +1717,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "270",
+      "id": "282",
       "meta_id": "",
       "ref": "77070357Negro",
       "nombre": "TOP CROP BOTONES",
@@ -1871,7 +1871,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "271",
+      "id": "283",
       "meta_id": "",
       "ref": "053",
       "nombre": "CAMISETA ALGODÓN MENSAJE ESTAMPADO",
@@ -1893,7 +1893,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "272",
+      "id": "284",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -1915,7 +1915,7 @@
       "drop": "Drop 2"
     },
     {
-      "id": "273",
+      "id": "285",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -1957,9 +1957,306 @@
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
+    },
+    {
+      "id": "286",
+      "meta_id": "",
+      "ref": "3253/367",
+      "nombre": "TOP CORTO ABERTURA",
+      "precio": 0.0,
+      "precio_coste": 5.37,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/3253-367.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "287",
+      "meta_id": "",
+      "ref": "4174/300",
+      "nombre": "CAMISETA VIVOS CONTRASTE",
+      "precio": 0.0,
+      "precio_coste": 5.37,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/4174-300.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "288",
+      "meta_id": "",
+      "ref": "4424/003",
+      "nombre": "CAMISETA CUELLO BARCO",
+      "precio": 0.0,
+      "precio_coste": 4.77,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/4424-003.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "289",
+      "meta_id": "",
+      "ref": "0085/052",
+      "nombre": "CAMISETA MANGA CORTA ESTAMPADO FLOR",
+      "precio": 0.0,
+      "precio_coste": 9.57,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/0085-052.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "290",
+      "meta_id": "",
+      "ref": "4424/164",
+      "nombre": "CAMISETA CROP MANGA VOLUMEN",
+      "precio": 0.0,
+      "precio_coste": 7.77,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/4424-164.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "291",
+      "meta_id": "",
+      "ref": "5644/041",
+      "nombre": "CAMISETA MANGA CORTA OSO",
+      "precio": 0.0,
+      "precio_coste": 5.97,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/5644-041.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "292",
+      "meta_id": "",
+      "ref": "1044/154",
+      "nombre": "CAMISETA COMBINADA RIB VOLANTES",
+      "precio": 0.0,
+      "precio_coste": 7.77,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/1044-154.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "293",
+      "meta_id": "",
+      "ref": "5643/035",
+      "nombre": "CAMISETA MANGA CORTA BORDADOS",
+      "precio": 0.0,
+      "precio_coste": 9.57,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/5643-035.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "294",
+      "meta_id": "",
+      "ref": "5644/214",
+      "nombre": "CAMISETA TEXTO DELANTERO",
+      "precio": 0.0,
+      "precio_coste": 5.97,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/5644-214.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "295",
+      "meta_id": "",
+      "ref": "4174/174",
+      "nombre": "CAMISETA MANGA CAÍDA",
+      "precio": 0.0,
+      "precio_coste": 7.77,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/4174-174.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "296",
+      "meta_id": "",
+      "ref": "6050/066",
+      "nombre": "CAMISETA VIVOS TEXTO",
+      "precio": 0.0,
+      "precio_coste": 7.77,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/6050-066.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "297",
+      "meta_id": "",
+      "ref": "5644/210",
+      "nombre": "CAMISETA TEXTO VIVOS CONTRASTE",
+      "precio": 0.0,
+      "precio_coste": 7.77,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/5644-210.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "298",
+      "meta_id": "",
+      "ref": "0085/076",
+      "nombre": "CAMISETA ESTAMPADO FLORES",
+      "precio": 0.0,
+      "precio_coste": 9.57,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/0085-076.jpg",
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
     }
   ],
   "historial": [
+    {
+      "id": "05a8aebf-3639-4c82-abc9-971872fe8cb2",
+      "productoId": "sync-all",
+      "nombre": "Sincronización masiva",
+      "tipo": "importacion",
+      "estadoAnterior": false,
+      "nuevoEstado": true,
+      "usuario": "marco",
+      "fecha_hora": "2026-07-03T23:00:18.778368",
+      "mensaje": "Sincronización total — 25 creados, 76 actualizados"
+    },
     {
       "id": "123de89c-16b2-47ce-992d-a73b54d70a6a",
       "productoId": "sync-all",
