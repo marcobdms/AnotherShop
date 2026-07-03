@@ -1,1 +1,851 @@
-{}
+{
+  "004": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "005": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "006": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "008": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "009": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "021": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "022": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "024": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "025": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "026": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "027": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "257": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "030": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "032": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "033": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "034": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "035": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "037": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "038": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "261": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "040": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "041": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "254": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "043": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "256": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "045": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "046": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "047": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "048": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "050": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "051": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "052": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "259": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "054": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "055": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "056": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "057": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "058": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "059": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "069": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "070": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "071": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "072": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "073": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "075": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "076": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "078": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "079": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "080": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "081": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "082": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "084": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "085": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "086": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "088": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "089": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "091": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "092": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "093": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "094": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "095": {
+    "variantes": [
+      {
+        "color": "Único",
+        "hex": "#888888",
+        "tallas": {}
+      }
+    ]
+  },
+  "250": {
+    "variantes": [
+      {
+        "color": "Negro",
+        "hex": "#000000",
+        "tallas": {
+          "S": 3
+        }
+      }
+    ]
+  },
+  "262": {
+    "variantes": [
+      {
+        "color": "Rosa",
+        "hex": "#E8A0BF",
+        "tallas": {
+          "L": 1,
+          "S": 1
+        }
+      }
+    ]
+  },
+  "263": {
+    "variantes": [
+      {
+        "color": "Marrón",
+        "hex": "#8B4513",
+        "tallas": {
+          "XS": 1,
+          "M": 2
+        }
+      }
+    ]
+  },
+  "264": {
+    "variantes": [
+      {
+        "color": "Naranja",
+        "hex": "#E67E22",
+        "tallas": {
+          "S": 2
+        }
+      }
+    ]
+  },
+  "265": {
+    "variantes": [
+      {
+        "color": "Blanco",
+        "hex": "#000000",
+        "tallas": {
+          "S": 2
+        }
+      }
+    ]
+  },
+  "266": {
+    "variantes": [
+      {
+        "color": "Azul",
+        "hex": "#1E3A5F",
+        "tallas": {
+          "S": 1
+        }
+      }
+    ]
+  },
+  "255": {
+    "variantes": [
+      {
+        "color": "Camel",
+        "hex": "#C19A6B",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "267": {
+    "variantes": [
+      {
+        "color": "Blanco roto",
+        "hex": "#000000",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "268": {
+    "variantes": [
+      {
+        "color": "Blanco",
+        "hex": "#000000",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "156": {
+    "variantes": [
+      {
+        "color": "Beige",
+        "hex": "#D4B896",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "269": {
+    "variantes": [
+      {
+        "color": "Marrón",
+        "hex": "#000000",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "158": {
+    "variantes": [
+      {
+        "color": "Beige",
+        "hex": "#D4B896",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "159": {
+    "variantes": [
+      {
+        "color": "Gris",
+        "hex": "#000000",
+        "tallas": {
+          "38": 1
+        }
+      }
+    ]
+  },
+  "160": {
+    "variantes": [
+      {
+        "color": "Naranja",
+        "hex": "#000000",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "161": {
+    "variantes": [
+      {
+        "color": "Crema",
+        "hex": "#FFFDD0",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "258": {
+    "variantes": [
+      {
+        "color": "Negro",
+        "hex": "#000000",
+        "tallas": {
+          "M": 1
+        }
+      }
+    ]
+  },
+  "270": {
+    "variantes": [
+      {
+        "color": "Blanco",
+        "hex": "#FFFFFF",
+        "tallas": {
+          "L": 1
+        }
+      }
+    ]
+  },
+  "164": {
+    "variantes": [
+      {
+        "color": "Beige",
+        "hex": "#000000",
+        "tallas": {
+          "S": 1
+        }
+      }
+    ]
+  },
+  "165": {
+    "variantes": [
+      {
+        "color": "Negro",
+        "hex": "#000000",
+        "tallas": {
+          "38": 1
+        }
+      }
+    ]
+  },
+  "166": {
+    "variantes": [
+      {
+        "color": "Amarillo pastel",
+        "hex": "#000000",
+        "tallas": {
+          "M": 1
+        }
+      }
+    ]
+  },
+  "167": {
+    "variantes": [
+      {
+        "color": "Blanco",
+        "hex": "#000000",
+        "tallas": {
+          "M": 1
+        }
+      }
+    ]
+  },
+  "168": {
+    "variantes": [
+      {
+        "color": "Cuero",
+        "hex": "#000000",
+        "tallas": {
+          "UNICA": 1
+        }
+      }
+    ]
+  },
+  "169": {
+    "variantes": [
+      {
+        "color": "Crudo",
+        "hex": "#000000",
+        "tallas": {
+          "M": 1
+        }
+      }
+    ]
+  },
+  "271": {
+    "variantes": [
+      {
+        "color": "Gris antracita",
+        "hex": "#000000",
+        "tallas": {
+          "S": 1
+        }
+      }
+    ]
+  },
+  "272": {
+    "variantes": [
+      {
+        "color": "Negro",
+        "hex": "#000000",
+        "tallas": {
+          "M": 1,
+          "S": 1
+        }
+      }
+    ]
+  },
+  "273": {
+    "variantes": [
+      {
+        "color": "Azul",
+        "hex": "#1E3A5F",
+        "tallas": {
+          "M": 1
+        }
+      }
+    ]
+  },
+  "173": {
+    "variantes": [
+      {
+        "color": "Gris",
+        "hex": "#000000",
+        "tallas": {
+          "M": 1
+        }
+      }
+    ]
+  }
+}

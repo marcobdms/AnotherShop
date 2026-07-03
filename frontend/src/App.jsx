@@ -12,6 +12,7 @@ import { useCatalog } from './hooks/useCatalog'
 import { useAuth } from './hooks/useAuth'
 import Admin from './pages/Admin'
 import AdminCambios from './pages/AdminCambios'
+import AdminImport from './pages/AdminImport'
 import Login from './pages/Login'
 import Account from './pages/Account'
 import TopBanner from './components/TopBanner'
@@ -39,6 +40,7 @@ function AppLayout() {
         <Route path="/cuenta" element={<Account />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/cambios" element={<AdminCambios />} />
+        <Route path="/admin/import" element={<AdminImport />} />
         {/* Fallback */}
         <Route path="*" element={<Home />} />
       </Routes>

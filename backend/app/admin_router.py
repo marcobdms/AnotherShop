@@ -9,8 +9,9 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 import uuid
+import shutil
 
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header, UploadFile, File
 from pydantic import BaseModel
 
 # ── Ruta al catálogo ───────────────────────────────────────────────────────────
@@ -284,6 +285,7 @@ class VarianteColor(BaseModel):
 
 class InventarioProducto(BaseModel):
     variantes: list[VarianteColor]
+    usuario: Optional[str] = "admin"
 
 
 # ── Endpoints Inventario ───────────────────────────────────────────────────────
@@ -305,10 +307,9 @@ def admin_get_inventory(product_id: str):
     dependencies=[Depends(verify_token)],
 )
 def admin_save_inventory(product_id: str, body: InventarioProducto):
-    # Verificar que el producto existe
     catalog = load_catalog()
-    found = any(p["id"] == product_id for p in catalog["productos"])
-    if not found:
+    producto = next((p for p in catalog["productos"] if p["id"] == product_id), None)
+    if not producto:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
 
     inventory = load_inventory()
@@ -317,7 +318,293 @@ def admin_save_inventory(product_id: str, body: InventarioProducto):
     }
     save_inventory(inventory)
 
-    total_stock = sum(
-        sum(v.tallas.values()) for v in body.variantes
-    )
+    total_stock = sum(sum(v.tallas.values()) for v in body.variantes)
+    n_colores = len(body.variantes)
+
+    # Registrar en historial
+    if "historial" not in catalog:
+        catalog["historial"] = []
+    evento = {
+        "id": str(uuid.uuid4()),
+        "productoId": product_id,
+        "nombre": producto["nombre"],
+        "tipo": "inventario",
+        "estadoAnterior": False,
+        "nuevoEstado": True,
+        "usuario": body.usuario or "admin",
+        "fecha_hora": datetime.now().isoformat(),
+        "mensaje": f"Inventario actualizado — {n_colores} color{'es' if n_colores != 1 else ''}, stock total: {total_stock} uds."
+    }
+    catalog["historial"].insert(0, evento)
+    if len(catalog["historial"]) > 200:
+        catalog["historial"] = catalog["historial"][:200]
+    save_catalog(catalog)
+
     return {"status": "ok", "total_stock": total_stock}
+
+
+# ── Schemas Importación Masiva ─────────────────────────────────────────────────
+class VarianteImport(BaseModel):
+    color: str
+    hex: str = "#000000"
+    tallas: dict[str, int] = {}
+
+
+class ProductoImport(BaseModel):
+    ref: str
+    nombre: str
+    precio: float
+    precio_coste: float
+    genero: str = "unisex"
+    imagen: str = ""
+    disponible: bool = True
+    drop: str = "Drop 1"
+    variantes: list[VarianteImport] = []
+
+
+class BulkImportBody(BaseModel):
+    productos: list[ProductoImport]
+    usuario: Optional[str] = "admin"
+
+
+@router.post(
+    "/import",
+    summary="Importación masiva de productos con variantes",
+    dependencies=[Depends(verify_token)],
+)
+def admin_bulk_import(body: BulkImportBody):
+    catalog = load_catalog()
+    inventory = load_inventory()
+
+    ids_existentes = {p["id"] for p in catalog["productos"]}
+    refs_existentes = {p.get("ref", p["id"]): p["id"] for p in catalog["productos"]}
+
+    creados = []
+    actualizados = []
+
+    for prod in body.productos:
+        ref = prod.ref.strip()
+
+        if ref in refs_existentes:
+            # Actualizar producto existente
+            pid = refs_existentes[ref]
+            for i, p in enumerate(catalog["productos"]):
+                if p["id"] == pid:
+                    catalog["productos"][i].update({
+                        "nombre": prod.nombre,
+                        "precio": prod.precio,
+                        "precio_coste": prod.precio_coste,
+                        "genero": prod.genero,
+                        "disponible": prod.disponible,
+                        "ref": ref,
+                    })
+                    if prod.imagen:
+                        catalog["productos"][i]["imagen"] = prod.imagen
+                    break
+            actualizados.append(pid)
+            product_id = pid
+        else:
+            # Crear nuevo producto
+            new_id = next_id(catalog["productos"])
+            new_product = {
+                "id": new_id,
+                "meta_id": "",
+                "ref": ref,
+                "nombre": prod.nombre,
+                "precio": prod.precio,
+                "precio_coste": prod.precio_coste,
+                "categoria": "sin_categoria",
+                "genero": prod.genero,
+                "tallas": ["XS", "S", "M", "L", "XL"],
+                "imagen": prod.imagen or f"/images/{new_id}.jpg",
+                "descripcion": "",
+                "disponible": prod.disponible,
+                "marca": "",
+            }
+            catalog["productos"].append(new_product)
+            creados.append(new_id)
+            product_id = new_id
+
+        # Guardar inventario si tiene variantes
+        if prod.variantes:
+            inventory[product_id] = {
+                "variantes": [v.model_dump() for v in prod.variantes]
+            }
+
+    save_catalog(catalog)
+    save_inventory(inventory)
+
+    # Registrar en historial
+    if "historial" not in catalog:
+        catalog["historial"] = []
+    evento = {
+        "id": str(uuid.uuid4()),
+        "productoId": "import",
+        "nombre": f"Importación masiva",
+        "tipo": "importacion",
+        "estadoAnterior": False,
+        "nuevoEstado": True,
+        "usuario": body.usuario or "admin",
+        "fecha_hora": datetime.now().isoformat(),
+        "mensaje": f"Importación masiva — {len(creados)} creados, {len(actualizados)} actualizados"
+    }
+    catalog["historial"].insert(0, evento)
+    if len(catalog["historial"]) > 200:
+        catalog["historial"] = catalog["historial"][:200]
+    save_catalog(catalog)
+
+    return {
+        "status": "ok",
+        "creados": len(creados),
+        "actualizados": len(actualizados),
+        "ids_creados": creados,
+    }
+
+
+@router.get(
+    "/export-full",
+    summary="Exportar el catálogo y el inventario completo",
+    dependencies=[Depends(verify_token)],
+)
+def admin_export_full():
+    catalog = load_catalog()
+    inventory = load_inventory()
+    return {
+        "productos": catalog["productos"],
+        "inventario": inventory
+    }
+
+
+@router.put(
+    "/sync-all",
+    summary="Sincronización completa (sobrescribe catálogo e inventario, elimina faltantes)",
+    dependencies=[Depends(verify_token)],
+)
+def admin_sync_all(body: BulkImportBody):
+    catalog = load_catalog()
+    inventory = load_inventory()
+
+    # Mapear productos antiguos por REF (o ID si no tienen REF)
+    old_products_by_ref = {p.get("ref", p["id"]): p for p in catalog["productos"]}
+    
+    new_productos = []
+    new_inventory = {}
+    
+    creados = 0
+    actualizados = 0
+
+    for prod in body.productos:
+        # Usa el ref del payload como clave de búsqueda
+        ref_key = prod.ref
+        if not ref_key:
+            continue
+
+        if ref_key in old_products_by_ref:
+            old_p = old_products_by_ref[ref_key]
+            pid = old_p["id"]
+            new_p = {
+                "id": pid,
+                "meta_id": old_p.get("meta_id", ""),
+                "ref": prod.ref,
+                "nombre": prod.nombre,
+                "precio": prod.precio,
+                "precio_coste": prod.precio_coste,
+                "categoria": old_p.get("categoria", "sin_categoria"),
+                "genero": prod.genero,
+                "tallas": ["XS", "S", "M", "L", "XL"],
+                "imagen": prod.imagen or old_p.get("imagen", ""),
+                "descripcion": old_p.get("descripcion", ""),
+                "disponible": prod.disponible,
+                "marca": old_p.get("marca", ""),
+                "drop": prod.drop,
+            }
+            new_productos.append(new_p)
+            actualizados += 1
+            # Eliminar del map para saber qué queda huerfano
+            del old_products_by_ref[ref_key]
+        else:
+            # Crear producto nuevo
+            new_id = next_id(new_productos + list(old_products_by_ref.values()))
+            pid = new_id
+            new_p = {
+                "id": pid,
+                "meta_id": "",
+                "ref": prod.ref,
+                "nombre": prod.nombre,
+                "precio": prod.precio,
+                "precio_coste": prod.precio_coste,
+                "categoria": "sin_categoria",
+                "genero": prod.genero,
+                "tallas": ["XS", "S", "M", "L", "XL"],
+                "imagen": prod.imagen or f"/images/{pid}.jpg",
+                "descripcion": "",
+                "disponible": prod.disponible,
+                "marca": "",
+                "drop": prod.drop,
+            }
+            new_productos.append(new_p)
+            creados += 1
+
+        if prod.variantes:
+            new_inventory[pid] = {
+                "variantes": [v.model_dump() for v in prod.variantes]
+            }
+
+    eliminados = len(old_products_by_ref)
+
+    # Guardar estado final
+    catalog["productos"] = new_productos
+    save_catalog(catalog)
+    save_inventory(new_inventory)
+
+    # Registrar en historial
+    if "historial" not in catalog:
+        catalog["historial"] = []
+    
+    mensaje = f"Sincronización total — {creados} creados, {actualizados} actualizados"
+    if eliminados > 0:
+        mensaje += f", {eliminados} eliminados"
+
+    evento = {
+        "id": str(uuid.uuid4()),
+        "productoId": "sync-all",
+        "nombre": "Sincronización masiva",
+        "tipo": "importacion",
+        "estadoAnterior": False,
+        "nuevoEstado": True,
+        "usuario": body.usuario or "admin",
+        "fecha_hora": datetime.now().isoformat(),
+        "mensaje": mensaje
+    }
+    catalog["historial"].insert(0, evento)
+    if len(catalog["historial"]) > 200:
+        catalog["historial"] = catalog["historial"][:200]
+    save_catalog(catalog)
+
+    return {
+        "status": "ok",
+        "creados": creados,
+        "actualizados": actualizados,
+        "eliminados": eliminados
+    }
+
+
+@router.post(
+    "/upload-image",
+    summary="Subir imagen a frontend/public/images",
+    dependencies=[Depends(verify_token)],
+)
+async def admin_upload_image(file: UploadFile = File(...)):
+    # Calculate the path relative to the backend app
+    # backend/app/admin_router.py -> ../../../frontend/public/images/
+    public_images_dir = Path(__file__).parent.parent.parent / "frontend" / "public" / "images"
+    
+    # Ensure directory exists
+    public_images_dir.mkdir(parents=True, exist_ok=True)
+    
+    file_path = public_images_dir / file.filename
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"status": "ok", "filename": file.filename, "url": f"/images/{file.filename}"}

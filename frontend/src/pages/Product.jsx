@@ -83,6 +83,19 @@ export default function Product() {
     showFavToast(wasAdded !== false ? 'Añadido a favoritos' : 'Eliminado de favoritos')
   }
 
+  const hasVariantes = producto?.variantes && producto.variantes.length > 0
+  const [selectedColor, setSelectedColor] = useState(null)
+
+  // Auto-select first color with stock when variants load
+  useEffect(() => {
+    if (producto && hasVariantes) {
+      const firstWithStock = producto.variantes.find(v =>
+        Object.values(v.tallas || {}).some(s => s > 0)
+      )
+      setSelectedColor(firstWithStock?.color || producto.variantes[0]?.color || null)
+    }
+  }, [producto, hasVariantes])
+
   if (loading) return <div className="page-state"></div>
 
   if (error || !producto) {
@@ -102,18 +115,8 @@ export default function Product() {
 
   const favActive = isFavorite(producto.id)
 
-  const hasVariantes = producto.variantes && producto.variantes.length > 0
-  const [selectedColor, setSelectedColor] = useState(null)
+  const isSingleVariantWithoutColor = hasVariantes && producto.variantes.length === 1 && (!producto.variantes[0].color || producto.variantes[0].color === 'Único')
 
-  // Auto-select first color with stock when variants load
-  useEffect(() => {
-    if (hasVariantes) {
-      const firstWithStock = producto.variantes.find(v =>
-        Object.values(v.tallas || {}).some(s => s > 0)
-      )
-      setSelectedColor(firstWithStock?.color || producto.variantes[0]?.color || null)
-    }
-  }, [producto, hasVariantes])
 
   const selectedVariante = hasVariantes
     ? producto.variantes.find(v => v.color === selectedColor) || null
@@ -154,8 +157,8 @@ export default function Product() {
 
           <p className="product-page__description">{producto.descripcion}</p>
 
-          {/* Colores — solo si hay variantes */}
-          {hasVariantes && (
+          {/* Colores — solo si hay variantes y no es el color 'Único' */}
+          {hasVariantes && !isSingleVariantWithoutColor && (
             <div className="product-page__colors">
               <span className="product-page__sizes-label">Color</span>
               <div className="product-page__colors-row">

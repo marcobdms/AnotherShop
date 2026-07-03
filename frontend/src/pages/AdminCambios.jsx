@@ -86,6 +86,31 @@ const css = `
     border: 1px solid var(--grey-200);
     border-radius: 4px;
   }
+  .adm-cambios__badge {
+    display: inline-block;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .adm-cambios__badge--disponibilidad {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+  }
+  .adm-cambios__badge--inventario {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+  }
+  .adm-cambios__badge--importacion {
+    background: #ede9fe;
+    color: #7c3aed;
+    border: 1px solid #ddd6fe;
+  }
 `
 
 export default function AdminCambios() {
@@ -120,6 +145,9 @@ export default function AdminCambios() {
       
       <header className="adm-cambios__header">
         <Link to="/admin" className="adm-cambios__brand">← Volver al Panel</Link>
+        <Link to="/admin/import" style={{ fontSize: 'var(--size-xs)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--grey-400)', textDecoration: 'none' }}>
+          Importar productos →
+        </Link>
       </header>
 
       <main className="adm-cambios__container">
@@ -138,12 +166,17 @@ export default function AdminCambios() {
             {history.map(h => {
               const dateObj = new Date(h.fecha_hora)
               const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+              const tipo = h.tipo || 'disponibilidad'
+              const badgeLabel = tipo === 'inventario' ? 'Inventario' : tipo === 'importacion' ? 'Importación' : 'Disponibilidad'
               return (
                 <li key={h.id} className="adm-cambios__item">
                   <div className="adm-cambios__info">
-                    <span className="adm-cambios__text">
-                      <span className="adm-cambios__user">{h.usuario}</span>: {h.mensaje}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <span className={`adm-cambios__badge adm-cambios__badge--${tipo}`}>{badgeLabel}</span>
+                      <span className="adm-cambios__text">
+                        <span className="adm-cambios__user">{h.usuario}</span>: {h.mensaje}
+                      </span>
+                    </div>
                     <span className="adm-cambios__date">{dateStr}</span>
                   </div>
                 </li>

@@ -351,12 +351,12 @@ const modalCss = `
   }
 `
 
-export default function InventoryModal({ product, onClose, onSaved }) {
+export default function InventoryModal({ product, onClose, onSaved, usuario = 'admin' }) {
   const [variantes, setVariantes] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [newColorName, setNewColorName] = useState('')
-  const [newColorHex, setNewColorHex] = useState('#000000')
+  const [newColorHex, setNewColorHex] = useState('#888888')
   const [dirty, setDirty] = useState(false)
 
   // Cargar inventario
@@ -414,7 +414,7 @@ export default function InventoryModal({ product, onClose, onSaved }) {
   const handleSave = useCallback(async () => {
     setSaving(true)
     try {
-      await adminSaveInventory(product.id, variantes)
+      await adminSaveInventory(product.id, variantes, usuario)
       setDirty(false)
       if (onSaved) onSaved()
     } catch (e) {

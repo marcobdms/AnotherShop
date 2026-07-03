@@ -97,11 +97,52 @@ export async function adminFetchInventory(productId) {
   return handleResponse(res)
 }
 
-export async function adminSaveInventory(productId, variantes) {
+export async function adminSaveInventory(productId, variantes, usuario = 'admin') {
   const res = await fetch(`${ADMIN_BASE}/inventory/${productId}`, {
     method: 'PUT',
     headers: adminHeaders(),
-    body: JSON.stringify({ variantes }),
+    body: JSON.stringify({ variantes, usuario }),
+  })
+  return handleResponse(res)
+}
+
+export async function adminBulkImport(productos, usuario = 'admin') {
+  const res = await fetch(`${ADMIN_BASE}/import`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({ productos, usuario }),
+  })
+  return handleResponse(res)
+}
+
+export async function adminExportFull() {
+  const res = await fetch(`${ADMIN_BASE}/export-full`, {
+    headers: adminHeaders()
+  })
+  return handleResponse(res)
+}
+
+export async function adminSyncAll(productos, usuario = 'admin') {
+  const res = await fetch(`${ADMIN_BASE}/sync-all`, {
+    method: 'PUT',
+    headers: adminHeaders(),
+    body: JSON.stringify({ productos, usuario }),
+  })
+  return handleResponse(res)
+}
+
+export async function adminUploadImage(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  // Need to get headers but exclude Content-Type so the browser sets the boundary correctly
+  const headers = adminHeaders()
+  delete headers['Content-Type']
+
+  const res = await fetch(`${ADMIN_BASE}/upload-image`, {
+    method: 'POST',
+    headers,
+    body: formData,
   })
   return handleResponse(res)
 }

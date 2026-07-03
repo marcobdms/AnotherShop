@@ -593,7 +593,7 @@ button.size-tag--selected, button.size-tag--selected:hover {
 .color-dot__inner {
   width: 22px;
   height: 22px;
-  border-radius: 50%;
+  border-radius: 3px;
   background: var(--dot-color, #000);
   border: 1px solid var(--grey-200);
   transition: transform 150ms ease;
@@ -610,19 +610,7 @@ button.size-tag--selected, button.size-tag--selected:hover {
   pointer-events: none;
 }
 
-/* Color indicator dot on product cards (catalog) */
-.product-card__color-dot {
-  position: absolute;
-  top: 0.6rem;
-  left: 0.6rem;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.9);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  z-index: 5;
-  pointer-events: none;
-}
+
 
 /* Botones de contacto */
 .product-page__actions { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; }

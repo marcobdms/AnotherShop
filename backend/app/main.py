@@ -80,8 +80,8 @@ def _expand_products(productos: list, inventory: dict) -> list:
                 expanded["variante_color"] = v["color"]
                 expanded["variante_hex"] = v.get("hex", "#000000")
                 expanded["variante_tallas"] = v.get("tallas", {})
-                # Disponible solo si toggle=true Y este color tiene stock
-                expanded["disponible"] = p.get("disponible", False) and total_color_stock > 0
+                # Disponible solo según el toggle (ignorando el stock real por solicitud del usuario)
+                expanded["disponible"] = p.get("disponible", False)
                 result.append(expanded)
         else:
             result.append(p)

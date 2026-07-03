@@ -5,10 +5,12 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
-import { adminFetchProducts, adminFetchHistory, adminPublishDraft, formatPrice } from '../api/catalog'
+import { Link, useNavigate } from 'react-router-dom'
+import { adminFetchProducts, adminFetchHistory, adminPublishDraft, adminFetchInventory, formatPrice } from '../api/catalog'
 import { supabase } from '../lib/supabase'
 import InventoryModal from '../components/InventoryModal'
+
+const TALLAS_GLOBALES = ['XS', 'S', 'M', 'L', 'XL']
 
 // ── Estilos específicos de Admin ────────────────────────────────────────────────
 const css = `
@@ -463,6 +465,8 @@ function LoginScreen({ onAuth }) {
 function AdminPanel({ onLogout, usuario }) {
   const [productos, setProductos] = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [productInventory, setProductInventory] = useState(null) // inventario real del producto seleccionado
+  const [loadingInventory, setLoadingInventory] = useState(false)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [history, setHistory] = useState([])
@@ -471,6 +475,7 @@ function AdminPanel({ onLogout, usuario }) {
   const [toast, setToast] = useState(null)
   const [error, setError] = useState(null)
   const [inventoryProduct, setInventoryProduct] = useState(null)
+  const navigate = useNavigate()
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type, key: Date.now() })
@@ -497,6 +502,19 @@ function AdminPanel({ onLogout, usuario }) {
       })
       .finally(() => setLoading(false))
   }, [showToast, fetchHistory])
+
+  // Cargar inventario real cuando se selecciona un producto
+  useEffect(() => {
+    if (!selectedProduct) {
+      setProductInventory(null)
+      return
+    }
+    setLoadingInventory(true)
+    adminFetchInventory(selectedProduct.id)
+      .then(data => setProductInventory(data.variantes || []))
+      .catch(() => setProductInventory([]))
+      .finally(() => setLoadingInventory(false))
+  }, [selectedProduct])
 
   const handleToggle = useCallback((producto, nuevoEstado) => {
     setProductos(prev =>
@@ -565,6 +583,13 @@ function AdminPanel({ onLogout, usuario }) {
               Guardar ({pendingEvents.length})
             </button>
           )}
+          <Link
+            to="/admin/import"
+            className="adm-header__logout"
+            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+          >
+            + Productos
+          </Link>
           <button className="adm-header__logout" onClick={() => setShowHistory(!showHistory)}>
             Cambios ({pendingEvents.length > 0 ? '*' : ''}{combinedHistory.length})
           </button>
@@ -585,10 +610,13 @@ function AdminPanel({ onLogout, usuario }) {
                   {combinedHistory.slice(0, 10).map(h => {
                     const dateObj = new Date(h.fecha_hora)
                     const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    const tipo = h.tipo || 'disponibilidad'
+                    const tipoBadge = { inventario: '📦', importacion: '📥', disponibilidad: '' }[tipo] || ''
                     return (
                       <li key={h.id} className="adm-history__item">
                         <div className="adm-history__info">
                           <span className="adm-history__text">
+                            {tipoBadge && <span style={{ marginRight: '0.3rem' }}>{tipoBadge}</span>}
                             <span className="adm-history__user">{h.usuario}</span>: {h.mensaje}
                           </span>
                           <span className="adm-history__date">{dateStr}</span>
@@ -639,21 +667,30 @@ function AdminPanel({ onLogout, usuario }) {
             <p className="product-page__description">{selectedProduct.descripcion}</p>
 
             <div className="product-page__sizes">
-              <span className="product-page__sizes-label">Tallas registradas</span>
+              <span className="product-page__sizes-label">Tallas disponibles</span>
               <div className="product-page__sizes-row">
-                {selectedProduct.tallas.map(t => {
-                  const availableSizesText = (selectedProduct.descripcion || '').toUpperCase()
-                  const isAvailable = new RegExp('\\b' + t + '\\b', 'i').test(availableSizesText)
-                  return (
-                    <button
-                      key={t}
-                      disabled
-                      className={`size-tag ${isAvailable ? 'size-tag--available' : 'size-tag--unavailable'}`}
-                    >
-                      {t}
-                    </button>
-                  )
-                })}
+                {loadingInventory ? (
+                  <span style={{ fontSize: 'var(--size-xs)', color: 'var(--grey-400)', letterSpacing: '0.08em' }}>Cargando...</span>
+                ) : productInventory && productInventory.length > 0 ? (
+                  TALLAS_GLOBALES.map(t => {
+                    const totalStock = productInventory.reduce((acc, v) => acc + (v.tallas?.[t] ?? 0), 0)
+                    const isAvailable = totalStock > 0
+                    return (
+                      <button
+                        key={t}
+                        disabled
+                        className={`size-tag ${isAvailable ? 'size-tag--available' : 'size-tag--unavailable'}`}
+                        title={isAvailable ? `${totalStock} uds. en stock` : 'Sin stock'}
+                      >
+                        {t}
+                      </button>
+                    )
+                  })
+                ) : (
+                  (selectedProduct.tallas || []).map(t => (
+                    <button key={t} disabled className="size-tag size-tag--unavailable">{t}</button>
+                  ))
+                )}
               </div>
             </div>
 
@@ -737,6 +774,7 @@ function AdminPanel({ onLogout, usuario }) {
       {inventoryProduct && (
         <InventoryModal
           product={inventoryProduct}
+          usuario={usuario}
           onClose={() => setInventoryProduct(null)}
           onSaved={() => {
             showToast(`Inventario de ${inventoryProduct.nombre} guardado`, 'success')
