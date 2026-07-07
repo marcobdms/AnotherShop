@@ -852,8 +852,9 @@ export default function AdminImport() {
           precio_coste: parseFloat(r.precio_coste) || 0,
           genero: r.genero,
           imagen: r.imagen,
+          imagen2: r.imagen2 || '',
           disponible: r.disponible,
-          drop: r._drop,
+          drop: r._drop || 'Drop 1', // forzar valor válido siempre
           _colorMap: {
             [colorKey]: { color: colorKey, hex: r.hex, tallas: {} }
           },
@@ -864,6 +865,7 @@ export default function AdminImport() {
 
       // Actualizar imagen si viene definida en esta fila
       if (r.imagen) prod.imagen = r.imagen
+      if (r.imagen2) prod.imagen2 = r.imagen2
       // Si alguna fila dice disponible=true, el producto está disponible (true gana)
       if (r.disponible === true) prod.disponible = true
 
@@ -879,7 +881,10 @@ export default function AdminImport() {
     return Object.values(byNombreColor).map(p => {
       const variantes = Object.values(p._colorMap)
       const { _colorMap, ...rest } = p
-      return { ...rest, variantes }
+      // Construir array de imagenes: [imagen, imagen2] filtrando vacíos
+      const imagenes = [rest.imagen, rest.imagen2].filter(Boolean)
+      const { imagen2, ...restClean } = rest
+      return { ...restClean, imagenes, variantes }
     })
   }
 
@@ -946,7 +951,7 @@ export default function AdminImport() {
         {/* Back to catalog */}
         <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem' }}>
           <a
-            href="/catalog"
+            href="/admin"
             style={{
               fontFamily: "'Inter', sans-serif",
               fontSize: '0.65rem',
@@ -1215,34 +1220,23 @@ export default function AdminImport() {
                       />
                     </td>
 
-                    {/* Color — visual swatch selector */}
-                    <td style={{ minWidth: 155 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '2px 0' }}>
-                        <div className="imp-color-selector">
-                          {/* Sin color */}
-                          <button
-                            className={`imp-color-swatch-btn imp-color-swatch-btn--none ${!row.color ? 'selected' : ''}`}
-                            title="Sin color"
-                            onClick={() => updateRow(row._id, 'color', '') || updateRow(row._id, 'hex', '#888888')}
-                          />
-                          {COLORES_PRESET.map(c => (
-                            <button
-                              key={c.nombre}
-                              className={`imp-color-swatch-btn ${row.color === c.nombre ? 'selected' : ''}`}
-                              style={{
-                                background: c.hex,
-                                boxShadow: c.hex === '#FFFFFF' ? 'inset 0 0 0 1px #ddd' : undefined,
-                              }}
-                              title={c.nombre}
-                              onClick={() => {
-                                updateRow(row._id, 'color', c.nombre)
-                                updateRow(row._id, 'hex', c.hex)
-                              }}
-                            />
-                          ))}
-                        </div>
-                        <span className="imp-color-name">{row.color || '—'}</span>
-                      </div>
+                    {/* Color — select dropdown */}
+                    <td style={{ minWidth: 100 }}>
+                      <select
+                        className="imp-cell-select"
+                        value={row.color}
+                        onChange={e => {
+                          const nombre = e.target.value
+                          const preset = COLORES_PRESET.find(c => c.nombre === nombre)
+                          updateRow(row._id, 'color', nombre)
+                          updateRow(row._id, 'hex', preset ? preset.hex : '#888888')
+                        }}
+                      >
+                        <option value="">— Sin color —</option>
+                        {COLORES_PRESET.map(c => (
+                          <option key={c.nombre} value={c.nombre}>{c.nombre}</option>
+                        ))}
+                      </select>
                     </td>
 
                     {/* Talla */}
@@ -1320,76 +1314,97 @@ export default function AdminImport() {
                       </select>
                     </td>
 
-                    {/* Imagen — drag & drop */}
-                    <td style={{ width: 70 }}>
-                      <div className="imp-img-drop-wrap">
-                        {/* Drop zone / preview */}
-                        <label
-                          className={`imp-img-placeholder${row._dragOver ? ' drag-over' : ''}`}
-                          style={row._imgPreview || row.imagen ? { border: 'none', background: 'transparent', padding: 0 } : {}}
-                          onDragOver={e => { e.preventDefault(); updateRow(row._id, '_dragOver', true) }}
-                          onDragLeave={() => updateRow(row._id, '_dragOver', false)}
-                          onDrop={async e => {
-                            e.preventDefault()
-                            updateRow(row._id, '_dragOver', false)
-                            const file = e.dataTransfer.files[0]
-                            if (!file || !file.type.startsWith('image/')) return
-                            const blobUrl = URL.createObjectURL(file)
-                            const ext = file.name.split('.').pop() || 'jpg'
-                            const refClean = (row.ref || 'img').replace(/[^a-zA-Z0-9-_]/g, '-')
-                            const newFilename = `${refClean}.${ext}`
-                            updateRow(row._id, '_imgPreview', blobUrl)
-                            
-                            try {
-                              const renamedFile = new File([file], newFilename, { type: file.type })
-                              const res = await adminUploadImage(renamedFile)
-                              updateRow(row._id, 'imagen', res.url)
-                            } catch (err) {
-                              console.error("Upload error:", err)
-                              alert("Error subiendo la imagen")
-                            }
-                          }}
-                          title="Arrastra una imagen o click para seleccionar"
-                        >
-                          {(row._imgPreview || row.imagen) ? (
-                            <img
-                              src={row._imgPreview || row.imagen}
-                              alt=""
-                              className="imp-img-thumb"
-                              onError={e => { e.target.style.opacity = '0.3' }}
-                            />
-                          ) : (
-                            <span style={{ textAlign: 'center', lineHeight: 1.3 }}>↓<br/>foto</span>
-                          )}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={async e => {
+                    {/* Imagen 1 + Imagen 2 — drag & drop */}
+                    <td style={{ width: 130 }}>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
+                        {/* Foto 1 */}
+                        <div className="imp-img-drop-wrap">
+                          <label
+                            className={`imp-img-placeholder${row._dragOver ? ' drag-over' : ''}`}
+                            style={row._imgPreview || row.imagen ? { border: 'none', background: 'transparent', padding: 0 } : {}}
+                            onDragOver={e => { e.preventDefault(); updateRow(row._id, '_dragOver', true) }}
+                            onDragLeave={() => updateRow(row._id, '_dragOver', false)}
+                            onDrop={async e => {
+                              e.preventDefault()
+                              updateRow(row._id, '_dragOver', false)
+                              const file = e.dataTransfer.files[0]
+                              if (!file || !file.type.startsWith('image/')) return
+                              const blobUrl = URL.createObjectURL(file)
+                              const ext = file.name.split('.').pop() || 'jpg'
+                              const refClean = (row.ref || 'img').replace(/[^a-zA-Z0-9-_]/g, '-')
+                              updateRow(row._id, '_imgPreview', blobUrl)
+                              try {
+                                const renamedFile = new File([file], `${refClean}.${ext}`, { type: file.type })
+                                const res = await adminUploadImage(renamedFile)
+                                updateRow(row._id, 'imagen', res.url)
+                              } catch (err) { alert('Error subiendo la imagen') }
+                            }}
+                            title="Foto 1 (principal)"
+                          >
+                            {(row._imgPreview || row.imagen) ? (
+                              <img src={row._imgPreview || row.imagen} alt="" className="imp-img-thumb" onError={e => { e.target.style.opacity = '0.3' }} />
+                            ) : (
+                              <span style={{ textAlign: 'center', lineHeight: 1.3, fontSize: '0.55rem' }}>↓<br/>foto 1</span>
+                            )}
+                            <input type="file" accept="image/*" onChange={async e => {
                               const file = e.target.files[0]
                               if (!file) return
                               const blobUrl = URL.createObjectURL(file)
                               const ext = file.name.split('.').pop() || 'jpg'
                               const refClean = (row.ref || 'img').replace(/[^a-zA-Z0-9-_]/g, '-')
-                              const newFilename = `${refClean}.${ext}`
                               updateRow(row._id, '_imgPreview', blobUrl)
-                              
                               try {
-                                const renamedFile = new File([file], newFilename, { type: file.type })
+                                const renamedFile = new File([file], `${refClean}.${ext}`, { type: file.type })
                                 const res = await adminUploadImage(renamedFile)
                                 updateRow(row._id, 'imagen', res.url)
-                              } catch (err) {
-                                console.error("Upload error:", err)
-                                alert("Error subiendo la imagen")
-                              }
+                              } catch (err) { alert('Error subiendo la imagen') }
+                            }} />
+                          </label>
+                        </div>
+                        {/* Foto 2 */}
+                        <div className="imp-img-drop-wrap">
+                          <label
+                            className={`imp-img-placeholder${row._dragOver2 ? ' drag-over' : ''}`}
+                            style={row._imgPreview2 || row.imagen2 ? { border: 'none', background: 'transparent', padding: 0 } : {}}
+                            onDragOver={e => { e.preventDefault(); updateRow(row._id, '_dragOver2', true) }}
+                            onDragLeave={() => updateRow(row._id, '_dragOver2', false)}
+                            onDrop={async e => {
+                              e.preventDefault()
+                              updateRow(row._id, '_dragOver2', false)
+                              const file = e.dataTransfer.files[0]
+                              if (!file || !file.type.startsWith('image/')) return
+                              const blobUrl = URL.createObjectURL(file)
+                              const ext = file.name.split('.').pop() || 'jpg'
+                              const refClean = (row.ref || 'img').replace(/[^a-zA-Z0-9-_]/g, '-')
+                              updateRow(row._id, '_imgPreview2', blobUrl)
+                              try {
+                                const renamedFile = new File([file], `${refClean}_2.${ext}`, { type: file.type })
+                                const res = await adminUploadImage(renamedFile)
+                                updateRow(row._id, 'imagen2', res.url)
+                              } catch (err) { alert('Error subiendo la imagen 2') }
                             }}
-                          />
-                        </label>
-                        {/* Ruta generada */}
-                        {row.imagen && (
-                          <span className="imp-img-drop-label" title={row.imagen}>
-                            {row.imagen.replace('/images/', '')}
-                          </span>
-                        )}
+                            title="Foto 2 (carrusel)"
+                          >
+                            {(row._imgPreview2 || row.imagen2) ? (
+                              <img src={row._imgPreview2 || row.imagen2} alt="" className="imp-img-thumb" onError={e => { e.target.style.opacity = '0.3' }} />
+                            ) : (
+                              <span style={{ textAlign: 'center', lineHeight: 1.3, fontSize: '0.55rem' }}>+<br/>foto 2</span>
+                            )}
+                            <input type="file" accept="image/*" onChange={async e => {
+                              const file = e.target.files[0]
+                              if (!file) return
+                              const blobUrl = URL.createObjectURL(file)
+                              const ext = file.name.split('.').pop() || 'jpg'
+                              const refClean = (row.ref || 'img').replace(/[^a-zA-Z0-9-_]/g, '-')
+                              updateRow(row._id, '_imgPreview2', blobUrl)
+                              try {
+                                const renamedFile = new File([file], `${refClean}_2.${ext}`, { type: file.type })
+                                const res = await adminUploadImage(renamedFile)
+                                updateRow(row._id, 'imagen2', res.url)
+                              } catch (err) { alert('Error subiendo la imagen 2') }
+                            }} />
+                          </label>
+                        </div>
                       </div>
                     </td>
 

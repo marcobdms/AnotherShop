@@ -25,11 +25,15 @@ function AppLayout() {
   const isAdmin = location.pathname.toLowerCase().startsWith('/admin')
   const isFullscreen = isAdmin || location.pathname === '/login'
 
+  const isHome = location.pathname === '/'
+  const isCatalog = location.pathname.toLowerCase() === '/catalogo'
+
   return (
     <>
-      {/* Nav y Banner en todas las páginas excepto admin y login */}
+      {/* Nav en todas las páginas excepto admin, login */}
       {!isFullscreen && <Nav marca={marca} user={user} />}
-      {!isFullscreen && <TopBanner />}
+      {/* Cinta solo en el catálogo */}
+      {isCatalog && <TopBanner />}
 
       <Routes>
         <Route path="/" element={<Home />} />

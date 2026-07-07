@@ -5,7 +5,7 @@
  *   GET /api/products/{id}  → { id, nombre, precio, imagen, descripcion, tallas, genero, disponible }
  *   GET /api/meta           → { marca, whatsapp, paypal, recargo_paypal, ... }
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { fetchProduct, fetchMeta, formatPrice, buildWhatsAppLink, buildPayPalLink } from '../api/catalog'
 import { useAuth } from '../hooks/useAuth'
@@ -52,6 +52,8 @@ export default function Product() {
   const [error,    setError]      = useState(null)
   const [selectedSize, setSelectedSize] = useState(null)
   const [favToast, setFavToast]   = useState(null) // { msg, key }
+  const [activeIndex, setActiveIndex] = useState(0)
+  const touchStartX = useRef(null)
 
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
@@ -68,6 +70,7 @@ export default function Product() {
 
   useEffect(() => {
     setSelectedSize(null)
+    setActiveIndex(0)
   }, [producto])
 
   const showFavToast = useCallback((msg) => {
@@ -125,15 +128,64 @@ export default function Product() {
   return (
     <>
       <main className="product-page">
-        {/* Imagen */}
-        <div className={`product-page__img-wrap ${!producto.disponible ? 'sold-out' : ''}`}>
-          <img
-            src={producto.imagen}
-            alt={producto.nombre}
-            onError={e => { e.target.style.visibility = 'hidden' }}
-          />
-          {!producto.disponible && <div className="sold-out-overlay">Agotado</div>}
-        </div>
+        {/* Carrusel de imágenes */}
+        {(() => {
+          const fotos = (producto.imagenes && producto.imagenes.length > 1)
+            ? producto.imagenes
+            : [producto.imagen]
+          const total = fotos.length
+          const prev = () => setActiveIndex(i => (i - 1 + total) % total)
+          const next = () => setActiveIndex(i => (i + 1) % total)
+          return (
+            <div
+              className={`product-carousel ${!producto.disponible ? 'sold-out' : ''}`}
+              onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
+              onTouchEnd={e => {
+                if (touchStartX.current === null) return
+                const dx = e.changedTouches[0].clientX - touchStartX.current
+                if (Math.abs(dx) > 40) dx < 0 ? next() : prev()
+                touchStartX.current = null
+              }}
+            >
+              <div
+                className="product-carousel__track"
+                style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+              >
+                {fotos.map((src, i) => (
+                  <div key={i} className="product-carousel__slide">
+                    <img
+                      src={src}
+                      alt={`${producto.nombre} ${i + 1}`}
+                      onError={e => { e.target.style.visibility = 'hidden' }}
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* Flechas — solo visibles en hover gracias a CSS */}
+              {total > 1 && (
+                <>
+                  <button className="product-carousel__btn product-carousel__btn--prev" onClick={prev} aria-label="Anterior">
+                    &#8592;
+                  </button>
+                  <button className="product-carousel__btn product-carousel__btn--next" onClick={next} aria-label="Siguiente">
+                    &#8594;
+                  </button>
+                  <div className="product-carousel__dots">
+                    {fotos.map((_, i) => (
+                      <button
+                        key={i}
+                        className={`product-carousel__dot ${i === activeIndex ? 'product-carousel__dot--active' : ''}`}
+                        onClick={() => setActiveIndex(i)}
+                        aria-label={`Foto ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+              {!producto.disponible && <div className="sold-out-overlay">Agotado</div>}
+            </div>
+          )
+        })()}
 
         {/* Info */}
         <div className="product-page__info">

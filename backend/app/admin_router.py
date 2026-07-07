@@ -357,6 +357,7 @@ class ProductoImport(BaseModel):
     precio_coste: float
     genero: str = "unisex"
     imagen: str = ""
+    imagenes: list[str] = []
     disponible: bool = True
     drop: str = "Drop 1"
     variantes: list[VarianteImport] = []
@@ -502,6 +503,9 @@ def admin_sync_all(body: BulkImportBody):
         if ref_key in old_products_by_ref:
             old_p = old_products_by_ref[ref_key]
             pid = old_p["id"]
+            # imagenes: priorizar el array, y mantener imagen como la primera
+            imagenes_nuevas = prod.imagenes if prod.imagenes else ([prod.imagen] if prod.imagen else old_p.get("imagenes", []))
+            imagen_principal = imagenes_nuevas[0] if imagenes_nuevas else old_p.get("imagen", "")
             new_p = {
                 "id": pid,
                 "meta_id": old_p.get("meta_id", ""),
@@ -512,7 +516,8 @@ def admin_sync_all(body: BulkImportBody):
                 "categoria": old_p.get("categoria", "sin_categoria"),
                 "genero": prod.genero,
                 "tallas": ["XS", "S", "M", "L", "XL"],
-                "imagen": prod.imagen or old_p.get("imagen", ""),
+                "imagen": imagen_principal,
+                "imagenes": imagenes_nuevas,
                 "descripcion": old_p.get("descripcion", ""),
                 "disponible": prod.disponible,
                 "marca": old_p.get("marca", ""),
@@ -526,6 +531,9 @@ def admin_sync_all(body: BulkImportBody):
             # Crear producto nuevo
             new_id = next_id(new_productos + list(old_products_by_ref.values()))
             pid = new_id
+            # imagenes: priorizar el array, y mantener imagen como la primera
+            imagenes_nuevas = prod.imagenes if prod.imagenes else ([prod.imagen] if prod.imagen else [])
+            imagen_principal = imagenes_nuevas[0] if imagenes_nuevas else f"/images/{pid}.jpg"
             new_p = {
                 "id": pid,
                 "meta_id": "",
@@ -536,7 +544,8 @@ def admin_sync_all(body: BulkImportBody):
                 "categoria": "sin_categoria",
                 "genero": prod.genero,
                 "tallas": ["XS", "S", "M", "L", "XL"],
-                "imagen": prod.imagen or f"/images/{pid}.jpg",
+                "imagen": imagen_principal,
+                "imagenes": imagenes_nuevas,
                 "descripcion": "",
                 "disponible": prod.disponible,
                 "marca": "",

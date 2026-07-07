@@ -119,6 +119,7 @@ class ProductoDetalle(BaseModel):
     nombre: str
     precio: float
     imagen: str
+    imagenes: list[str] = []
     descripcion: str
     tallas: list[str]
     genero: str

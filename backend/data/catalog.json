@@ -39,6 +39,9 @@
         "XL"
       ],
       "imagen": "/images/004.jpg",
+      "imagenes": [
+        "/images/004.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "Abercrombie",
@@ -61,6 +64,9 @@
         "XL"
       ],
       "imagen": "/images/005.jpg",
+      "imagenes": [
+        "/images/005.jpg"
+      ],
       "descripcion": "S, Marrón",
       "disponible": false,
       "marca": "Abercrombie",
@@ -83,6 +89,9 @@
         "XL"
       ],
       "imagen": "/images/007.jpg",
+      "imagenes": [
+        "/images/007.jpg"
+      ],
       "descripcion": "L, Blanco",
       "disponible": false,
       "marca": "Abercrombie",
@@ -105,6 +114,9 @@
         "XL"
       ],
       "imagen": "/images/010.jpg",
+      "imagenes": [
+        "/images/010.jpg"
+      ],
       "descripcion": "S, Negro",
       "disponible": false,
       "marca": "Abercrombie",
@@ -127,6 +139,9 @@
         "XL"
       ],
       "imagen": "/images/009.jpg",
+      "imagenes": [
+        "/images/009.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "Abercrombie",
@@ -149,6 +164,9 @@
         "XL"
       ],
       "imagen": "/images/021.jpg",
+      "imagenes": [
+        "/images/021.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -171,6 +189,9 @@
         "XL"
       ],
       "imagen": "/images/036.jpg",
+      "imagenes": [
+        "/images/036.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -193,6 +214,9 @@
         "XL"
       ],
       "imagen": "/images/024.jpg",
+      "imagenes": [
+        "/images/024.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -215,6 +239,9 @@
         "XL"
       ],
       "imagen": "/images/025.jpg",
+      "imagenes": [
+        "/images/025.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -237,6 +264,9 @@
         "XL"
       ],
       "imagen": "/images/026.jpg",
+      "imagenes": [
+        "/images/026.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -259,13 +289,16 @@
         "XL"
       ],
       "imagen": "/images/029.jpg",
+      "imagenes": [
+        "/images/029.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
       "drop": "Drop 1"
     },
     {
-      "id": "384",
+      "id": "405",
       "meta_id": "",
       "ref": "028",
       "nombre": "TARJETERO ESTAMPADO LOGO",
@@ -281,6 +314,9 @@
         "XL"
       ],
       "imagen": "/images/028.jpg",
+      "imagenes": [
+        "/images/028.jpg"
+      ],
       "descripcion": "",
       "disponible": false,
       "marca": "",
@@ -303,6 +339,9 @@
         "XL"
       ],
       "imagen": "/images/030.jpg",
+      "imagenes": [
+        "/images/030.jpg"
+      ],
       "descripcion": "pendiente",
       "disponible": false,
       "marca": "",
@@ -325,6 +364,9 @@
         "XL"
       ],
       "imagen": "/images/032.jpg",
+      "imagenes": [
+        "/images/032.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -347,6 +389,9 @@
         "XL"
       ],
       "imagen": "/images/033.jpg",
+      "imagenes": [
+        "/images/033.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -369,6 +414,9 @@
         "XL"
       ],
       "imagen": "/images/034.jpg",
+      "imagenes": [
+        "/images/034.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -391,6 +439,9 @@
         "XL"
       ],
       "imagen": "/images/035.jpg",
+      "imagenes": [
+        "/images/035.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -413,6 +464,9 @@
         "XL"
       ],
       "imagen": "/images/037.jpg",
+      "imagenes": [
+        "/images/037.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -435,13 +489,16 @@
         "XL"
       ],
       "imagen": "/images/038.jpg",
+      "imagenes": [
+        "/images/038.jpg"
+      ],
       "descripcion": "S",
       "disponible": true,
       "marca": "",
       "drop": "Drop 1"
     },
     {
-      "id": "388",
+      "id": "409",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -457,6 +514,9 @@
         "XL"
       ],
       "imagen": "/images/039.jpg",
+      "imagenes": [
+        "/images/039.jpg"
+      ],
       "descripcion": "",
       "disponible": false,
       "marca": "",
@@ -479,6 +539,9 @@
         "XL"
       ],
       "imagen": "/images/040.jpg",
+      "imagenes": [
+        "/images/040.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -501,13 +564,16 @@
         "XL"
       ],
       "imagen": "/images/041.jpg",
+      "imagenes": [
+        "/images/041.jpg"
+      ],
       "descripcion": "M",
       "disponible": true,
       "marca": "",
       "drop": "Drop 1"
     },
     {
-      "id": "381",
+      "id": "402",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -523,6 +589,9 @@
         "XL"
       ],
       "imagen": "/images/042.jpg",
+      "imagenes": [
+        "/images/042.jpg"
+      ],
       "descripcion": "",
       "disponible": false,
       "marca": "",
@@ -545,13 +614,16 @@
         "XL"
       ],
       "imagen": "/images/043.jpg",
+      "imagenes": [
+        "/images/043.jpg"
+      ],
       "descripcion": "M",
       "disponible": true,
       "marca": "",
       "drop": "Drop 1"
     },
     {
-      "id": "383",
+      "id": "404",
       "meta_id": "",
       "ref": "044",
       "nombre": "PASADOR LAZO BORDADO",
@@ -567,6 +639,9 @@
         "XL"
       ],
       "imagen": "/images/044.jpg",
+      "imagenes": [
+        "/images/044.jpg"
+      ],
       "descripcion": "",
       "disponible": false,
       "marca": "",
@@ -589,6 +664,9 @@
         "XL"
       ],
       "imagen": "/images/045.jpg",
+      "imagenes": [
+        "/images/045.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -611,6 +689,9 @@
         "XL"
       ],
       "imagen": "/images/049.jpg",
+      "imagenes": [
+        "/images/049.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -633,6 +714,9 @@
         "XL"
       ],
       "imagen": "/images/047.jpg",
+      "imagenes": [
+        "/images/047.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -655,6 +739,9 @@
         "XL"
       ],
       "imagen": "/images/048.jpg",
+      "imagenes": [
+        "/images/048.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -677,6 +764,9 @@
         "XL"
       ],
       "imagen": "/images/050.jpg",
+      "imagenes": [
+        "/images/050.jpg"
+      ],
       "descripcion": "M",
       "disponible": true,
       "marca": "",
@@ -699,6 +789,9 @@
         "XL"
       ],
       "imagen": "/images/051.jpg",
+      "imagenes": [
+        "/images/051.jpg"
+      ],
       "descripcion": "Talla unica",
       "disponible": false,
       "marca": "",
@@ -721,13 +814,16 @@
         "XL"
       ],
       "imagen": "/images/052.jpg",
+      "imagenes": [
+        "/images/052.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
       "drop": "Drop 1"
     },
     {
-      "id": "386",
+      "id": "407",
       "meta_id": "",
       "ref": "053",
       "nombre": "CAMISETA ALGODÓN MENSAJE ESTAMPADO",
@@ -743,6 +839,9 @@
         "XL"
       ],
       "imagen": "/images/053.jpg",
+      "imagenes": [
+        "/images/053.jpg"
+      ],
       "descripcion": "",
       "disponible": false,
       "marca": "",
@@ -765,6 +864,9 @@
         "XL"
       ],
       "imagen": "/images/054.jpg",
+      "imagenes": [
+        "/images/054.jpg"
+      ],
       "descripcion": "M",
       "disponible": true,
       "marca": "",
@@ -787,6 +889,9 @@
         "XL"
       ],
       "imagen": "/images/055.jpg",
+      "imagenes": [
+        "/images/055.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -809,6 +914,9 @@
         "XL"
       ],
       "imagen": "/images/056.jpg",
+      "imagenes": [
+        "/images/056.jpg"
+      ],
       "descripcion": "M",
       "disponible": true,
       "marca": "",
@@ -831,6 +939,9 @@
         "XL"
       ],
       "imagen": "/images/057.jpg",
+      "imagenes": [
+        "/images/057.jpg"
+      ],
       "descripcion": "S",
       "disponible": true,
       "marca": "",
@@ -853,6 +964,9 @@
         "XL"
       ],
       "imagen": "/images/058.jpg",
+      "imagenes": [
+        "/images/058.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -875,6 +989,9 @@
         "XL"
       ],
       "imagen": "/images/059.jpg",
+      "imagenes": [
+        "/images/059.jpg"
+      ],
       "descripcion": "S",
       "disponible": true,
       "marca": "",
@@ -897,6 +1014,9 @@
         "XL"
       ],
       "imagen": "/images/087.jpg",
+      "imagenes": [
+        "/images/087.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -919,6 +1039,9 @@
         "XL"
       ],
       "imagen": "/images/070.jpg",
+      "imagenes": [
+        "/images/070.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -941,6 +1064,9 @@
         "XL"
       ],
       "imagen": "/images/074.jpg",
+      "imagenes": [
+        "/images/074.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -963,6 +1089,9 @@
         "XL"
       ],
       "imagen": "/images/072.jpg",
+      "imagenes": [
+        "/images/072.jpg"
+      ],
       "descripcion": "S",
       "disponible": true,
       "marca": "",
@@ -985,6 +1114,9 @@
         "XL"
       ],
       "imagen": "/images/073.jpg",
+      "imagenes": [
+        "/images/073.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -1007,6 +1139,9 @@
         "XL"
       ],
       "imagen": "/images/075.jpg",
+      "imagenes": [
+        "/images/075.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -1029,6 +1164,9 @@
         "XL"
       ],
       "imagen": "/images/076.jpg",
+      "imagenes": [
+        "/images/076.jpg"
+      ],
       "descripcion": "M",
       "disponible": true,
       "marca": "",
@@ -1051,6 +1189,9 @@
         "XL"
       ],
       "imagen": "/images/078.jpg",
+      "imagenes": [
+        "/images/078.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1073,6 +1214,9 @@
         "XL"
       ],
       "imagen": "/images/090.jpg",
+      "imagenes": [
+        "/images/090.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1095,6 +1239,9 @@
         "XL"
       ],
       "imagen": "/images/080.jpg",
+      "imagenes": [
+        "/images/080.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -1117,6 +1264,9 @@
         "XL"
       ],
       "imagen": "/images/081.jpg",
+      "imagenes": [
+        "/images/081.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1139,6 +1289,9 @@
         "XL"
       ],
       "imagen": "/images/082.jpg",
+      "imagenes": [
+        "/images/082.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1161,6 +1314,9 @@
         "XL"
       ],
       "imagen": "/images/084.jpg",
+      "imagenes": [
+        "/images/084.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1183,6 +1339,9 @@
         "XL"
       ],
       "imagen": "/images/085.jpg",
+      "imagenes": [
+        "/images/085.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1205,6 +1364,9 @@
         "XL"
       ],
       "imagen": "/images/086.jpg",
+      "imagenes": [
+        "/images/086.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1227,6 +1389,9 @@
         "XL"
       ],
       "imagen": "/images/088.jpg",
+      "imagenes": [
+        "/images/088.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1249,6 +1414,9 @@
         "XL"
       ],
       "imagen": "/images/089.jpg",
+      "imagenes": [
+        "/images/089.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -1271,6 +1439,9 @@
         "XL"
       ],
       "imagen": "/images/091.jpg",
+      "imagenes": [
+        "/images/091.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "",
@@ -1293,6 +1464,9 @@
         "XL"
       ],
       "imagen": "/images/092.jpg",
+      "imagenes": [
+        "/images/092.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "",
@@ -1315,6 +1489,9 @@
         "XL"
       ],
       "imagen": "/images/093.jpg",
+      "imagenes": [
+        "/images/093.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "Pull&Bear",
@@ -1337,6 +1514,9 @@
         "XL"
       ],
       "imagen": "/images/094.jpg",
+      "imagenes": [
+        "/images/094.jpg"
+      ],
       "descripcion": "M",
       "disponible": false,
       "marca": "Pull&Bear",
@@ -1359,32 +1539,13 @@
         "XL"
       ],
       "imagen": "/images/095.jpg",
+      "imagenes": [
+        "/images/095.jpg"
+      ],
       "descripcion": "S",
       "disponible": false,
       "marca": "Pull&Bear",
       "drop": "Drop 1"
-    },
-    {
-      "id": "377",
-      "meta_id": "",
-      "ref": "17061242Negra",
-      "nombre": "CAMISETA RAYAS LOGO",
-      "precio": 0.0,
-      "precio_coste": 4.49,
-      "categoria": "sin_categoria",
-      "genero": "mujer",
-      "tallas": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "imagen": "/images/17061242.jpg",
-      "descripcion": "",
-      "disponible": true,
-      "marca": "",
-      "drop": "Drop 2"
     },
     {
       "id": "398",
@@ -1402,14 +1563,43 @@
         "L",
         "XL"
       ],
-      "imagen": "/images/17061242.avif",
+      "imagen": "/images/17061242.jpg",
+      "imagenes": [
+        "/images/17061242.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "399",
+      "id": "416",
+      "meta_id": "",
+      "ref": "17061242Negra",
+      "nombre": "CAMISETA RAYAS LOGO",
+      "precio": 0.0,
+      "precio_coste": 4.49,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/17061242.avif",
+      "imagenes": [
+        "/images/17061242.avif",
+        "/images/17061242Negra_2.avif"
+      ],
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "417",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1425,13 +1615,16 @@
         "XL"
       ],
       "imagen": "/images/17081238Marron.avif",
+      "imagenes": [
+        "/images/17081238Marron.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "400",
+      "id": "418",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1447,13 +1640,16 @@
         "XL"
       ],
       "imagen": "/images/17081238Naranja.avif",
+      "imagenes": [
+        "/images/17081238Naranja.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "401",
+      "id": "419",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1469,13 +1665,16 @@
         "XL"
       ],
       "imagen": "/images/17081238.jpg",
+      "imagenes": [
+        "/images/17081238.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "402",
+      "id": "420",
       "meta_id": "",
       "ref": "042",
       "nombre": "CAMISETA ALGODÓN LOGO",
@@ -1491,28 +1690,9 @@
         "XL"
       ],
       "imagen": "/images/17081238.avif",
-      "descripcion": "",
-      "disponible": true,
-      "marca": "",
-      "drop": "Drop 2"
-    },
-    {
-      "id": "382",
-      "meta_id": "",
-      "ref": "17071216Beige",
-      "nombre": "TARJETERO EFECTO SAFIANO",
-      "precio": 0.0,
-      "precio_coste": 2.49,
-      "categoria": "sin_categoria",
-      "genero": "mujer",
-      "tallas": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
+      "imagenes": [
+        "/images/17081238.avif"
       ],
-      "imagen": "/images/17071216Beige.avif",
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1534,14 +1714,42 @@
         "L",
         "XL"
       ],
-      "imagen": "/images/17071216Rosa.avif",
+      "imagen": "/images/17071216Beige.avif",
+      "imagenes": [
+        "/images/17071216Beige.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "404",
+      "id": "421",
+      "meta_id": "",
+      "ref": "17071216Beige",
+      "nombre": "TARJETERO EFECTO SAFIANO",
+      "precio": 0.0,
+      "precio_coste": 2.49,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/17071216Rosa.avif",
+      "imagenes": [
+        "/images/17071216Rosa.avif"
+      ],
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "422",
       "meta_id": "",
       "ref": "044",
       "nombre": "PASADOR LAZO BORDADO",
@@ -1557,6 +1765,9 @@
         "XL"
       ],
       "imagen": "/images/77050267.avif",
+      "imagenes": [
+        "/images/77050267.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1579,13 +1790,16 @@
         "XL"
       ],
       "imagen": "/images/17081120.avif",
+      "imagenes": [
+        "/images/17081120.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "405",
+      "id": "423",
       "meta_id": "",
       "ref": "028",
       "nombre": "TARJETERO ESTAMPADO LOGO",
@@ -1601,6 +1815,9 @@
         "XL"
       ],
       "imagen": "/images/87052895.avif",
+      "imagenes": [
+        "/images/87052895.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1623,6 +1840,9 @@
         "XL"
       ],
       "imagen": "/images/17091533.avif",
+      "imagenes": [
+        "/images/17091533.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1645,6 +1865,9 @@
         "XL"
       ],
       "imagen": "/images/87070421.avif",
+      "imagenes": [
+        "/images/87070421.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1667,6 +1890,9 @@
         "XL"
       ],
       "imagen": "/images/17091173.avif",
+      "imagenes": [
+        "/images/17091173.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1689,28 +1915,9 @@
         "XL"
       ],
       "imagen": "/images/17091120.avif",
-      "descripcion": "",
-      "disponible": true,
-      "marca": "",
-      "drop": "Drop 2"
-    },
-    {
-      "id": "385",
-      "meta_id": "",
-      "ref": "77070357Negro",
-      "nombre": "TOP CROP BOTONES",
-      "precio": 0.0,
-      "precio_coste": 5.99,
-      "categoria": "sin_categoria",
-      "genero": "mujer",
-      "tallas": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
+      "imagenes": [
+        "/images/17091120.avif"
       ],
-      "imagen": "/images/77070357Negro.avif",
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1732,7 +1939,35 @@
         "L",
         "XL"
       ],
+      "imagen": "/images/77070357Negro.avif",
+      "imagenes": [
+        "/images/77070357Negro.avif"
+      ],
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "424",
+      "meta_id": "",
+      "ref": "77070357Negro",
+      "nombre": "TOP CROP BOTONES",
+      "precio": 0.0,
+      "precio_coste": 5.99,
+      "categoria": "sin_categoria",
+      "genero": "mujer",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
       "imagen": "/images/77070357Blanca.avif",
+      "imagenes": [
+        "/images/77070357Blanca.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1755,6 +1990,9 @@
         "XL"
       ],
       "imagen": "/images/77082913.avif",
+      "imagenes": [
+        "/images/77082913.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1777,6 +2015,9 @@
         "XL"
       ],
       "imagen": "/images/77077118.avif",
+      "imagenes": [
+        "/images/77077118.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1799,6 +2040,9 @@
         "XL"
       ],
       "imagen": "/images/17092536.webp",
+      "imagenes": [
+        "/images/17092536.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1821,6 +2065,9 @@
         "XL"
       ],
       "imagen": "/images/17021272.avif",
+      "imagenes": [
+        "/images/17021272.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1843,6 +2090,9 @@
         "XL"
       ],
       "imagen": "/images/87065750.avif",
+      "imagenes": [
+        "/images/87065750.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1865,13 +2115,16 @@
         "XL"
       ],
       "imagen": "/images/17091199.avif",
+      "imagenes": [
+        "/images/17091199.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "407",
+      "id": "425",
       "meta_id": "",
       "ref": "053",
       "nombre": "CAMISETA ALGODÓN MENSAJE ESTAMPADO",
@@ -1887,13 +2140,16 @@
         "XL"
       ],
       "imagen": "/images/87015746.avif",
+      "imagenes": [
+        "/images/87015746.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "408",
+      "id": "426",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -1909,13 +2165,16 @@
         "XL"
       ],
       "imagen": "/images/039Negro.avif",
+      "imagenes": [
+        "/images/039Negro.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "409",
+      "id": "427",
       "meta_id": "",
       "ref": "039",
       "nombre": "CHALECO TERCIOPELO CROP",
@@ -1931,6 +2190,9 @@
         "XL"
       ],
       "imagen": "/images/77069062.avif",
+      "imagenes": [
+        "/images/77069062.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1953,6 +2215,9 @@
         "XL"
       ],
       "imagen": "/images/87095139.webp",
+      "imagenes": [
+        "/images/87095139.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1975,6 +2240,9 @@
         "XL"
       ],
       "imagen": "/images/3253-367.jpg",
+      "imagenes": [
+        "/images/3253-367.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -1997,6 +2265,9 @@
         "XL"
       ],
       "imagen": "/images/4174-300.jpg",
+      "imagenes": [
+        "/images/4174-300.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2019,6 +2290,9 @@
         "XL"
       ],
       "imagen": "/images/4424-003.jpg",
+      "imagenes": [
+        "/images/4424-003.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2041,6 +2315,9 @@
         "XL"
       ],
       "imagen": "/images/0085-052.jpg",
+      "imagenes": [
+        "/images/0085-052.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2063,6 +2340,9 @@
         "XL"
       ],
       "imagen": "/images/4424-164.jpg",
+      "imagenes": [
+        "/images/4424-164.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2085,6 +2365,9 @@
         "XL"
       ],
       "imagen": "/images/5644-041.jpg",
+      "imagenes": [
+        "/images/5644-041.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2107,6 +2390,9 @@
         "XL"
       ],
       "imagen": "/images/1044-154.jpg",
+      "imagenes": [
+        "/images/1044-154.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2129,6 +2415,9 @@
         "XL"
       ],
       "imagen": "/images/5643-035.jpg",
+      "imagenes": [
+        "/images/5643-035.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2151,6 +2440,9 @@
         "XL"
       ],
       "imagen": "/images/5644-214.jpg",
+      "imagenes": [
+        "/images/5644-214.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2173,6 +2465,9 @@
         "XL"
       ],
       "imagen": "/images/4174-174.jpg",
+      "imagenes": [
+        "/images/4174-174.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2195,6 +2490,9 @@
         "XL"
       ],
       "imagen": "/images/6050-066.jpg",
+      "imagenes": [
+        "/images/6050-066.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2217,6 +2515,9 @@
         "XL"
       ],
       "imagen": "/images/5644-210.jpg",
+      "imagenes": [
+        "/images/5644-210.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2239,13 +2540,16 @@
         "XL"
       ],
       "imagen": "/images/0085-076.jpg",
+      "imagenes": [
+        "/images/0085-076.jpg"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "390",
+      "id": "411",
       "meta_id": "",
       "ref": "PB-0001",
       "nombre": "CAMISETA RIB GRÁFICO",
@@ -2261,6 +2565,9 @@
         "XL"
       ],
       "imagen": "/images/PB-0001.webp",
+      "imagenes": [
+        "/images/PB-0001.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2283,13 +2590,16 @@
         "XL"
       ],
       "imagen": "/images/PB-0002.webp",
+      "imagenes": [
+        "/images/PB-0002.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "389",
+      "id": "410",
       "meta_id": "",
       "ref": "PB-0003",
       "nombre": "CAMISA POPELÍN ENTALLADA PINZAS",
@@ -2305,6 +2615,9 @@
         "XL"
       ],
       "imagen": "/images/PB-0003.webp",
+      "imagenes": [
+        "/images/PB-0003.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2327,6 +2640,9 @@
         "XL"
       ],
       "imagen": "/images/PB-0004.webp",
+      "imagenes": [
+        "/images/PB-0004.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2349,13 +2665,16 @@
         "XL"
       ],
       "imagen": "/images/PB-0005.webp",
+      "imagenes": [
+        "/images/PB-0005.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "410",
+      "id": "428",
       "meta_id": "",
       "ref": "PB-0003",
       "nombre": "CAMISA POPELÍN ENTALLADA PINZAS",
@@ -2371,6 +2690,9 @@
         "XL"
       ],
       "imagen": "/images/PB-0006.webp",
+      "imagenes": [
+        "/images/PB-0006.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2393,13 +2715,16 @@
         "XL"
       ],
       "imagen": "/images/PB-0007.webp",
+      "imagenes": [
+        "/images/PB-0007.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "391",
+      "id": "412",
       "meta_id": "",
       "ref": "PB-0008",
       "nombre": "TOP BAMBULA LAZADAS",
@@ -2415,6 +2740,9 @@
         "XL"
       ],
       "imagen": "/images/PB-0008.webp",
+      "imagenes": [
+        "/images/PB-0008.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2437,13 +2765,16 @@
         "XL"
       ],
       "imagen": "/images/PB-0009.webp",
+      "imagenes": [
+        "/images/PB-0009.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "411",
+      "id": "429",
       "meta_id": "",
       "ref": "PB-0001",
       "nombre": "CAMISETA RIB GRÁFICO",
@@ -2459,6 +2790,9 @@
         "XL"
       ],
       "imagen": "/images/PB-0010.webp",
+      "imagenes": [
+        "/images/PB-0010.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2481,13 +2815,16 @@
         "XL"
       ],
       "imagen": "/images/PB-0011.webp",
+      "imagenes": [
+        "/images/PB-0011.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "412",
+      "id": "430",
       "meta_id": "",
       "ref": "PB-0008",
       "nombre": "TOP BAMBULA LAZADAS",
@@ -2503,6 +2840,9 @@
         "XL"
       ],
       "imagen": "/images/PB-0012.webp",
+      "imagenes": [
+        "/images/PB-0012.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2525,13 +2865,16 @@
         "XL"
       ],
       "imagen": "/images/PB-0013.webp",
+      "imagenes": [
+        "/images/PB-0013.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "394",
+      "id": "415",
       "meta_id": "",
       "ref": "32460900534Negra",
       "nombre": "CAMISETA DE ALGODÓN CON CUELLO REDONDO E ICONO",
@@ -2547,13 +2890,16 @@
         "XL"
       ],
       "imagen": "/images/32460900534.avif",
+      "imagenes": [
+        "/images/32460900534.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "413",
+      "id": "431",
       "meta_id": "",
       "ref": "32460900534Negra",
       "nombre": "CAMISETA DE ALGODÓN CON CUELLO REDONDO E ICONO",
@@ -2569,28 +2915,9 @@
         "XL"
       ],
       "imagen": "/images/32460900545.avif",
-      "descripcion": "",
-      "disponible": true,
-      "marca": "",
-      "drop": "Drop 2"
-    },
-    {
-      "id": "393",
-      "meta_id": "",
-      "ref": "32460900621Marron",
-      "nombre": "CAMISETA HOLGADA PARA TODOS LOS DÍAS",
-      "precio": 0.0,
-      "precio_coste": 11.01,
-      "categoria": "sin_categoria",
-      "genero": "hombre",
-      "tallas": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
+      "imagenes": [
+        "/images/32460900545.avif"
       ],
-      "imagen": "/images/32460900621.avif",
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2612,14 +2939,42 @@
         "L",
         "XL"
       ],
-      "imagen": "/images/32460900606.avif",
+      "imagen": "/images/32460900621.avif",
+      "imagenes": [
+        "/images/32460900621.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
       "drop": "Drop 2"
     },
     {
-      "id": "415",
+      "id": "432",
+      "meta_id": "",
+      "ref": "32460900621Marron",
+      "nombre": "CAMISETA HOLGADA PARA TODOS LOS DÍAS",
+      "precio": 0.0,
+      "precio_coste": 11.01,
+      "categoria": "sin_categoria",
+      "genero": "hombre",
+      "tallas": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "imagen": "/images/32460900606.avif",
+      "imagenes": [
+        "/images/32460900606.avif"
+      ],
+      "descripcion": "",
+      "disponible": true,
+      "marca": "",
+      "drop": "Drop 2"
+    },
+    {
+      "id": "433",
       "meta_id": "",
       "ref": "32460900534Negra",
       "nombre": "CAMISETA DE ALGODÓN CON CUELLO REDONDO E ICONO",
@@ -2635,6 +2990,9 @@
         "XL"
       ],
       "imagen": "/images/324-609-00535-100.avif",
+      "imagenes": [
+        "/images/324-609-00535-100.avif"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2657,6 +3015,9 @@
         "XL"
       ],
       "imagen": "/images/1000-360-250.webp",
+      "imagenes": [
+        "/images/1000-360-250.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2679,6 +3040,9 @@
         "XL"
       ],
       "imagen": "/images/5914-350-427.webp",
+      "imagenes": [
+        "/images/5914-350-427.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2701,6 +3065,9 @@
         "XL"
       ],
       "imagen": "/images/1910-315-250.webp",
+      "imagenes": [
+        "/images/1910-315-250.webp"
+      ],
       "descripcion": "",
       "disponible": true,
       "marca": "",
@@ -2708,6 +3075,17 @@
     }
   ],
   "historial": [
+    {
+      "id": "476b6784-11fd-407c-8efb-c78837b48dfa",
+      "productoId": "sync-all",
+      "nombre": "Sincronización masiva",
+      "tipo": "importacion",
+      "estadoAnterior": false,
+      "nuevoEstado": true,
+      "usuario": "marco",
+      "fecha_hora": "2026-07-06T20:57:43.390417",
+      "mensaje": "Sincronización total — 18 creados, 104 actualizados"
+    },
     {
       "id": "f5d31575-5e74-4669-a9d3-00e54d7b16a9",
       "productoId": "sync-all",
