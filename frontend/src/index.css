@@ -171,11 +171,10 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 }
 
 
-/* ── Página: INICIO wrapper ──────────────────────────────────────────────── */
+/* ── Página: INICIO — Video Banner ───────────────────────────────────────── */
 .home-page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  /* Ocupa exactamente la ventana disponible debajo del nav */
+  display: block;
 }
 
 .home-page--fade {
@@ -183,178 +182,142 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   pointer-events: none;
 }
 
-/* ── Página: INICIO (Hero) ────────────────────────────────────────────────────────── */
-.home-hero {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 61px);
-  padding: 2rem var(--gap);
-  max-width: var(--max-width);
-  margin: 0 auto;
-  gap: 2.5rem;
-  animation: heroFadeIn 0.6s ease forwards;
-}
-
-@keyframes heroFadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (min-width: 900px) {
-  .home-hero {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 4rem;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-}
-
-.home-hero.fade-out {
-  animation: homeHeroFadeOut 0.5s ease forwards;
-  pointer-events: none;
-}
-
 @keyframes homeHeroFadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-8px); }
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 
-.home-hero__content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.5rem;
-}
-
-.home-hero__title {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  line-height: 1.05;
-  color: var(--black);
-}
-
-.home-hero__sub {
-  font-size: var(--size-sm);
-  color: var(--grey-600);
-  letter-spacing: 0.05em;
-  font-weight: 300;
-  line-height: 1.6;
-  max-width: 400px;
-}
-
-.home-hero__actions {
-  margin-top: 1rem;
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.home-hero__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 2rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition: all var(--transition);
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.home-hero__btn--primary {
-  background: var(--black);
-  color: var(--white);
-  border: 1px solid var(--black);
-}
-.home-hero__btn--primary:hover {
-  background: var(--grey-600);
-  border-color: var(--grey-600);
-}
-
-.home-hero__btn--outline {
-  background: transparent;
-  color: var(--black);
-  border: 1px solid var(--black);
-}
-.home-hero__btn--outline:hover {
-  background: var(--black);
-  color: var(--white);
-}
-
-.home-hero__image-wrapper {
-  flex: 1;
-  width: 100%;
+.home-banner {
   position: relative;
-  background: var(--grey-100);
+  width: 100%;
+  /* Desktop: altura de la ventana menos el nav (~61px) */
+  height: calc(100vh - 61px);
   overflow: hidden;
-  aspect-ratio: 4/5;
-  border-radius: 20px;
+  background: var(--black);
 }
 
-.home-hero__image {
+/* ── Vídeo ── */
+.home-banner__video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Vídeo original es horizontal → en desktop cubre bien */
+  object-position: center center;
   display: block;
-  transition: transform 600ms ease;
 }
 
-.home-hero__image-wrapper:hover .home-hero__image {
-  transform: scale(1.02);
+/* ── Overlay oscuro sutil para legibilidad del texto ── */
+.home-banner__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.10) 50%,
+    rgba(0, 0, 0, 0.0) 100%
+  );
 }
 
-/* ── Home: Footer ─────────────────────────────────────────────────────────── */
-.home-footer {
-  border-top: 1px solid var(--grey-200);
-  background: var(--white);
-}
-
-.home-footer__inner {
+/* ── Contenido (texto + botón) ── */
+.home-banner__content {
+  position: absolute;
+  inset: 0;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 1.5rem var(--gap);
+  text-align: center;
+  padding: 3rem var(--gap);
+  gap: 2.5rem;
+  animation: homeBannerFadeIn 0.8s ease forwards;
 }
 
-.home-footer__brand {
-  font-size: 0.7rem;
+@keyframes homeBannerFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Título ── */
+.home-banner__title {
+  font-family: var(--font);
+  /* Tamaño mucho más grande para imponer y cubrir ancho */
+  font-size: clamp(3rem, 9.5vw, 10rem);
   font-weight: 500;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--black);
-}
-
-.home-footer__links {
+  /* Blanco con transparencia sutil (85%) para armonizar con el vídeo */
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.05;
+  /* Desktop: una sola línea centrada */
   display: flex;
-  gap: 2rem;
+  flex-wrap: nowrap;
+  gap: 0.35em;
+  justify-content: center;
+  width: 100%;
 }
 
-.home-footer__links a {
+.home-banner__word {
+  display: inline-block;
+}
+
+/* ── Botón CTA ── */
+.home-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 2.2rem;
   font-size: var(--size-xs);
-  letter-spacing: 0.12em;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--grey-400);
-  transition: color var(--transition);
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.home-footer__links a:hover { color: var(--black); }
-
-.home-footer__copy {
-  font-size: var(--size-xs);
-  letter-spacing: 0.1em;
-  color: var(--grey-400);
+.home-banner__cta:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: var(--white);
 }
+
+/* ── Mobile: vídeo en 9:16, texto centrado una palabra por línea ── */
+@media (max-width: 640px) {
+  .home-banner {
+    height: calc(100svh - 57px);
+  }
+
+  .home-banner__video {
+    /* En vertical el vídeo se recorta a 9:16 */
+    object-fit: cover;
+    object-position: center center;
+  }
+
+  .home-banner__content {
+    /* Desplaza el texto hacia abajo para no tapar a la modelo */
+    justify-content: flex-end;
+    align-items: center;
+    text-align: center;
+    padding: 2.5rem 1.5rem 4rem;
+    gap: 1.5rem;
+  }
+
+  .home-banner__title {
+    /* Una palabra por línea */
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    font-size: clamp(2.4rem, 14vw, 3.5rem);
+    line-height: 1.05;
+  }
+}
+
+
 
 /* ── Página: CATÁLOGO ──────────────────────────────────────────────────────── */
 .catalog-page { padding: var(--gap-lg) var(--gap); max-width: var(--max-width); margin: 0 auto; }

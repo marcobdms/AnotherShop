@@ -1,9 +1,11 @@
-﻿# Another Shop — Design System
+# Another NPC Shop — Design System
 
-> Documento de referencia de identidad visual y sistema de diseño para agentes IA y colaboradores.
-> Úsalo como punto de partida al rediseñar o crear nuevas páginas. **No alteres otras rutas sin instrucción explícita.**
+> Referencia de identidad visual para agentes y colaboradores.
+> Cubre todas las rutas **excepto `/` (Home/Landing)** — el Home está en proceso de rediseño.
+> La fuente única del CSS real es `frontend/src/index.css`.
 
 ---
+
 
 ## 1. Stack técnico
 
@@ -57,94 +59,69 @@ Los elementos de UI (etiquetas, nav, botones) son **light + mucho tracking** par
 
 ---
 
-## 4. Escala de espaciado
+## 4. Espaciado
 
-```css
---gap:       2rem      /* gap estándar entre elementos */
---gap-lg:    4rem      /* gap grande entre secciones */
---max-width: 1200px    /* máx. ancho del contenido */
-```
-
-- Padding lateral de páginas: `var(--gap)` (2rem)
-- Separación de secciones: `var(--gap-lg)` (4rem)
-- Máximo ancho centrado: `max-width: var(--max-width); margin: 0 auto;`
+- Padding lateral: `var(--gap)` = 2rem
+- Entre secciones: `var(--gap-lg)` = 4rem
+- Ancho máximo: `max-width: var(--max-width); margin: 0 auto;`
 
 ---
 
-## 5. Transiciones y animaciones
+## 5. Animaciones
 
 ```css
---transition: 200ms ease   /* transición estándar para hover */
-```
-
-| Uso | Valor |
-|---|---|
-| Hover de links, botones, colores | `200ms ease` |
-| Hover de imágenes (scale/filter) | `350–600ms ease` |
-| Fade-in al cargar una página | `0.5–0.6s ease` (keyframe `heroFadeIn`) |
-| Fade-out al navegar | `0.5s ease` (keyframe `homeHeroFadeOut`) |
-| Carrusel de imágenes | `400ms ease` (opacity) |
-
-**Principio:** Cada página nueva debe tener un `fade-in` al montar y un `fade-out` antes de navegar.
-
-```css
-@keyframes heroFadeIn {
-  from { opacity: 0; transform: translateY(12px); }
+/* Páginas interiores (producto, nosotros) */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes homeHeroFadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-8px); }
+/* Catálogo */
+@keyframes slowFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 ```
+
+- `.product-page`, `.about-page` → `animation: fadeIn 0.4s ease`
+- `.catalog-page` → `animation: slowFadeIn 1.2s ease-in-out`
+- `--transition: 200ms ease` para hovers
 
 ---
 
 ## 6. Componentes clave
 
 ### Nav (`Nav.jsx`)
-- **Desktop:** Logo izquierda + links (Catálogo, Nosotros) + icono de usuario a la derecha.
-- **Mobile:** Logo + botón hamburguesa → menú desplegable vertical.
-- La marca (`nav__brand`) usa `font-size: 0.75rem`, `letter-spacing: 0.15em`, `text-transform: uppercase`, `white-space: nowrap`.
-- El Nav aparece en **todas las rutas** excepto `/admin` y `/login`.
-- La cinta de métodos de pago (`TopBanner`) **solo aparece en `/catalogo`**.
-- No crear headers propios en las páginas interiores — usar el Nav global.
+- **Desktop:** Logo izquierda + links (Catálogo, Nosotros) + icono usuario derecha.
+- **Mobile (`max-width: 640px`):** Logo + hamburguesa → dropdown con `box-shadow: 0 4px 16px rgba(0,0,0,0.06)`.
+- Marca: `0.75rem`, weight 500, `letter-spacing: 0.15em`, uppercase, `white-space: nowrap`.
+- Links: `--size-xs`, `letter-spacing: 0.15em`, uppercase, `--grey-600` → `--black` en hover/active.
+- Nav presente en **todas las rutas** excepto `/admin` y `/login`.
+- **TopBanner** (cinta de métodos de pago): solo en `/catalogo`.
 
 ### ProductCard (`ProductCard.jsx`)
-- Grid de tarjetas con `aspect-ratio: 3/4`.
-- Carrusel de imágenes con transición `opacity: 400ms ease` si `producto.imagenes` tiene múltiples fotos.
-- Flechas circulares (`30px`) con `backdrop-filter: blur` visibles on-hover.
-- Dots de navegación en la parte inferior de la imagen.
-- Botón de favorito (corazón) visible on-hover en la esquina inferior derecha.
+- `aspect-ratio: 3/4`, `background: var(--grey-100)`.
+- **Sin flechas.** Interacción implícita:
+  - **Desktop hover** → muestra imagen 2 (`opacity 450ms ease, scale 500ms ease`)
+  - **Mobile swipe** → cambia `displayIndex` (umbral 40px)
+- **Dots:** visibles solo con `@media (hover: none)`. Círculos 5px, blancos, activo `scale(1.4)`.
+- **Favorito:** circular 32px, `backdrop-filter: blur(4px)`, visible al hover.
+- **Agotado:** `grayscale(100%) opacity(70%)` + overlay "Agotado".
 
-### Carousel — Producto (`Product.jsx`)
-- Carrusel con soporte de swipe táctil (touch events).
-- Flechas con `position: absolute`, visibles on-hover, `border-radius: 50%`.
-- Dots con tamaño activo ligeramente mayor (`scale(1.35)`).
+### Carrusel de producto (`Product.jsx`)
+- Slide horizontal, `transition: transform 350ms ease`.
+- **Flechas:** 36×36px, `opacity: 0 → 1` on-hover, `backdrop-filter: blur(4px)`.
+- **Dots:** cuadrados (`border-radius: 0`), 6px. Activo → `var(--black)`.
 
-### Botones
+### Botones CTA (producto)
 
 ```css
-/* Primario — fondo negro */
-.btn-primary {
-  background: var(--black);
-  color: var(--white);
-  border: 1px solid var(--black);
-  padding: 1rem 2rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
+.btn-whatsapp { background: var(--black); color: var(--white); }
+.btn-whatsapp:hover { opacity: 0.75; }
 
-/* Outline — borde negro */
-.btn-outline {
-  background: transparent;
-  color: var(--black);
-  border: 1px solid var(--black);
-  /* on-hover: invierte a fondo negro */
-}
+.btn-paypal { border: 1px solid var(--grey-200); color: var(--grey-600); }
+.btn-paypal:hover { border-color: var(--black); color: var(--black); }
+
+/* Ambos: font-size --size-xs; letter-spacing 0.18em; uppercase; weight 500 */
 ```
 
 ---
@@ -190,45 +167,41 @@ anothershop/
 ## 8. Identidad de marca
 
 - **Nombre:** `ANOTHER NPC SHOP` (dinámico desde `catalog.meta.marca`)
-- **Tono:** Minimalista, editorial, monocromático. Sin colores vivos ni decoraciones recargadas.
-- **Estética:** Inspirada en marcas de moda de nicho independiente. Mucho espacio en blanco, tipografía de alta jerarquía, imágenes en escala de grises que revelan color al hover.
-- **Voz:** Concisa, directa. Títulos en todo-caps o minúsculas. Sin puntos al final de títulos.
-- **Imágenes:** Fotografía editorial de grupo o de producto. Preferir blanco/negro con `filter: grayscale(15%)` y `grayscale(0%)` on-hover.
+- **Tono:** Minimalista, editorial, monocromático.
+- **Estética:** Moda de nicho independiente. Espacio en blanco, tipografía de alta jerarquía, fotografía editorial.
+- **Voz:** Concisa, todo-caps. Sin puntos al final de títulos.
 
 ---
 
 ## 9. Datos de producto
-
-Los productos tienen la siguiente estructura en el JSON:
 
 ```json
 {
   "id": "001",
   "nombre": "Nombre del producto",
   "precio": 49.99,
-  "color": "#ffffff",
   "tallas": ["S", "M", "L"],
   "imagen": "https://...",
   "imagenes": ["https://img1", "https://img2"],
   "disponible": true,
-  "drop": 1
+  "drop": "Drop 1"
 }
 ```
 
-- `imagenes` es el array completo para el carrusel. `imagen` es la primera por compatibilidad.
-- `drop` puede ser `1` o `2`. En `/admin/import` se filtran por drop activo.
+- `imagenes` → carrusel completo. `imagen` → primera imagen (compatibilidad).
+- `disponible` → controlado por toggle manual en admin (no por stock).
 
 ---
 
-## 10. Reglas para agentes al rediseñar
+## 10. Reglas para agentes
 
-1. **No cambiar rutas ni lógica de negocio** — solo la capa visual y de presentación.
-2. **Usar siempre las variables CSS** (`var(--black)`, `var(--grey-600)`, etc.) — no hardcodear colores.
-3. **Mantener nomenclatura BEM** para clases CSS: `.bloque__elemento--modificador`.
-4. **Añadir estilos a `index.css`** — no crear archivos CSS adicionales.
-5. **No introducir Tailwind** ni librerías de CSS externas sin aprobación explícita del usuario.
-6. **Respetar el Nav global** — no reemplazarlo por un header propio salvo en la ruta `/`.
-7. **Implementar animaciones** de entrada (fade-in) y salida (fade-out) en páginas nuevas.
-8. **No modificar `catalog.json` directamente** — el backend lo gestiona vía `/admin`.
-9. **No mostrar menú hamburguesa en desktop** — el Nav global ya lo controla con media queries.
-10. **Revisar `design.md`** antes de proponer cualquier cambio de paleta, fuente o componente.
+1. **Un único CSS:** todo va en `frontend/src/index.css`.
+2. **Variables siempre:** `var(--black)`, no `#0a0a0a`.
+3. **BEM:** `.bloque__elemento--modificador`.
+4. **Sin Tailwind** salvo instrucción explícita.
+5. **Nav global:** no reemplazarlo en páginas interiores.
+6. **Fade de entrada:** todas las páginas interiores usan `fadeIn` o `slowFadeIn`.
+7. **Imágenes:** `aspect-ratio: 3/4`, `object-fit: cover`, `background: var(--grey-100)`.
+8. **Botones primarios:** fondo `--black`, texto `--white`, sin border-radius, uppercase.
+9. **`/` (Home/Landing) está excluido** — se rediseñará por separado; no tomar su CSS como referencia.
+10. **No modificar `catalog.json`** directamente — el backend lo gestiona vía `/admin`.

@@ -207,7 +207,9 @@ El `catalog.json` es la única base de datos del catálogo. El panel de admin (r
 
 ## Notas de código
 
-- **Redundancia identificada:** `Catalog.jsx` y `Admin.jsx` comparten lógica de filtrado/ordenación (disponible al final) y markup de tarjeta de producto. Si el proyecto crece, considera extraer esa lógica a un hook `useProductFilter`.
-- **Doble `load_catalog()`:** La función está duplicada en `main.py` y `admin_router.py`. Se puede mover a un módulo `utils.py` compartido si se quiere limpiar.
-- **CSS en componente:** `Admin.jsx` inyecta un bloque `<style>` con ~330 líneas. Si la app crece, conviene moverlo a `admin.css`.
-- **`fetchProducts()` vs `fetchCatalog()`:** En `catalog.js`, `fetchProducts()` llama a `/api/catalog` (el endpoint completo) y luego extrae `.productos`, mientras que existe un endpoint dedicado `/api/products`. Usar el endpoint específico sería más eficiente.
+- **Home en rediseño:** `Home.jsx` está en proceso de rediseño completo — no usarlo como referencia de patrones de UI.
+- **`design.md`:** El design system actualizado (excluye Home) está en la raíz del proyecto.
+- **Redundancia de filtrado:** `Catalog.jsx` y `Admin.jsx` comparten lógica de filtrado/ordenación. Si el proyecto crece, extraer a un hook `useProductFilter`.
+- **Doble `load_catalog()`:** Duplicada en `main.py` y `admin_router.py`. Puede moverse a `utils.py` si se quiere limpiar.
+- **CSS en componente:** `Admin.jsx` inyecta un bloque `<style>` con ~330 líneas. Si la app crece, moverlo a `admin.css`.
+- **`fetchProducts()` vs `fetchCatalog()`:** En `catalog.js`, `fetchProducts()` llama al endpoint completo `/api/catalog`. Usar `/api/products` sería más eficiente.
