@@ -32,7 +32,11 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
   const isDragging = useRef(false)
 
   function handleClick() {
-    if (!isDragging.current) navigate(`/producto/${producto.id}`)
+    if (!isDragging.current) {
+      // Guardar scroll actual para restaurarlo al volver al catálogo
+      sessionStorage.setItem('catalog-scroll', String(window.scrollY))
+      navigate(`/producto/${producto.id}`)
+    }
   }
 
   function handleFavorite(e) {

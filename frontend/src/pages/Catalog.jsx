@@ -79,6 +79,15 @@ export default function Catalog() {
         setProductos(prods)
         setFiltros(fils)
         setMeta(met)
+
+        // Restaurar posición de scroll si el usuario viene de un producto
+        const savedScroll = sessionStorage.getItem('catalog-scroll')
+        if (savedScroll) {
+          sessionStorage.removeItem('catalog-scroll')
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: Number(savedScroll), behavior: 'instant' })
+          })
+        }
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
@@ -124,37 +133,73 @@ export default function Catalog() {
 
   return (
     <>
-      <main className="catalog-page">
-        <FilterChips
-          generos={filtros.generos}
-          tallas={filtros.tallas}
-          activeGenero={activeGenero}
-          activeTalla={activeTalla}
-          onGenero={setActiveGenero}
-          onTalla={setActiveTalla}
-          searchTerm={searchTerm}
-          onSearch={setSearchTerm}
-        />
+      <div className="catalog-page">
+        {/* Header editorial — mismo lenguaje tipográfico que el landing */}
+        <header className="catalog-header">
+          <h1 className="catalog-header__title">Catálogo</h1>
+          <p className="catalog-header__sub">
+            Piezas seleccionadas. Esenciales para todos los días.
+          </p>
+        </header>
 
-        {lista.length > 0 ? (
-          <div className="product-grid">
-            {lista.map(p => (
-              <ProductCard
-                key={p.variante_color ? `${p.id}-${p.variante_color}` : p.id}
-                producto={p}
-                isFavorite={isFavorite(p.id)}
-                onFavoriteClick={handleFavoriteClick}
-              />
-            ))}
+        {/* Layout 2 columnas: sidebar (FilterChips) + contenido */}
+        <div className="catalog-layout">
+          {/* FilterChips renderiza el sidebar en desktop y el drawer en mobile */}
+          <FilterChips
+            generos={filtros.generos}
+            tallas={filtros.tallas}
+            activeGenero={activeGenero}
+            activeTalla={activeTalla}
+            onGenero={setActiveGenero}
+            onTalla={setActiveTalla}
+            searchTerm={searchTerm}
+            onSearch={setSearchTerm}
+          />
+
+          {/* Columna principal */}
+          <div className="catalog-main">
+            {/* Tags de filtros activos */}
+            {(activeGenero || activeTalla || searchTerm) && (
+              <div className="catalog-active-filters">
+                {activeGenero && (
+                  <button className="catalog-active-tag" onClick={() => setActiveGenero(null)}>
+                    {activeGenero} ✕
+                  </button>
+                )}
+                {activeTalla && (
+                  <button className="catalog-active-tag" onClick={() => setActiveTalla(null)}>
+                    Talla {activeTalla} ✕
+                  </button>
+                )}
+                {searchTerm && (
+                  <button className="catalog-active-tag" onClick={() => setSearchTerm('')}>
+                    "{searchTerm}" ✕
+                  </button>
+                )}
+              </div>
+            )}
+
+            {lista.length > 0 ? (
+              <div className="product-grid">
+                {lista.map(p => (
+                  <ProductCard
+                    key={p.variante_color ? `${p.id}-${p.variante_color}` : p.id}
+                    producto={p}
+                    isFavorite={isFavorite(p.id)}
+                    onFavoriteClick={handleFavoriteClick}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="no-results">
+                <p>Sin resultados.</p>
+                <button onClick={() => { setActiveGenero(null); setActiveTalla(null); setSearchTerm('') }}>
+                  Limpiar filtros
+                </button>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="no-results">
-            <p>Sin resultados.</p>
-            <button onClick={() => { setActiveGenero(null); setActiveTalla(null); setSearchTerm('') }}>
-              Limpiar filtros
-            </button>
-          </div>
-        )}
+        </div>
 
         <button
           className={`back-to-top ${showTopBtn ? 'visible' : ''}`}
@@ -163,7 +208,7 @@ export default function Catalog() {
         >
           ↑
         </button>
-      </main>
+      </div>
 
       {/* Toast de favorito */}
       {favToast && (

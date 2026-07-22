@@ -4,11 +4,19 @@
  * Mobile:  vídeo 9:16 (object-position center), texto centrado una palabra por línea
  */
 import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function Home() {
   const navigate = useNavigate()
   const [isFadingOut, setIsFadingOut] = useState(false)
+  const [videoReady, setVideoReady] = useState(false)
+  const videoRef = useRef(null)
+
+  // Fallback: si en 2.5s el vídeo no dispara canPlay, mostramos igualmente
+  useEffect(() => {
+    const timeout = setTimeout(() => setVideoReady(true), 2500)
+    return () => clearTimeout(timeout)
+  }, [])
 
   const handleCatalogClick = (e) => {
     e.preventDefault()
@@ -18,9 +26,10 @@ export default function Home() {
 
   return (
     <div className={`home-page ${isFadingOut ? 'home-page--fade' : ''}`}>
-      <section className="home-banner">
-        {/* Vídeo de fondo */}
+      {/* Banner: oculto hasta que el vídeo esté listo — todo aparece sincronizado */}
+      <section className={`home-banner ${videoReady ? 'home-banner--ready' : ''}`}>
         <video
+          ref={videoRef}
           className="home-banner__video"
           src="/another.mp4"
           autoPlay
@@ -28,6 +37,7 @@ export default function Home() {
           loop
           playsInline
           preload="auto"
+          onCanPlay={() => setVideoReady(true)}
         />
 
         {/* Overlay oscuro sutil */}
