@@ -31,7 +31,7 @@ function AppLayout() {
   return (
     <>
       {/* Nav en todas las páginas excepto admin, login */}
-      {!isFullscreen && <Nav marca={marca} user={user} />}
+      {!isFullscreen && <Nav marca={marca} user={user} isHome={isHome} />}
       {/* Cinta solo en el catálogo */}
       {isCatalog && <TopBanner />}
 

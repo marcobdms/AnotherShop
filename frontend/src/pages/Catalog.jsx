@@ -38,6 +38,8 @@ export default function Catalog() {
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState(null)
   const [favToast,  setFavToast]  = useState(null)
+  // Si hay scroll guardado, venimos de un producto → sin animación de fade
+  const [noFade] = useState(() => !!sessionStorage.getItem('catalog-scroll'))
 
   const [searchParams, setSearchParams] = useSearchParams()
   const activeGenero = searchParams.get('genero')
@@ -133,15 +135,7 @@ export default function Catalog() {
 
   return (
     <>
-      <div className="catalog-page">
-        {/* Header editorial — mismo lenguaje tipográfico que el landing */}
-        <header className="catalog-header">
-          <h1 className="catalog-header__title">Catálogo</h1>
-          <p className="catalog-header__sub">
-            Piezas seleccionadas. Esenciales para todos los días.
-          </p>
-        </header>
-
+      <div className={`catalog-page${noFade ? ' catalog-page--no-fade' : ''}`}>
         {/* Layout 2 columnas: sidebar (FilterChips) + contenido */}
         <div className="catalog-layout">
           {/* FilterChips renderiza el sidebar en desktop y el drawer en mobile */}

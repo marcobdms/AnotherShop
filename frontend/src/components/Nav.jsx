@@ -46,7 +46,7 @@ function HamburgerIcon({ open }) {
   )
 }
 
-export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null }) {
+export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = false }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
   const location = useLocation()
@@ -69,11 +69,15 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null }) {
   }, [menuOpen])
 
   return (
-    <div className="nav-wrapper" ref={menuRef}>
-      <nav className="nav">
-        {/* Logo */}
-        <NavLink to="/" className="nav__brand">
-          {marca}
+    <div className={`nav-wrapper ${isHome ? 'nav-wrapper--glass' : ''}`} ref={menuRef}>
+      <nav className={`nav ${isHome ? 'nav--glass' : ''}`}>
+        {/* Logo imagen */}
+        <NavLink to="/" className="nav__brand nav__brand--img">
+          <img
+            src="/logo.png"
+            alt="Another NPC Shop"
+            className="nav__logo"
+          />
         </NavLink>
 
         {/* Desktop links */}

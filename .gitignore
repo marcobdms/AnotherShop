@@ -9,15 +9,20 @@ __pycache__/
 venv/
 *.egg-info/
 
-# Variables de entorno (nunca al repo)
+# Variables de entorno (NUNCA al repo)
 .env
 .env.local
 .env.*.local
+**/.env
 
 # Vite / build
 frontend/dist/
 
-# Datos sensibles de scripts
+# Scripts con credenciales — NUNCA al repo
+backend/scripts/sync_meta_to_json.py
+backend/scripts/backup_catalog.py
+backend/scripts/setup_local.py
+backend/scripts/update_and_sql.py
 backend/scripts/__pycache__/
 
 # OS

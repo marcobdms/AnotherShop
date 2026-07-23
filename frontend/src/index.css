@@ -66,24 +66,53 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   background: var(--white);
 }
 
+/* Glassmorphism en Home */
+.nav-wrapper--glass {
+  position: fixed;
+  width: 100%;
+  background: transparent;
+}
+
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem var(--gap);
+  padding: 1rem var(--gap);
   border-bottom: 1px solid var(--grey-200);
   background: var(--white);
+  transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.nav--glass {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .nav__brand {
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Contenedor-ventana que recorta el whitespace del PNG */
+.nav__brand--img {
+  position: relative;
+  width: 210px;
+  height: 56px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 65vw;
+  flex-shrink: 0;
+  display: block;
+}
+
+.nav__logo {
+  position: absolute;
+  width: 280px;
+  top: -30px;          /* Más negativo para empujar la imagen hacia arriba */
+  left: -35px;
+  height: auto;
+  display: block;
 }
 
 /* Desktop links */
@@ -191,7 +220,8 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .home-banner {
   position: relative;
   width: 100%;
-  height: calc(100vh - 61px);
+  /* Ocupa el 100% del alto porque el nav glass es fixed y se superpone */
+  height: 100vh;
   overflow: hidden;
   /* Fondo del design system mientras carga (gris claro) */
   background: var(--grey-100);
@@ -326,38 +356,17 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 
 
 
-/* ── Página: CATÁLOGO ─────────────────────────────────────────────── */
+/* ── Página: CATÁLOGO ───────────────────────────────── */
 .catalog-page {
-  /* Limitar ancho máximo para que las imágenes no sean excesivas */
   max-width: 1400px;
   margin: 0 auto;
   animation: slowFadeIn 1.2s ease-in-out forwards;
 }
 
-/* ── Header editorial del catálogo ── */
-.catalog-header {
-  padding: 2.5rem 1.5rem 0;
-  border-bottom: 1px solid var(--grey-200);
-  margin-bottom: 0;
-}
-
-.catalog-header__title {
-  /* Mismo lenguaje tipográfico que el landing — imponente, editorial */
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--black);
-  line-height: 1;
-  margin-bottom: 0.6rem;
-}
-
-.catalog-header__sub {
-  font-size: var(--size-xs);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--grey-400);
-  padding-bottom: 1.5rem;
+/* Sin animación cuando se restaura el scroll (vuelta desde producto) */
+.catalog-page--no-fade {
+  animation: none;
+  opacity: 1;
 }
 
 /* ── Layout 2 columnas: sidebar + contenido ── */
@@ -675,6 +684,8 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   overflow: hidden;
   background: var(--grey-100);
   position: relative;
+  /* Permite scroll vertical nativo pero deja que JS maneje swipes horizontales */
+  touch-action: pan-y;
 }
 
 .product-card__img-wrap img {
@@ -944,6 +955,11 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .product-carousel__btn--prev { left: 0.6rem; }
 .product-carousel__btn--next { right: 0.6rem; }
 .product-carousel__btn:hover { background: var(--white); }
+
+/* En dispositivos táctiles las flechas no son necesarias — solo swipe + dots */
+@media (hover: none) {
+  .product-carousel__btn { display: none; }
+}
 
 /* Dots de posición */
 .product-carousel__dots {
@@ -1396,13 +1412,17 @@ button.size-tag--selected, button.size-tag--selected:hover {
     grid-template-columns: 1fr;
     gap: var(--gap-lg) 0;
   }
-  /* Header catálogo en mobile */
-  .catalog-header {
-    padding: 1rem 0.75rem 0;
-  }
-  .catalog-header__title {
-    font-size: clamp(1.4rem, 7vw, 2rem);
-  }
   .catalog-page { padding-top: 0; }
+
+  /* Logo más pequeño en mobile para dejar espacio al hamburger */
+  .nav__brand--img {
+    width: 170px;
+    height: 46px;
+  }
+  .nav__logo {
+    width: 230px;
+    top: -24px;
+    left: -29px;
+  }
 }
 

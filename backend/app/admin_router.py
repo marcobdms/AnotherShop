@@ -343,124 +343,6 @@ def admin_save_inventory(product_id: str, body: InventarioProducto):
     return {"status": "ok", "total_stock": total_stock}
 
 
-# ── Schemas Importación Masiva ─────────────────────────────────────────────────
-class VarianteImport(BaseModel):
-    color: str
-    hex: str = "#000000"
-    tallas: dict[str, int] = {}
-
-
-class ProductoImport(BaseModel):
-    ref: str
-    nombre: str
-    precio: float
-    precio_coste: float
-    genero: str = "unisex"
-    imagen: str = ""
-    imagenes: list[str] = []
-    disponible: bool = True
-    drop: str = "Drop 1"
-    variantes: list[VarianteImport] = []
-
-
-class BulkImportBody(BaseModel):
-    productos: list[ProductoImport]
-    usuario: Optional[str] = "admin"
-
-
-@router.post(
-    "/import",
-    summary="Importación masiva de productos con variantes",
-    dependencies=[Depends(verify_token)],
-)
-def admin_bulk_import(body: BulkImportBody):
-    catalog = load_catalog()
-    inventory = load_inventory()
-
-    ids_existentes = {p["id"] for p in catalog["productos"]}
-    refs_existentes = {p.get("ref", p["id"]): p["id"] for p in catalog["productos"]}
-
-    creados = []
-    actualizados = []
-
-    for prod in body.productos:
-        ref = prod.ref.strip()
-
-        if ref in refs_existentes:
-            # Actualizar producto existente
-            pid = refs_existentes[ref]
-            for i, p in enumerate(catalog["productos"]):
-                if p["id"] == pid:
-                    catalog["productos"][i].update({
-                        "nombre": prod.nombre,
-                        "precio": prod.precio,
-                        "precio_coste": prod.precio_coste,
-                        "genero": prod.genero,
-                        "disponible": prod.disponible,
-                        "ref": ref,
-                    })
-                    if prod.imagen:
-                        catalog["productos"][i]["imagen"] = prod.imagen
-                    break
-            actualizados.append(pid)
-            product_id = pid
-        else:
-            # Crear nuevo producto
-            new_id = next_id(catalog["productos"])
-            new_product = {
-                "id": new_id,
-                "meta_id": "",
-                "ref": ref,
-                "nombre": prod.nombre,
-                "precio": prod.precio,
-                "precio_coste": prod.precio_coste,
-                "categoria": "sin_categoria",
-                "genero": prod.genero,
-                "tallas": ["XS", "S", "M", "L", "XL"],
-                "imagen": prod.imagen or f"/images/{new_id}.jpg",
-                "descripcion": "",
-                "disponible": prod.disponible,
-                "marca": "",
-            }
-            catalog["productos"].append(new_product)
-            creados.append(new_id)
-            product_id = new_id
-
-        # Guardar inventario si tiene variantes
-        if prod.variantes:
-            inventory[product_id] = {
-                "variantes": [v.model_dump() for v in prod.variantes]
-            }
-
-    save_catalog(catalog)
-    save_inventory(inventory)
-
-    # Registrar en historial
-    if "historial" not in catalog:
-        catalog["historial"] = []
-    evento = {
-        "id": str(uuid.uuid4()),
-        "productoId": "import",
-        "nombre": f"Importación masiva",
-        "tipo": "importacion",
-        "estadoAnterior": False,
-        "nuevoEstado": True,
-        "usuario": body.usuario or "admin",
-        "fecha_hora": datetime.now().isoformat(),
-        "mensaje": f"Importación masiva — {len(creados)} creados, {len(actualizados)} actualizados"
-    }
-    catalog["historial"].insert(0, evento)
-    if len(catalog["historial"]) > 200:
-        catalog["historial"] = catalog["historial"][:200]
-    save_catalog(catalog)
-
-    return {
-        "status": "ok",
-        "creados": len(creados),
-        "actualizados": len(actualizados),
-        "ids_creados": creados,
-    }
-
 
 @router.get(
     "/export-full",
@@ -476,12 +358,37 @@ def admin_export_full():
     }
 
 
+# ── Schemas para /sync-all ────────────────────────────────────────────────────
+class VarianteSyncItem(BaseModel):
+    color: str
+    hex: str = "#000000"
+    tallas: dict[str, int] = {}
+
+
+class ProductoSyncItem(BaseModel):
+    ref: str
+    nombre: str
+    precio: float
+    precio_coste: float
+    genero: str = "unisex"
+    imagen: str = ""
+    imagenes: list[str] = []
+    disponible: bool = True
+    drop: str = "Drop 1"
+    variantes: list[VarianteSyncItem] = []
+
+
+class SyncBody(BaseModel):
+    productos: list[ProductoSyncItem]
+    usuario: Optional[str] = "admin"
+
+
 @router.put(
     "/sync-all",
     summary="Sincronización completa (sobrescribe catálogo e inventario, elimina faltantes)",
     dependencies=[Depends(verify_token)],
 )
-def admin_sync_all(body: BulkImportBody):
+def admin_sync_all(body: SyncBody):
     catalog = load_catalog()
     inventory = load_inventory()
 

@@ -106,14 +106,6 @@ export async function adminSaveInventory(productId, variantes, usuario = 'admin'
   return handleResponse(res)
 }
 
-export async function adminBulkImport(productos, usuario = 'admin') {
-  const res = await fetch(`${ADMIN_BASE}/import`, {
-    method: 'POST',
-    headers: adminHeaders(),
-    body: JSON.stringify({ productos, usuario }),
-  })
-  return handleResponse(res)
-}
 
 export async function adminExportFull() {
   const res = await fetch(`${ADMIN_BASE}/export-full`, {

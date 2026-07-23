@@ -5,7 +5,7 @@
  */
 import { useState, useCallback, useEffect, useRef, Fragment } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { adminBulkImport, adminUploadImage, adminExportFull, adminSyncAll } from '../api/catalog'
+import { adminUploadImage, adminExportFull, adminSyncAll } from '../api/catalog'
 
 const TALLAS = ['XS', 'S', 'M', 'L', 'XL']
 const GENEROS = ['mujer', 'hombre', 'unisex']

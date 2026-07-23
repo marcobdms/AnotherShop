@@ -4,8 +4,13 @@ import os
 import re
 
 # ── Credenciales Meta ──────────────────────────────────────────────────────────
+# ⚠️  Revoca el token anterior en Meta Business Suite y genera uno nuevo.
+# Crea un fichero .env en la raíz del proyecto con:
+#   META_ACCESS_TOKEN=<tu_nuevo_token>
 CATALOG_ID   = '1194041306232036'
-ACCESS_TOKEN = 'EAAeCpZAbbStIBRHb4EtmZCWk75QWqP8CqI1hT8F1hZAuwmSvt1WMC5FrPGlZBt9Gkg3MSVlhdR7P7VEUMQKviHBNHSOnJOSVZB7yxiDZA6IQULSBXD3Hkx4EtnFJyGGYuvZC8psU683xHyZA6VPWMeeMin07kZAn8NcXJJR4i686KbwBuHZC3kdc7EaKAyHGoFuwx1IgZDZD'
+ACCESS_TOKEN = os.getenv('META_ACCESS_TOKEN', '')
+if not ACCESS_TOKEN:
+    raise EnvironmentError("META_ACCESS_TOKEN no está definido. Añádelo al fichero .env o como variable de entorno.")
 
 # ── Config del sitio ───────────────────────────────────────────────────────────
 SITE_META = {
