@@ -220,8 +220,10 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 .home-banner {
   position: relative;
   width: 100%;
-  /* Ocupa el 100% del alto porque el nav glass es fixed y se superpone */
+  /* 100dvh se ajusta al viewport visible real en móvil (sin hueco blanco abajo).
+     100vh como fallback para navegadores que no soportan dvh. */
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   /* Fondo del design system mientras carga (gris claro) */
   background: var(--grey-100);
@@ -326,7 +328,9 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 /* ── Mobile: vídeo en 9:16, texto centrado una palabra por línea ── */
 @media (max-width: 640px) {
   .home-banner {
-    height: calc(100svh - 57px);
+    /* Nav es fixed en Home, no ocupa espacio → el banner debe ser el 100% del viewport */
+    height: 100svh;   /* fallback iOS Safari */
+    height: 100dvh;   /* dinámico: se adapta mostrando/ocultando la barra del navegador */
   }
 
   .home-banner__video {
