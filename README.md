@@ -1,134 +1,181 @@
-# ANOTHER NPC SHOP — Monorepo (React + FastAPI)
+# ANOTHER NPC SHOP
 
-Tienda online minimalista. Frontend en **React/Vite** desplegado en Vercel, backend en **FastAPI** desplegado en Coolify. El catálogo vive en un `catalog.json` que el propio panel de admin edita en tiempo real.
+Monorepo de la tienda Another NPC Shop. Incluye un frontend web en React/Vite, un backend en FastAPI, datos locales en JSON y un cliente iOS en desarrollo.
 
----
+La app web publica un catalogo de ropa, fichas de producto, favoritos con Supabase y un panel administrativo para disponibilidad, inventario, historial e importacion masiva.
 
-## Estructura del proyecto
+## Stack
 
-```
+| Capa | Tecnologia |
+| --- | --- |
+| Frontend web | React 18, Vite, React Router |
+| Estilos | CSS propio en `frontend/src/index.css` + estilos puntuales inline en pantallas admin/cuenta |
+| Backend | FastAPI, Uvicorn |
+| Datos catalogo | `backend/data/catalog.json` |
+| Datos inventario | `backend/data/inventory.json` |
+| Auth/favoritos | Supabase desde el frontend |
+| Cliente nativo | Swift/iOS en `ios/` |
+
+## Estructura actual
+
+```text
 anothershop/
-├── package.json            ← Script raíz: npm run dev (lanza back + front en paralelo)
-├── init.sql                ← Volcado SQL generado por update_and_sql.py (referencia, no se usa en prod)
-├── .gitignore
-│
-├── backend/
-│   ├── app/
-│   │   ├── main.py         ← FastAPI: endpoints públicos (/api/products, /api/meta, etc.)
-│   │   └── admin_router.py ← CRUD protegido (/admin/*), requiere X-Admin-Token
-│   ├── data/
-│   │   └── catalog.json    ← Fuente de verdad (meta + filtros + productos + historial)
-│   ├── scripts/            ← Utilidades de mantenimiento (no forman parte del servidor)
-│   │   ├── sync_meta_to_json.py  ← Importa productos desde el catálogo de Meta/Facebook
-│   │   ├── backup_catalog.py     ← Descarga imágenes y genera CSV de respaldo
-│   │   ├── setup_local.py        ← Migra URLs de Meta a rutas locales (/images/...)
-│   │   └── update_and_sql.py     ← Asigna marcas/géneros y regenera init.sql
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx         ← Router principal (BrowserRouter + rutas)
-│   │   ├── main.jsx        ← Entry point de Vite
-│   │   ├── index.css       ← Design system completo (variables, layout, componentes)
-│   │   ├── api/
-│   │   │   └── catalog.js  ← Toda la lógica de fetch (público + admin) + helpers
-│   │   ├── hooks/
-│   │   │   └── useCatalog.js ← Hook con caché en memoria para el catálogo completo
-│   │   ├── components/
-│   │   │   ├── Nav.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   ├── ProductCard.jsx
-│   │   │   ├── FilterChips.jsx
-│   │   │   ├── TopBanner.jsx   ← Banner animado de métodos de pago
-│   │   │   └── TopBanner.css   ← Estilos del banner (animación scroll)
-│   │   └── pages/
-│   │       ├── Home.jsx
-│   │       ├── Catalog.jsx
-│   │       ├── Product.jsx
-│   │       ├── About.jsx
-│   │       ├── Admin.jsx        ← Panel admin (login + grid editable + historial)
-│   │       └── AdminCambios.jsx ← Vista de historial completo
-│   ├── public/
-│   │   └── images/         ← Imágenes locales (si se usa setup_local.py)
-│   ├── index.html
-│   ├── vite.config.js      ← Proxy /api y /admin → localhost:8000 en dev
-│   ├── vercel.json         ← SPA rewrite para React Router
-│   └── package.json
-│
-└── backup/
-    ├── catalog_backup.csv  ← CSV generado por backup_catalog.py
-    └── images/             ← Imágenes descargadas de Meta CDN
+|-- package.json                  # scripts raiz para levantar back + front
+|-- README.md
+|-- design.md                     # referencia visual vigente
+|-- backend/
+|   |-- app/
+|   |   |-- main.py               # API publica: /api/catalog, /api/products, /api/meta, /api/filters
+|   |   `-- admin_router.py       # API admin: /admin/*
+|   |-- data/
+|   |   |-- catalog.json          # meta, filtros, productos e historial
+|   |   `-- inventory.json        # variantes de color y stock por talla
+|   `-- requirements.txt
+|-- frontend/
+|   |-- public/
+|   |   |-- another.mp4           # video hero del Home
+|   |   |-- logo.png
+|   |   |-- npc.png
+|   |   `-- images/               # imagenes de producto servidas por Vite
+|   |-- src/
+|   |   |-- App.jsx               # layout global y rutas
+|   |   |-- api/catalog.js        # cliente HTTP publico/admin
+|   |   |-- hooks/                # catalogo cacheado, auth y favoritos
+|   |   |-- components/           # Nav, ProductCard, filtros, Footer, TopBanner, InventoryModal
+|   |   `-- pages/                # Home, Catalog, Product, About, Login, Account, Admin...
+|   |-- vite.config.js            # dev server en :3000 y proxy a :8000
+|   `-- vercel.json               # rewrite SPA para React Router
+`-- ios/                          # app iOS Swift en desarrollo
 ```
 
----
+No existen actualmente `init.sql`, `backend/scripts/` ni `backup/`; cualquier referencia antigua a esos paths estaba obsoleta.
 
-## Setup de desarrollo (local)
+## Desarrollo local
 
-**Requisitos:** Node.js, Python 3.11+, pip.
+Requisitos:
+
+- Node.js
+- Python 3.11+ recomendado
+- `pip`
+
+Instalacion:
 
 ```powershell
-# 1. Instalar dependencias raíz (solo concurrently)
 npm install
-
-# 2. Instalar dependencias del frontend
-cd frontend && npm install && cd ..
-
-# 3. Instalar dependencias del backend
+npm install --prefix frontend
 pip install -r backend/requirements.txt
+```
 
-# 4. Levantar todo de un golpe
+Levantar todo:
+
+```powershell
 npm run dev
 ```
 
 Esto arranca:
-- **Backend** FastAPI en `http://localhost:8000` (con `--reload`)
-- **Frontend** Vite en `http://localhost:5173` (con proxy hacia el backend)
 
----
+- Backend FastAPI: `http://localhost:8000`
+- Frontend Vite: `http://localhost:3000`
+
+Si el puerto `3000` esta ocupado, Vite usara el siguiente puerto disponible, por ejemplo `3001`.
+
+## Scripts
+
+| Comando | Descripcion |
+| --- | --- |
+| `npm run dev` | Lanza backend y frontend en paralelo |
+| `npm run backend` | Lanza FastAPI con reload en `:8000` |
+| `npm run frontend` | Lanza Vite desde `frontend/` |
+| `npm run build --prefix frontend` | Compila el frontend para produccion |
+| `npm run preview --prefix frontend` | Previsualiza el build de Vite |
 
 ## Variables de entorno
 
-### Frontend (`frontend/.env.local`)
+### Frontend
 
-| Variable               | Descripción                                                   | Ejemplo                          |
-|------------------------|---------------------------------------------------------------|----------------------------------|
-| `VITE_API_URL`         | URL base del backend en producción. Vacía = usa proxy.        | `https://api.midominio.com`      |
-| `VITE_ADMIN_TOKEN`     | Token del panel admin. Debe coincidir con el backend.         | `mi-token-secreto`               |
-| `VITE_SUPABASE_URL`    | URL del proyecto Supabase (Project Settings → API).           | `https://xyz.supabase.co`        |
-| `VITE_SUPABASE_ANON_KEY` | Anon key pública de Supabase. Segura en el frontend (RLS). | `eyJ...`                         |
+Crear `frontend/.env.local` cuando haga falta:
 
-### Backend (variable de entorno del servidor)
+| Variable | Uso |
+| --- | --- |
+| `VITE_API_URL` | URL base del backend en produccion. Vacio usa el proxy local de Vite |
+| `VITE_ADMIN_TOKEN` | Token enviado como `X-Admin-Token` a endpoints `/admin/*` |
+| `VITE_SUPABASE_URL` | URL del proyecto Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Anon key publica de Supabase |
 
-| Variable      | Descripción                        | Default              |
-|---------------|------------------------------------|----------------------|
-| `ADMIN_TOKEN` | Token que valida el header admin.  | `change-me-in-env`   |
+### Backend
 
-> En Vercel, añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` junto con las demás variables de entorno.
+| Variable | Uso | Default |
+| --- | --- | --- |
+| `ADMIN_TOKEN` | Token que protege endpoints admin | `change-me-in-env` |
 
----
+## Rutas web
 
-## Despliegue
+| Ruta | Vista |
+| --- | --- |
+| `/` | Landing con video hero, logo/nav glass y CTA al catalogo |
+| `/catalogo` | Catalogo con TopBanner, filtros, busqueda, favoritos y restauracion de scroll |
+| `/producto/:id` | Detalle con carrusel, tallas, favoritos, WhatsApp y PayPal |
+| `/nosotros` | Pagina editorial de marca |
+| `/login` | Login/registro Supabase, sin nav global |
+| `/cuenta` | Favoritos del usuario; redirige a login si no hay sesion |
+| `/admin` | Panel protegido de disponibilidad, inventario e historial |
+| `/admin/cambios` | Historial completo de cambios |
+| `/admin/import` | Importacion/sincronizacion masiva de drops |
 
-### Backend — Coolify
-- **Directorio raíz:** `/backend`
-- **Build:** `pip install -r requirements.txt`
-- **Start:** `uvicorn app.main:app --host 0.0.0.0 --port 8000`
-- **Ports Exposes:** `8000` (sin Port Mappings; Coolify gestiona el proxy inverso)
-- **Env:** Añade `ADMIN_TOKEN` con el valor secreto
+## API publica
 
-### Frontend — Vercel
-- **Directorio raíz:** `/frontend`
-- **Framework:** Vite (Vercel lo detecta automáticamente)
-- **Env en Vercel:** `VITE_API_URL`, `VITE_ADMIN_TOKEN`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+| Endpoint | Descripcion |
+| --- | --- |
+| `GET /api/catalog` | Catalogo completo: `meta`, `filtros`, `productos`; el backend expande variantes desde `inventory.json` |
+| `GET /api/products` | Lista de productos para tarjetas |
+| `GET /api/products/{id}` | Detalle de producto con variantes y SKUs |
+| `GET /api/meta` | Datos de marca, WhatsApp y PayPal |
+| `GET /api/filters` | Tallas y generos disponibles |
 
----
+## API admin
 
-## Supabase — Setup del sistema de usuarios
+Todos los endpoints `/admin/*` requieren header `X-Admin-Token`.
 
-Ejecuta este SQL en **Supabase → SQL Editor** para crear las tablas necesarias:
+| Endpoint | Uso |
+| --- | --- |
+| `GET/POST/PUT/DELETE /admin/products` | CRUD de productos |
+| `PATCH /admin/products/{id}/disponible` | Cambio rapido de disponibilidad con historial |
+| `GET /admin/history` | Historial reciente |
+| `POST /admin/publish` | Publicar borradores del panel |
+| `GET/PUT /admin/meta` | Leer/editar meta de tienda |
+| `GET/PUT /admin/inventory/{id}` | Leer/guardar inventario por producto |
+| `GET /admin/export-full` | Exportar catalogo + inventario |
+| `PUT /admin/sync-all` | Sincronizacion masiva de catalogo e inventario |
+| `POST /admin/upload-image` | Subir imagen a `frontend/public/images` |
+
+## Datos
+
+`catalog.json` contiene:
+
+- `meta`: marca, moneda, WhatsApp, PayPal y recargo PayPal
+- `filtros`: tallas y generos
+- `productos`: productos base
+- `historial`: ultimos cambios administrativos
+
+`inventory.json` contiene variantes por producto:
+
+- color
+- hex
+- stock por talla
+
+El backend combina ambos archivos para publicar variantes en catalogo y detalle. El toggle `disponible` sigue siendo el control manual principal de visibilidad comercial; el stock informa tallas/colores disponibles.
+
+## Supabase
+
+El frontend usa Supabase para auth y favoritos. La configuracion esperada es:
+
+- `profiles`: perfil basico por usuario
+- `favorites`: favoritos por `user_id` y `product_id`
+- RLS activado para que cada usuario lea/escriba solo sus propios registros
+
+SQL base:
 
 ```sql
--- Tabla de perfiles (se crea automáticamente al registrarse un usuario)
 create table public.profiles (
   id uuid references auth.users on delete cascade primary key,
   email text,
@@ -138,7 +185,6 @@ alter table public.profiles enable row level security;
 create policy "Solo el propio usuario"
   on public.profiles for all using (auth.uid() = id);
 
--- Trigger: crea el profile automáticamente tras el registro
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
@@ -151,7 +197,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- Tabla de favoritos
 create table public.favorites (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users on delete cascade not null,
@@ -164,52 +209,27 @@ create policy "Solo el propio usuario"
   on public.favorites for all using (auth.uid() = user_id);
 ```
 
-**Configuración recomendada en Supabase → Authentication → Settings:**
-- **Email confirmations:** ON (el usuario debe confirmar su email antes de entrar)
-- **Enable sign ups:** ON (los usuarios se registran solos; tú los ves en el panel)
+## Despliegue
 
----
+### Backend en Coolify
 
-## Scripts de mantenimiento (`backend/scripts/`)
+- Directorio raiz: `backend`
+- Build: `pip install -r requirements.txt`
+- Start: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+- Puerto expuesto: `8000`
+- Env: `ADMIN_TOKEN`
 
-Estos scripts se ejecutan manualmente desde la raíz del proyecto. No son parte del servidor.
+### Frontend en Vercel
 
-| Script                  | Cuándo usarlo                                                         |
-|-------------------------|-----------------------------------------------------------------------|
-| `sync_meta_to_json.py`  | Para importar/actualizar productos desde el catálogo de Meta/Facebook |
-| `backup_catalog.py`     | Para hacer un respaldo local en CSV + descargar imágenes de Meta CDN  |
-| `setup_local.py`        | Tras el backup, para migrar las URLs de imagen a rutas locales        |
-| `update_and_sql.py`     | Para reasignar géneros/marcas y regenerar `init.sql`                  |
+- Directorio raiz: `frontend`
+- Framework: Vite
+- Env: `VITE_API_URL`, `VITE_ADMIN_TOKEN`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
-```powershell
-python backend/scripts/sync_meta_to_json.py
-python backend/scripts/backup_catalog.py
-python backend/scripts/setup_local.py
-python backend/scripts/update_and_sql.py
-```
+## Notas de mantenimiento
 
----
-
-## Flujo de datos
-
-```
-catalog.json  ←→  FastAPI (backend)  ←→  React (frontend)
-                      ↑
-                 Panel /admin (escribe directamente al JSON)
-
-Supabase Auth + DB  ←→  React (frontend)
-  └─ favorites (por usuario)
-```
-
-El `catalog.json` es la única base de datos del catálogo. El panel de admin (ruta `/admin`) lee y escribe sobre él vía los endpoints protegidos. Los favoritos de usuario se almacenan directamente en Supabase desde el frontend.
-
----
-
-## Notas de código
-
-- **Home en rediseño:** `Home.jsx` está en proceso de rediseño completo — no usarlo como referencia de patrones de UI.
-- **`design.md`:** El design system actualizado (excluye Home) está en la raíz del proyecto.
-- **Redundancia de filtrado:** `Catalog.jsx` y `Admin.jsx` comparten lógica de filtrado/ordenación. Si el proyecto crece, extraer a un hook `useProductFilter`.
-- **Doble `load_catalog()`:** Duplicada en `main.py` y `admin_router.py`. Puede moverse a `utils.py` si se quiere limpiar.
-- **CSS en componente:** `Admin.jsx` inyecta un bloque `<style>` con ~330 líneas. Si la app crece, moverlo a `admin.css`.
-- **`fetchProducts()` vs `fetchCatalog()`:** En `catalog.js`, `fetchProducts()` llama al endpoint completo `/api/catalog`. Usar `/api/products` sería más eficiente.
+- `README.md` describe arquitectura y operacion.
+- `design.md` describe identidad visual y reglas para tocar frontend.
+- El catalogo se consume principalmente con `useCatalog()`, que cachea `GET /api/catalog` en memoria.
+- El retorno desde producto a catalogo restaura scroll antes de revelar nav, cinta y grid para evitar saltos visuales.
+- Varias pantallas admin y cuenta aun tienen estilos inline dentro del componente. Si crecen, conviene extraerlos a CSS dedicado.
+- No editar `backend/data/catalog.json` o `backend/data/inventory.json` manualmente salvo para mantenimiento controlado; el flujo normal debe pasar por `/admin`.

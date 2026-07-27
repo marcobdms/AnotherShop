@@ -1,16 +1,14 @@
 /**
  * Catalog.jsx — Página de catálogo
  *
- * Consume:
- *   GET /api/products  → lista minimal { id, nombre, precio, imagen, disponible }
- *   GET /api/filters   → { tallas, generos }
- *   GET /api/meta      → { marca, ... }
+ * Consume el catálogo compartido por useCatalog:
+ *   GET /api/catalog → { productos, filtros, meta }
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { fetchProducts, fetchFilters, fetchMeta } from '../api/catalog'
 import { useAuth } from '../hooks/useAuth'
 import { useFavorites } from '../hooks/useFavorites'
+import { useCatalog } from '../hooks/useCatalog'
 import ProductCard from '../components/ProductCard'
 import FilterChips from '../components/FilterChips'
 import Footer from '../components/Footer'
@@ -31,15 +29,16 @@ function FavToast({ msg, onDone }) {
   )
 }
 
-export default function Catalog() {
-  const [productos, setProductos] = useState([])
-  const [filtros,   setFiltros]   = useState({ tallas: [], generos: [] })
-  const [meta,      setMeta]      = useState({ marca: 'ANOTHER NPC SHOP' })
-  const [loading,   setLoading]   = useState(true)
-  const [error,     setError]     = useState(null)
+export default function Catalog({ onReady }) {
+  const { catalog, loading, error } = useCatalog()
+  const productos = catalog?.productos ?? []
+  const filtros = catalog?.filtros ?? { tallas: [], generos: [] }
+  const meta = catalog?.meta ?? { marca: 'ANOTHER NPC SHOP' }
   const [favToast,  setFavToast]  = useState(null)
-  // Si hay scroll guardado, venimos de un producto → sin animación de fade
-  const [noFade] = useState(() => !!sessionStorage.getItem('catalog-scroll'))
+  // Leemos el valor una vez: así no se pierde antes de restaurar el scroll.
+  const savedScroll = useRef(sessionStorage.getItem('catalog-scroll'))
+  const didRestoreScroll = useRef(false)
+  const noFade = savedScroll.current !== null
 
   const [searchParams, setSearchParams] = useSearchParams()
   const activeGenero = searchParams.get('genero')
@@ -75,25 +74,20 @@ export default function Catalog() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  useEffect(() => {
-    Promise.all([fetchProducts(), fetchFilters(), fetchMeta()])
-      .then(([prods, fils, met]) => {
-        setProductos(prods)
-        setFiltros(fils)
-        setMeta(met)
+  // La restauración ocurre antes de pintar el grid; de esta forma nunca se ve
+  // el salto al scroll guardado. Avisamos al layout después para revelar toda
+  // la ruta (nav, cinta y catálogo) en el mismo frame.
+  useLayoutEffect(() => {
+    if (loading || didRestoreScroll.current) return
 
-        // Restaurar posición de scroll si el usuario viene de un producto
-        const savedScroll = sessionStorage.getItem('catalog-scroll')
-        if (savedScroll) {
-          sessionStorage.removeItem('catalog-scroll')
-          requestAnimationFrame(() => {
-            window.scrollTo({ top: Number(savedScroll), behavior: 'instant' })
-          })
-        }
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
+    didRestoreScroll.current = true
+
+    if (savedScroll.current !== null) {
+      window.scrollTo({ top: Number(savedScroll.current), behavior: 'auto' })
+      sessionStorage.removeItem('catalog-scroll')
+      onReady?.()
+    }
+  }, [loading, onReady])
 
   const handleFavoriteClick = async (producto) => {
     if (!user) {

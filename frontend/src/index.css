@@ -373,6 +373,12 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   opacity: 1;
 }
 
+/* Mantiene el espacio del layout mientras se restaura el scroll, pero evita
+   pintar la cinta, el nav o el grid por separado. */
+.catalog-route--restoring {
+  visibility: hidden;
+}
+
 /* ── Layout 2 columnas: sidebar + contenido ── */
 .catalog-layout {
   display: grid;
@@ -880,10 +886,6 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 @keyframes slowFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-.catalog-page {
-  animation: slowFadeIn 1.2s ease-in-out forwards;
 }
 
 .product-page, .home, .about-page {
@@ -1429,4 +1431,3 @@ button.size-tag--selected, button.size-tag--selected:hover {
     left: -29px;
   }
 }
-
