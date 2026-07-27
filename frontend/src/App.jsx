@@ -14,6 +14,7 @@ import { useAuth } from './hooks/useAuth'
 import Admin from './pages/Admin'
 import AdminCambios from './pages/AdminCambios'
 import AdminImport from './pages/AdminImport'
+import Clientes from './pages/Clientes'
 import Login from './pages/Login'
 import Account from './pages/Account'
 import TopBanner from './components/TopBanner'
@@ -25,7 +26,8 @@ function AppLayout() {
   const marca = catalog?.meta?.marca ?? 'ANOTHER NPC SHOP'
   const location = useLocation()
   const isAdmin = location.pathname.toLowerCase().startsWith('/admin')
-  const isFullscreen = isAdmin || location.pathname === '/login'
+  const isCrm = location.pathname.toLowerCase().startsWith('/clientes')
+  const isFullscreen = isAdmin || isCrm || location.pathname === '/login'
 
   const isHome = location.pathname === '/'
   const isCatalog = location.pathname.toLowerCase() === '/catalogo'
@@ -59,6 +61,7 @@ function AppLayout() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/cambios" element={<AdminCambios />} />
         <Route path="/admin/import" element={<AdminImport />} />
+        <Route path="/clientes" element={<Clientes />} />
         {/* Fallback */}
         <Route path="*" element={<Home />} />
       </Routes>

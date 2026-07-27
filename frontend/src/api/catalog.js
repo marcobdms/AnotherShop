@@ -6,6 +6,7 @@
 
 const BASE       = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api`   : '/api'
 const ADMIN_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/admin` : '/admin'
+const CRM_BASE   = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/crm`   : '/crm'
 
 // Token del backend — viene de variable de entorno, nunca lo escribe el usuario
 const ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN ?? ''
@@ -136,6 +137,115 @@ export async function adminUploadImage(file) {
     headers,
     body: formData,
   })
+  return handleResponse(res)
+}
+
+// â”€â”€ CRM interno â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+export async function crmFetchClientes(q = '') {
+  const params = q ? `?q=${encodeURIComponent(q)}` : ''
+  const res = await fetch(`${CRM_BASE}/clientes${params}`, {
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function crmCreateCliente(cliente) {
+  const res = await fetch(`${CRM_BASE}/clientes`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify(cliente),
+  })
+  return handleResponse(res)
+}
+
+export async function crmUpdateCliente(clienteId, cliente) {
+  const res = await fetch(`${CRM_BASE}/clientes/${clienteId}`, {
+    method: 'PUT',
+    headers: adminHeaders(),
+    body: JSON.stringify(cliente),
+  })
+  return handleResponse(res)
+}
+
+export async function crmFetchCliente(clienteId) {
+  const res = await fetch(`${CRM_BASE}/clientes/${clienteId}`, {
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function crmFetchCatalogo(q = '') {
+  const params = q ? `?q=${encodeURIComponent(q)}` : ''
+  const res = await fetch(`${CRM_BASE}/catalogo${params}`, {
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function crmFetchVentas(clienteId) {
+  const res = await fetch(`${CRM_BASE}/clientes/${clienteId}/ventas`, {
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function crmCrearVenta(clienteId, venta) {
+  const res = await fetch(`${CRM_BASE}/clientes/${clienteId}/ventas`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify(venta),
+  })
+  return handleResponse(res)
+}
+
+export async function crmAnularVenta(ventaId, motivo = 'Correccion manual') {
+  const res = await fetch(`${CRM_BASE}/ventas/${ventaId}`, {
+    method: 'DELETE',
+    headers: adminHeaders(),
+    body: JSON.stringify({ motivo }),
+  })
+  return handleResponse(res)
+}
+
+export async function crmFetchAbonos(clienteId) {
+  const res = await fetch(`${CRM_BASE}/clientes/${clienteId}/abonos`, {
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function crmCrearAbono(clienteId, abono) {
+  const res = await fetch(`${CRM_BASE}/clientes/${clienteId}/abonos`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify(abono),
+  })
+  return handleResponse(res)
+}
+
+export async function crmFetchComprobantes(clienteId) {
+  const res = await fetch(`${CRM_BASE}/clientes/${clienteId}/comprobantes`, {
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function crmUploadComprobante(clienteId, file, usuario = 'admin') {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const headers = adminHeaders()
+  delete headers['Content-Type']
+
+  const res = await fetch(
+    `${CRM_BASE}/clientes/${clienteId}/comprobantes?usuario=${encodeURIComponent(usuario)}`,
+    {
+      method: 'POST',
+      headers,
+      body: formData,
+    },
+  )
   return handleResponse(res)
 }
 

@@ -15,6 +15,7 @@ from supabase import Client, create_client
 
 
 DEFAULT_BUCKET = "catalog-images"
+DEFAULT_RECEIPTS_BUCKET = "crm-receipts"
 
 
 class StorageConfigurationError(RuntimeError):
@@ -30,6 +31,13 @@ def _required_env(name: str) -> str:
 
 def get_bucket_name() -> str:
     return os.getenv("SUPABASE_STORAGE_BUCKET", DEFAULT_BUCKET).strip() or DEFAULT_BUCKET
+
+
+def get_receipts_bucket_name() -> str:
+    return (
+        os.getenv("SUPABASE_CRM_RECEIPTS_BUCKET", DEFAULT_RECEIPTS_BUCKET).strip()
+        or DEFAULT_RECEIPTS_BUCKET
+    )
 
 
 def get_public_url_base() -> str:
@@ -101,6 +109,39 @@ def upload_admin_image(
         upsert=False,
     )
     return storage_path, public_url
+
+
+def upload_private_receipt(
+    *,
+    client_id: str,
+    original_name: str,
+    contents: bytes,
+    content_type: str | None,
+) -> tuple[str, str]:
+    """Sube un comprobante privado y devuelve una URL firmada temporal."""
+    filename = _safe_filename(original_name)
+    storage_path = f"clients/{client_id}/{uuid.uuid4().hex}-{filename}"
+    options: dict[str, Any] = {
+        "cache-control": "86400",
+        "upsert": "false",
+    }
+    if content_type:
+        options["content-type"] = content_type
+
+    bucket = get_storage_client().storage.from_(get_receipts_bucket_name())
+    bucket.upload(path=storage_path, file=contents, file_options=options)
+    signed = bucket.create_signed_url(storage_path, expires_in=60 * 60 * 24 * 7)
+    signed_url = signed.get("signedURL") or signed.get("signedUrl") or ""
+    return storage_path, signed_url
+
+
+def create_signed_receipt_url(storage_path: str, expires_in: int = 60 * 60 * 24 * 7) -> str:
+    signed = (
+        get_storage_client()
+        .storage.from_(get_receipts_bucket_name())
+        .create_signed_url(storage_path, expires_in=expires_in)
+    )
+    return signed.get("signedURL") or signed.get("signedUrl") or ""
 
 
 def _is_local_catalog_image(value: str) -> bool:

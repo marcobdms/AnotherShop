@@ -400,10 +400,30 @@ def update_product(product_id: str, fields: dict[str, Any]) -> Optional[dict[str
 
 def delete_product(product_id: str) -> bool:
     with get_engine().begin() as connection:
+        if product_id in _crm_product_ids_with_sales(connection, {product_id}):
+            result = connection.execute(
+                update(productos)
+                .where(productos.c.id == product_id)
+                .values(disponible=False, actualizado_en=datetime.now().astimezone())
+            )
+            return bool(result.rowcount)
         result = connection.execute(
             delete(productos).where(productos.c.id == product_id)
         )
         return bool(result.rowcount)
+
+
+def _crm_product_ids_with_sales(connection: Connection, product_ids: set[str]) -> set[str]:
+    if not product_ids:
+        return set()
+    exists = connection.scalar(text("select to_regclass('crm.venta_items') is not null"))
+    if not exists:
+        return set()
+    rows = connection.execute(
+        text("select distinct producto_id from crm.venta_items where producto_id = any(:ids)"),
+        {"ids": list(product_ids)},
+    )
+    return {str(row.producto_id) for row in rows}
 
 
 def _insert_history(connection: Connection, events: Iterable[dict[str, Any]]) -> None:
@@ -625,9 +645,18 @@ def publish_products(
 
         removed_ids = current_ids - published_ids
         if removed_ids:
-            connection.execute(
-                delete(productos).where(productos.c.id.in_(removed_ids))
-            )
+            sold_ids = _crm_product_ids_with_sales(connection, removed_ids)
+            if sold_ids:
+                connection.execute(
+                    update(productos)
+                    .where(productos.c.id.in_(sold_ids))
+                    .values(disponible=False, actualizado_en=datetime.now().astimezone())
+                )
+            delete_ids = removed_ids - sold_ids
+            if delete_ids:
+                connection.execute(
+                    delete(productos).where(productos.c.id.in_(delete_ids))
+                )
         _insert_history(connection, new_events)
 
 
@@ -773,9 +802,18 @@ def sync_all(
 
         removed_ids = set(available)
         if removed_ids:
-            connection.execute(
-                delete(productos).where(productos.c.id.in_(removed_ids))
-            )
+            sold_ids = _crm_product_ids_with_sales(connection, removed_ids)
+            if sold_ids:
+                connection.execute(
+                    update(productos)
+                    .where(productos.c.id.in_(sold_ids))
+                    .values(disponible=False, actualizado_en=datetime.now().astimezone())
+                )
+            delete_ids = removed_ids - sold_ids
+            if delete_ids:
+                connection.execute(
+                    delete(productos).where(productos.c.id.in_(delete_ids))
+                )
 
         removed = len(removed_ids)
         message = (

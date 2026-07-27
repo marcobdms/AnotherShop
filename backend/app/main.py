@@ -11,6 +11,7 @@ import re
 
 from app.admin_router import router as admin_router
 from app.catalog_repository import load_catalog, load_inventory
+from app.crm_router import router as crm_router
 
 app = FastAPI(
     title="Another NPC Shop API",
@@ -30,6 +31,7 @@ app.add_middleware(
 
 # ── Routers ────────────────────────────────────────────────────────────────────
 app.include_router(admin_router)
+app.include_router(crm_router)
 
 def _normalize_sku(text: str) -> str:
     """Normaliza texto para SKU: quita acentos, mayúsculas, reemplaza espacios."""
