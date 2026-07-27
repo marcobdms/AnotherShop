@@ -41,7 +41,7 @@ create table if not exists crm.abonos (
   id uuid primary key default gen_random_uuid(),
   cliente_id uuid not null references crm.clientes(id) on delete restrict,
   monto numeric(12, 2) not null check (monto > 0),
-  metodo text not null check (metodo in ('efectivo', 'transferencia')),
+  metodo text not null check (metodo in ('efectivo', 'transferencia', 'zelle', 'binance', 'paypal')),
   usuario text not null default 'admin',
   nota text not null default '',
   creado_en timestamptz not null default now()

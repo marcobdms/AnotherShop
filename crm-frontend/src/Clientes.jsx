@@ -5,12 +5,14 @@ import {
   crmCrearAbono,
   crmCrearVenta,
   crmCreateCliente,
+  crmDeleteCliente,
   crmFetchAbonos,
   crmFetchCatalogo,
   crmFetchCliente,
   crmFetchClientes,
   crmFetchComprobantes,
   crmFetchVentas,
+  crmImportarHistorico,
   crmUpdateCliente,
   crmUploadComprobante,
   formatPrice,
@@ -119,6 +121,26 @@ const css = `
   .crm-btn--primary { background: var(--black); border-color: var(--black); color: var(--white); }
   .crm-btn--primary:hover:not(:disabled) { color: var(--white); opacity: 0.82; }
   .crm-btn--danger { border-color: #fecaca; color: #b91c1c; }
+  .crm-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .crm-panel-head .crm-title { margin-bottom: 0; }
+  .crm-icon-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--grey-200);
+    background: var(--white);
+    color: var(--grey-600);
+    font-size: var(--size-sm);
+  }
+  .crm-icon-btn:hover { border-color: var(--black); color: var(--black); }
   .crm-client-list {
     display: flex;
     flex-direction: column;
@@ -239,7 +261,7 @@ const css = `
   }
   .crm-cart-row {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 44px 1fr auto;
     gap: 0.7rem;
     border-top: 1px solid var(--grey-200);
     padding: 0.6rem 0;
@@ -253,8 +275,19 @@ const css = `
   .crm-catalog-product {
     border-top: 1px solid var(--grey-200);
     padding: 0.7rem;
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 0.75rem;
   }
   .crm-catalog-product:first-child { border-top: none; }
+  .crm-catalog-img {
+    width: 58px;
+    height: 76px;
+    object-fit: cover;
+    background: var(--grey-100);
+    border: 1px solid var(--grey-200);
+  }
+  .crm-catalog-body { min-width: 0; }
   .crm-variant-grid {
     display: flex;
     flex-wrap: wrap;
@@ -269,6 +302,29 @@ const css = `
   }
   .crm-size-btn.active,
   .crm-size-btn:hover { border-color: var(--black); color: var(--black); }
+  .crm-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    background: rgba(0,0,0,0.36);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .crm-modal {
+    width: min(760px, 100%);
+    max-height: min(720px, calc(100vh - 2rem));
+    background: var(--white);
+    border: 1px solid var(--grey-200);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .crm-modal .crm-catalog-list {
+    max-height: min(520px, calc(100vh - 190px));
+  }
   .crm-swatch {
     display: inline-block;
     width: 10px;
@@ -310,6 +366,8 @@ const css = `
     .crm-summary,
     .crm-form-grid { grid-template-columns: 1fr; }
     .crm-main { padding: 1rem; }
+    .crm-cart-row { grid-template-columns: 44px 1fr; }
+    .crm-cart-row .crm-btn { grid-column: 1 / -1; }
   }
 `
 
@@ -338,6 +396,10 @@ function niceDate(value) {
 
 function emptyClientForm() {
   return { nombre: '', telefono: '', notas: '' }
+}
+
+function productImage(product) {
+  return product.imagen || product.variantes.find(variant => variant.imagen)?.imagen || ''
 }
 
 function CrmLogin({ onAuth }) {
@@ -411,7 +473,12 @@ export default function Clientes() {
   const [catalogSearch, setCatalogSearch] = useState('')
   const [catalog, setCatalog] = useState([])
   const [cart, setCart] = useState([])
+  const [purchaseOpen, setPurchaseOpen] = useState(true)
+  const [catalogPickerOpen, setCatalogPickerOpen] = useState(false)
   const [abonoForm, setAbonoForm] = useState({ monto: '', metodo: 'efectivo', nota: '' })
+  const [importText, setImportText] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState(null)
 
   const showToast = useCallback((message, type = 'ok') => {
     setToast({ message, type, key: Date.now() })
@@ -489,6 +556,22 @@ export default function Clientes() {
       setSelected(updated)
       await refreshClients()
       showToast('Ficha actualizada')
+    } catch (error) {
+      showToast(error.message, 'error')
+    }
+  }
+
+  async function handleDeleteClient() {
+    if (!selected) return
+    const ok = window.confirm(`Borrar cliente "${selected.nombre}"? Solo se puede borrar si no tiene compras ni abonos.`)
+    if (!ok) return
+    try {
+      await crmDeleteCliente(selected.id)
+      setSelected(null)
+      setSelectedId(null)
+      setCart([])
+      await refreshClients()
+      showToast('Cliente borrado')
     } catch (error) {
       showToast(error.message, 'error')
     }
@@ -580,6 +663,41 @@ export default function Clientes() {
     }
   }
 
+  function handleImportFile(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setImportText(String(reader.result || ''))
+    reader.onerror = () => showToast('No se pudo leer el archivo', 'error')
+    reader.readAsText(file)
+    event.target.value = ''
+  }
+
+  async function handleImportHistory() {
+    if (!importText.trim()) return
+    let datos
+    try {
+      datos = JSON.parse(importText)
+    } catch (_) {
+      showToast('JSON invalido', 'error')
+      return
+    }
+
+    setImporting(true)
+    setImportResult(null)
+    try {
+      const result = await crmImportarHistorico(datos, usuario)
+      setImportResult(result)
+      await refreshClients()
+      if (selectedId) await refreshDetail(selectedId)
+      showToast(`Importados ${result.clientes_creados + result.clientes_actualizados} clientes`)
+    } catch (error) {
+      showToast(error.message, 'error')
+    } finally {
+      setImporting(false)
+    }
+  }
+
   return (
     <div className="crm-page">
       <style>{css}</style>
@@ -611,6 +729,32 @@ export default function Clientes() {
               <button className="crm-btn crm-btn--primary" onClick={handleCreateClient} disabled={!newClient.nombre.trim()}>
                 Crear cliente
               </button>
+            </div>
+          </section>
+
+          <section className="crm-section">
+            <p className="crm-title">Importar JSON</p>
+            <div className="crm-stack">
+              <label className="crm-btn">
+                Cargar archivo
+                <input type="file" accept="application/json,.json" onChange={handleImportFile} style={{ display: 'none' }} />
+              </label>
+              <textarea
+                className="crm-textarea"
+                placeholder='{"clientes":[...]}'
+                value={importText}
+                onChange={e => setImportText(e.target.value)}
+                style={{ minHeight: 130 }}
+              />
+              <button className="crm-btn crm-btn--primary" onClick={handleImportHistory} disabled={!importText.trim() || importing}>
+                {importing ? 'Importando...' : 'Importar historico'}
+              </button>
+              <p className="crm-client-meta">Registra historicos sin descontar stock actual.</p>
+              {importResult && (
+                <p className="crm-client-meta">
+                  {importResult.clientes_creados} nuevos / {importResult.clientes_actualizados} actualizados / {importResult.ventas_creadas} compras / {importResult.abonos_creados} abonos
+                </p>
+              )}
             </div>
           </section>
 
@@ -652,11 +796,11 @@ export default function Clientes() {
                   <section className="crm-panel">
                     <p className="crm-title">Ficha del cliente</p>
                     <div className="crm-form-grid">
-                      <input className="crm-input" value={clientForm.nombre} onChange={e => setClientForm({ ...clientForm, nombre: e.target.value })} />
-                      <input className="crm-input" value={clientForm.telefono} onChange={e => setClientForm({ ...clientForm, telefono: e.target.value })} />
+                      <input className="crm-input" placeholder="Nombre" value={clientForm.nombre} onChange={e => setClientForm({ ...clientForm, nombre: e.target.value })} />
+                      <input className="crm-input" placeholder="Telefono" value={clientForm.telefono} onChange={e => setClientForm({ ...clientForm, telefono: e.target.value })} />
                     </div>
                     <div style={{ marginTop: '0.6rem' }}>
-                      <textarea className="crm-textarea" value={clientForm.notas} onChange={e => setClientForm({ ...clientForm, notas: e.target.value })} />
+                      <textarea className="crm-textarea" placeholder="Notas" value={clientForm.notas} onChange={e => setClientForm({ ...clientForm, notas: e.target.value })} />
                     </div>
                     <div className="crm-actions" style={{ marginTop: '0.75rem' }}>
                       <button className="crm-btn crm-btn--primary" onClick={handleSaveClient}>Guardar ficha</button>
@@ -664,6 +808,7 @@ export default function Clientes() {
                         Subir comprobante
                         <input type="file" accept="image/*" onChange={handleUploadReceipt} style={{ display: 'none' }} />
                       </label>
+                      <button className="crm-btn crm-btn--danger" onClick={handleDeleteClient}>Borrar cliente</button>
                     </div>
                   </section>
 
@@ -709,52 +854,39 @@ export default function Clientes() {
 
                 <aside>
                   <section className="crm-panel">
-                    <p className="crm-title">Nueva compra</p>
-                    <div className="crm-stack">
-                      <input className="crm-input" placeholder="Buscar producto, ref, color o talla" value={catalogSearch} onChange={e => setCatalogSearch(e.target.value)} />
-                      <div className="crm-catalog-list">
-                        {catalog.map(product => (
-                          <div key={product.id} className="crm-catalog-product">
-                            <p className="crm-mini-title">{product.nombre}</p>
-                            <p className="crm-mini-meta">Ref {product.ref} / sugerido {formatPrice(product.precio)}</p>
-                            {product.variantes.map(variant => (
-                              <div key={variant.id} className="crm-variant-grid">
-                                <span className="crm-mini-meta">
-                                  <span className="crm-swatch" style={{ background: variant.hex }} />
-                                  {variant.color}
-                                </span>
-                                {Object.entries(variant.tallas).map(([talla, stock]) => (
-                                  <button key={`${variant.id}-${talla}`} className="crm-size-btn" onClick={() => addCartItem(product, variant, talla, stock)}>
-                                    {talla} ({stock})
-                                  </button>
-                                ))}
+                    <div className="crm-panel-head">
+                      <p className="crm-title">Nueva compra</p>
+                      <button className="crm-icon-btn" onClick={() => setPurchaseOpen(open => !open)} title={purchaseOpen ? 'Colapsar compra' : 'Abrir compra'}>
+                        {purchaseOpen ? '-' : '+'}
+                      </button>
+                    </div>
+                    {purchaseOpen && (
+                      <div className="crm-stack">
+                        <button className="crm-btn" onClick={() => setCatalogPickerOpen(true)}>Añadir prendas</button>
+                        <p className="crm-client-meta">Al guardar la compra se descuenta stock del catalogo real.</p>
+                        <div>
+                          <p className="crm-title">Prendas</p>
+                          {cart.length === 0 ? <p className="crm-client-meta">Selecciona tallas desde el catalogo.</p> : cart.map(item => (
+                            <div key={item.key} className="crm-cart-row">
+                              <img className="crm-thumb" src={item.imagen} alt="" onError={e => { e.currentTarget.style.visibility = 'hidden' }} />
+                              <div>
+                                <p className="crm-mini-title">{item.producto_nombre}</p>
+                                <p className="crm-mini-meta">{item.color} / {item.talla} / stock {item.stock}</p>
+                                <div className="crm-form-grid" style={{ marginTop: '0.45rem' }}>
+                                  <input className="crm-input" type="number" min="1" max={item.stock} value={item.cantidad} onChange={e => setCart(prev => prev.map(row => row.key === item.key ? { ...row, cantidad: e.target.value } : row))} />
+                                  <input className="crm-input" type="number" min="0" step="0.01" value={item.precio_unitario} onChange={e => setCart(prev => prev.map(row => row.key === item.key ? { ...row, precio_unitario: e.target.value } : row))} />
+                                </div>
                               </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-
-                      <div>
-                        <p className="crm-title">Prendas</p>
-                        {cart.length === 0 ? <p className="crm-client-meta">Selecciona tallas del catalogo real.</p> : cart.map(item => (
-                          <div key={item.key} className="crm-cart-row">
-                            <div>
-                              <p className="crm-mini-title">{item.producto_nombre}</p>
-                              <p className="crm-mini-meta">{item.color} / {item.talla} / stock {item.stock}</p>
-                              <div className="crm-form-grid" style={{ marginTop: '0.45rem' }}>
-                                <input className="crm-input" type="number" min="1" max={item.stock} value={item.cantidad} onChange={e => setCart(prev => prev.map(row => row.key === item.key ? { ...row, cantidad: e.target.value } : row))} />
-                                <input className="crm-input" type="number" min="0" step="0.01" value={item.precio_unitario} onChange={e => setCart(prev => prev.map(row => row.key === item.key ? { ...row, precio_unitario: e.target.value } : row))} />
-                              </div>
+                              <button className="crm-btn" onClick={() => setCart(prev => prev.filter(row => row.key !== item.key))}>Quitar</button>
                             </div>
-                            <button className="crm-btn" onClick={() => setCart(prev => prev.filter(row => row.key !== item.key))}>Quitar</button>
+                          ))}
+                          <div className="crm-actions" style={{ marginTop: '0.75rem', justifyContent: 'space-between' }}>
+                            <span className="crm-mini-title">Total {formatPrice(cartTotal)}</span>
+                            <button className="crm-btn crm-btn--primary" onClick={handleCreateSale} disabled={!cart.length}>Guardar compra</button>
                           </div>
-                        ))}
-                        <div className="crm-actions" style={{ marginTop: '0.75rem', justifyContent: 'space-between' }}>
-                          <span className="crm-mini-title">Total {formatPrice(cartTotal)}</span>
-                          <button className="crm-btn crm-btn--primary" onClick={handleCreateSale} disabled={!cart.length}>Guardar compra</button>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </section>
 
                   <section className="crm-panel">
@@ -764,6 +896,9 @@ export default function Clientes() {
                       <select className="crm-select" value={abonoForm.metodo} onChange={e => setAbonoForm({ ...abonoForm, metodo: e.target.value })}>
                         <option value="efectivo">Efectivo</option>
                         <option value="transferencia">Transferencia</option>
+                        <option value="zelle">Zelle</option>
+                        <option value="binance">Binance</option>
+                        <option value="paypal">PayPal</option>
                       </select>
                       <input className="crm-input" placeholder="Nota opcional" value={abonoForm.nota} onChange={e => setAbonoForm({ ...abonoForm, nota: e.target.value })} />
                       <button className="crm-btn crm-btn--primary" onClick={handleCreatePayment} disabled={!abonoForm.monto}>Guardar abono</button>
@@ -801,6 +936,48 @@ export default function Clientes() {
           )}
         </main>
       </div>
+
+      {catalogPickerOpen && (
+        <div className="crm-modal-backdrop" onClick={() => setCatalogPickerOpen(false)}>
+          <div className="crm-modal" onClick={e => e.stopPropagation()}>
+            <div className="crm-panel-head">
+              <p className="crm-title">Seleccionar prendas</p>
+              <button className="crm-icon-btn" onClick={() => setCatalogPickerOpen(false)} title="Cerrar selector">x</button>
+            </div>
+            <input className="crm-input" placeholder="Buscar producto, ref, color o talla" value={catalogSearch} onChange={e => setCatalogSearch(e.target.value)} autoFocus />
+            <div className="crm-catalog-list">
+              {catalog.length === 0 ? (
+                <p className="crm-client-meta" style={{ padding: '0.8rem' }}>Sin prendas disponibles.</p>
+              ) : catalog.map(product => (
+                <div key={product.id} className="crm-catalog-product">
+                  <img className="crm-catalog-img" src={productImage(product)} alt="" onError={e => { e.currentTarget.style.visibility = 'hidden' }} />
+                  <div className="crm-catalog-body">
+                    <p className="crm-mini-title">{product.nombre}</p>
+                    <p className="crm-mini-meta">Ref {product.ref} / sugerido {formatPrice(product.precio)}</p>
+                    {product.variantes.map(variant => (
+                      <div key={variant.id} className="crm-variant-grid">
+                        <span className="crm-mini-meta">
+                          <span className="crm-swatch" style={{ background: variant.hex }} />
+                          {variant.color}
+                        </span>
+                        {Object.entries(variant.tallas).map(([talla, stock]) => (
+                          <button key={`${variant.id}-${talla}`} className="crm-size-btn" onClick={() => addCartItem(product, variant, talla, stock)}>
+                            Añadir {talla} ({stock})
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="crm-actions" style={{ justifyContent: 'space-between' }}>
+              <span className="crm-mini-title">{cart.length} prendas seleccionadas</span>
+              <button className="crm-btn crm-btn--primary" onClick={() => setCatalogPickerOpen(false)}>Añadir</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <div key={toast.key} className={`crm-toast ${toast.type}`}>{toast.message}</div>}
     </div>

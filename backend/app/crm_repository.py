@@ -28,6 +28,7 @@ from sqlalchemy import (
     literal,
     or_,
     select,
+    delete,
     update,
 )
 from sqlalchemy.dialects.postgresql import UUID
@@ -229,12 +230,296 @@ def update_client(client_id: str, fields: dict[str, Any]) -> Optional[dict[str, 
         return _client_out(row) if row else None
 
 
+def delete_client(client_id: str) -> Optional[dict[str, Any]]:
+    with get_engine().begin() as connection:
+        row = connection.execute(select(clientes).where(clientes.c.id == client_id)).first()
+        if not row:
+            return None
+
+        has_sales = connection.scalar(
+            select(func.count()).select_from(ventas).where(ventas.c.cliente_id == client_id)
+        )
+        has_payments = connection.scalar(
+            select(func.count()).select_from(abonos).where(abonos.c.cliente_id == client_id)
+        )
+        if has_sales or has_payments:
+            raise ValueError("No se puede borrar un cliente con compras o abonos")
+
+        connection.execute(delete(clientes).where(clientes.c.id == client_id))
+        return _client_out(row)
+
+
 def get_client(client_id: str) -> Optional[dict[str, Any]]:
     with get_engine().connect() as connection:
         row = connection.execute(select(clientes).where(clientes.c.id == client_id)).first()
         if not row:
             return None
         return _client_out(row, _client_balance_rows(connection).get(client_id))
+
+
+PAYMENT_METHODS = {"efectivo", "transferencia", "zelle", "binance", "paypal"}
+
+
+def _field(data: dict[str, Any], *keys: str, default: Any = "") -> Any:
+    for key in keys:
+        value = data.get(key)
+        if value is not None and value != "":
+            return value
+    return default
+
+
+def _items(data: Any) -> list[Any]:
+    if not data:
+        return []
+    return data if isinstance(data, list) else [data]
+
+
+def _decimal(value: Any, default: str = "0") -> Decimal:
+    try:
+        return Decimal(str(value if value not in (None, "") else default))
+    except Exception as error:
+        raise ValueError(f"Numero invalido: {value}") from error
+
+
+def _date(value: Any, fallback: datetime) -> datetime:
+    if isinstance(value, datetime):
+        return value
+    if not value:
+        return fallback
+    text = str(value).strip()
+    if not text:
+        return fallback
+    if text.endswith("Z"):
+        text = f"{text[:-1]}+00:00"
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return fallback
+
+
+def _payment_method(value: Any) -> str:
+    method = str(value or "efectivo").strip().lower()
+    aliases = {
+        "cash": "efectivo",
+        "transfer": "transferencia",
+        "transferencia bancaria": "transferencia",
+        "bank": "transferencia",
+        "paypal": "paypal",
+        "pay pal": "paypal",
+    }
+    method = aliases.get(method, method)
+    if method not in PAYMENT_METHODS:
+        raise ValueError(f"Metodo de pago invalido: {method}")
+    return method
+
+
+def _uuid_text(value: Any) -> str:
+    try:
+        return str(uuid.UUID(str(value)))
+    except Exception:
+        return _new_id()
+
+
+def _payload_clients(payload: Any) -> list[dict[str, Any]]:
+    if isinstance(payload, list):
+        rows = payload
+    elif isinstance(payload, dict):
+        rows = (
+            payload.get("clientes")
+            or payload.get("clients")
+            or payload.get("registros")
+            or payload.get("data")
+        )
+        if rows is None and _field(payload, "nombre", "name"):
+            rows = [payload]
+    else:
+        rows = None
+
+    if not isinstance(rows, list):
+        raise ValueError("El JSON debe ser una lista o tener una propiedad clientes")
+    if not all(isinstance(row, dict) for row in rows):
+        raise ValueError("Cada cliente del JSON debe ser un objeto")
+    return rows
+
+
+def _find_import_client(connection: Connection, name: str, phone: str) -> Optional[Any]:
+    if phone:
+        row = connection.execute(select(clientes).where(clientes.c.telefono == phone)).first()
+        if row:
+            return row
+    if name:
+        return connection.execute(
+            select(clientes).where(func.lower(clientes.c.nombre) == name.lower())
+        ).first()
+    return None
+
+
+def _upsert_import_client(connection: Connection, record: dict[str, Any], now: datetime) -> tuple[str, bool]:
+    name = str(_field(record, "nombre", "name", "cliente", default="")).strip()
+    phone = str(_field(record, "telefono", "phone", "celular", "movil", default="")).strip()
+    notes = str(_field(record, "notas", "nota", "notes", default="")).strip()
+    if not name:
+        raise ValueError("Hay un cliente sin nombre")
+
+    row = _find_import_client(connection, name, phone)
+    if row:
+        connection.execute(
+            update(clientes)
+            .where(clientes.c.id == row.id)
+            .values(
+                nombre=name or row.nombre,
+                telefono=phone or row.telefono,
+                notas=notes or row.notas,
+                actualizado_en=now,
+            )
+        )
+        return str(row.id), False
+
+    client_id = _new_id()
+    connection.execute(
+        insert(clientes).values(
+            id=client_id,
+            nombre=name,
+            telefono=phone,
+            notas=notes,
+            creado_en=now,
+            actualizado_en=now,
+        )
+    )
+    return client_id, True
+
+
+def _import_sale_items(record: dict[str, Any], sale_id: str) -> tuple[list[dict[str, Any]], Decimal]:
+    raw_items = _items(
+        _field(record, "items", "prendas", "productos", "lineas", default=[])
+    )
+    explicit_total = _decimal(_field(record, "total", "monto", "importe", default=0))
+
+    if not raw_items and explicit_total > 0:
+        raw_items = [{"nombre": _field(record, "concepto", "descripcion", default="Compra historica"), "precio": explicit_total}]
+
+    items = []
+    total = Decimal("0")
+    for raw in raw_items:
+        if not isinstance(raw, dict):
+            raise ValueError("Cada prenda historica debe ser un objeto")
+        quantity = int(_decimal(_field(raw, "cantidad", "qty", "unidades", default=1)))
+        if quantity <= 0:
+            raise ValueError("La cantidad debe ser mayor a cero")
+        unit_price = _decimal(_field(raw, "precio_unitario", "precio", "unitario", default=0))
+        line_total = _decimal(_field(raw, "subtotal", "total", default=0))
+        if unit_price <= 0 and line_total > 0:
+            unit_price = line_total / quantity
+        subtotal = unit_price * quantity
+        total += subtotal
+        items.append(
+            {
+                "id": _new_id(),
+                "venta_id": sale_id,
+                "producto_id": str(_field(raw, "producto_id", "product_id", "ref", default="historico")),
+                "variante_id": _uuid_text(_field(raw, "variante_id", "variant_id", default="")),
+                "talla": str(_field(raw, "talla", "size", default="")),
+                "cantidad": quantity,
+                "precio_unitario": unit_price,
+                "subtotal": subtotal,
+                "producto_nombre": str(_field(raw, "producto_nombre", "nombre", "name", default="Compra historica")),
+                "producto_ref": str(_field(raw, "producto_ref", "ref", "referencia", default="historico")),
+                "color": str(_field(raw, "color", default="")),
+                "color_hex": str(_field(raw, "color_hex", "hex", default="#000000")),
+                "imagen": str(_field(raw, "imagen", "image", "foto", default="")),
+            }
+        )
+
+    if items and total <= 0 and explicit_total > 0:
+        items[0]["precio_unitario"] = explicit_total
+        items[0]["subtotal"] = explicit_total
+
+    return items, explicit_total if explicit_total > 0 else total
+
+
+def import_history_from_json(payload: Any, usuario: str = "admin") -> dict[str, Any]:
+    rows = _payload_clients(payload)
+    summary = {
+        "clientes_creados": 0,
+        "clientes_actualizados": 0,
+        "ventas_creadas": 0,
+        "abonos_creados": 0,
+        "items_creados": 0,
+    }
+
+    with get_engine().begin() as connection:
+        for record in rows:
+            now = _now()
+            client_id, created = _upsert_import_client(connection, record, now)
+            if created:
+                summary["clientes_creados"] += 1
+            else:
+                summary["clientes_actualizados"] += 1
+
+            sales = _items(_field(record, "compras", "ventas", "purchases", default=[]))
+            if not sales and any(key in record for key in ("items", "prendas", "productos", "total")):
+                sales = [record]
+            for sale in sales:
+                if not isinstance(sale, dict):
+                    raise ValueError("Cada compra historica debe ser un objeto")
+                sale_id = _new_id()
+                sale_date = _date(_field(sale, "fecha", "creada_en", "created_at", "date", default=None), now)
+                estado = str(_field(sale, "estado", "status", default="activa")).strip().lower()
+                if estado not in {"activa", "anulada"}:
+                    estado = "activa"
+                sale_items, total = _import_sale_items(sale, sale_id)
+                if total <= 0:
+                    continue
+                connection.execute(
+                    insert(ventas).values(
+                        id=sale_id,
+                        cliente_id=client_id,
+                        estado=estado,
+                        total=total,
+                        usuario=usuario or "admin",
+                        nota=str(_field(sale, "nota", "notas", "notes", default="")),
+                        creada_en=sale_date,
+                        anulada_en=sale_date if estado == "anulada" else None,
+                        motivo_anulacion=str(_field(sale, "motivo_anulacion", "motivo", default="Importacion historica")) if estado == "anulada" else "",
+                    )
+                )
+                if sale_items:
+                    connection.execute(insert(venta_items), sale_items)
+                    summary["items_creados"] += len(sale_items)
+                summary["ventas_creadas"] += 1
+
+            payments = _items(_field(record, "abonos", "pagos", "payments", default=[]))
+            for payment in payments:
+                if not isinstance(payment, dict):
+                    raise ValueError("Cada abono historico debe ser un objeto")
+                amount = _decimal(_field(payment, "monto", "amount", "total", "importe", default=0))
+                if amount <= 0:
+                    continue
+                payment_id = _new_id()
+                payment_date = _date(_field(payment, "fecha", "creado_en", "created_at", "date", default=None), now)
+                row = connection.execute(
+                    insert(abonos)
+                    .values(
+                        id=payment_id,
+                        cliente_id=client_id,
+                        monto=amount,
+                        metodo=_payment_method(_field(payment, "metodo", "method", default="efectivo")),
+                        usuario=str(_field(payment, "usuario", "user", default=usuario or "admin")),
+                        nota=str(_field(payment, "nota", "notas", "notes", default="")),
+                        creado_en=payment_date,
+                    )
+                    .returning(abonos)
+                ).first()
+                _allocate_payment(connection, client_id, str(row.id), amount, payment_date)
+                summary["abonos_creados"] += 1
+
+            connection.execute(
+                update(clientes)
+                .where(clientes.c.id == client_id)
+                .values(actualizado_en=now)
+            )
+
+    return summary
 
 
 def list_catalog_options(search: str = "") -> list[dict[str, Any]]:
@@ -599,7 +884,7 @@ def create_payment(client_id: str, fields: dict[str, Any]) -> dict[str, Any]:
     method = str(fields.get("metodo") or "")
     if amount <= 0:
         raise ValueError("El abono debe ser mayor a cero")
-    if method not in {"efectivo", "transferencia"}:
+    if method not in {"efectivo", "transferencia", "zelle", "binance", "paypal"}:
         raise ValueError("Metodo de pago invalido")
 
     with get_engine().begin() as connection:

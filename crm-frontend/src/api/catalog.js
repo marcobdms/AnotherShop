@@ -168,6 +168,23 @@ export async function crmUpdateCliente(clienteId, cliente) {
   return handleResponse(res)
 }
 
+export async function crmDeleteCliente(clienteId) {
+  const res = await fetch(`${CRM_BASE}/clientes/${clienteId}`, {
+    method: 'DELETE',
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function crmImportarHistorico(datos, usuario = 'admin') {
+  const res = await fetch(`${CRM_BASE}/importar-json`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({ datos, usuario }),
+  })
+  return handleResponse(res)
+}
+
 export async function crmFetchCliente(clienteId) {
   const res = await fetch(`${CRM_BASE}/clientes/${clienteId}`, {
     headers: adminHeaders(),

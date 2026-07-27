@@ -2,7 +2,7 @@
 
 import hmac
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
 from pydantic import BaseModel, Field
@@ -56,6 +56,11 @@ class AnularVentaIn(BaseModel):
     motivo: str = "Correccion manual"
 
 
+class ImportarJsonIn(BaseModel):
+    datos: Any
+    usuario: str = "admin"
+
+
 router = APIRouter(prefix="/crm", tags=["crm"], dependencies=[Depends(verify_token)])
 
 
@@ -83,6 +88,25 @@ def crm_update_client(client_id: str, body: ClienteIn):
     if not client:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
     return client
+
+
+@router.delete("/clientes/{client_id}")
+def crm_delete_client(client_id: str):
+    try:
+        client = repository.delete_client(client_id)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    return client
+
+
+@router.post("/importar-json", status_code=201)
+def crm_import_json(body: ImportarJsonIn):
+    try:
+        return repository.import_history_from_json(body.datos, usuario=body.usuario)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
 
 @router.get("/catalogo")
