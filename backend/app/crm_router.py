@@ -48,6 +48,7 @@ class VentaIn(BaseModel):
 class AbonoIn(BaseModel):
     monto: float = Field(gt=0)
     metodo: str
+    moneda: str = "usd"
     usuario: str = "admin"
     nota: str = ""
 

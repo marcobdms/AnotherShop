@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { supabase } from './lib/supabase'
+import { hasSupabaseConfig, supabase } from './lib/supabase'
 import {
   crmAnularVenta,
   crmCrearAbono,
@@ -394,6 +394,21 @@ function niceDate(value) {
   })
 }
 
+function formatPaymentAmount(amount, currency = 'usd') {
+  const code = String(currency || 'usd').toLowerCase()
+  if (code === 'usd') return formatPrice(amount)
+  if (code === 'eur') {
+    return Number(amount || 0).toLocaleString('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+    })
+  }
+  return `${Number(amount || 0).toLocaleString('es-ES', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} ${code.toUpperCase()}`
+}
+
 function emptyClientForm() {
   return { nombre: '', telefono: '', notas: '' }
 }
@@ -406,12 +421,27 @@ function CrmLogin({ onAuth }) {
   const [pwd, setPwd] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const adminToken = import.meta.env.VITE_ADMIN_TOKEN || ''
 
   async function handleSubmit() {
     if (!pwd) return
     setLoading(true)
     setError('')
     try {
+      if (adminToken) {
+        if (pwd !== adminToken) {
+          setError('Contrasena incorrecta')
+          setPwd('')
+          return
+        }
+        sessionStorage.setItem('admin_auth_user', 'admin')
+        onAuth('admin')
+        return
+      }
+      if (!hasSupabaseConfig) {
+        setError('Falta configurar VITE_ADMIN_TOKEN')
+        return
+      }
       const { data, error: sbError } = await supabase
         .from('admin_users')
         .select('username')
@@ -475,7 +505,7 @@ export default function Clientes() {
   const [cart, setCart] = useState([])
   const [purchaseOpen, setPurchaseOpen] = useState(true)
   const [catalogPickerOpen, setCatalogPickerOpen] = useState(false)
-  const [abonoForm, setAbonoForm] = useState({ monto: '', metodo: 'efectivo', nota: '' })
+  const [abonoForm, setAbonoForm] = useState({ monto: '', metodo: 'desconocido', moneda: 'usd', nota: '' })
   const [importText, setImportText] = useState('')
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
@@ -641,7 +671,7 @@ export default function Clientes() {
     if (!selected || !abonoForm.monto) return
     try {
       await crmCrearAbono(selected.id, { ...abonoForm, monto: Number(abonoForm.monto), usuario })
-      setAbonoForm({ monto: '', metodo: 'efectivo', nota: '' })
+      setAbonoForm({ monto: '', metodo: 'desconocido', moneda: 'usd', nota: '' })
       await Promise.all([refreshDetail(selected.id), refreshClients()])
       showToast('Abono registrado')
     } catch (error) {
@@ -893,13 +923,22 @@ export default function Clientes() {
                     <p className="crm-title">Registrar abono</p>
                     <div className="crm-stack">
                       <input className="crm-input" type="number" min="0" step="0.01" placeholder="Monto" value={abonoForm.monto} onChange={e => setAbonoForm({ ...abonoForm, monto: e.target.value })} />
-                      <select className="crm-select" value={abonoForm.metodo} onChange={e => setAbonoForm({ ...abonoForm, metodo: e.target.value })}>
-                        <option value="efectivo">Efectivo</option>
-                        <option value="transferencia">Transferencia</option>
-                        <option value="zelle">Zelle</option>
-                        <option value="binance">Binance</option>
-                        <option value="paypal">PayPal</option>
-                      </select>
+                      <div className="crm-form-grid">
+                        <select className="crm-select" value={abonoForm.metodo} onChange={e => setAbonoForm({ ...abonoForm, metodo: e.target.value })}>
+                          <option value="desconocido">Desconocido</option>
+                          <option value="efectivo">Efectivo</option>
+                          <option value="transferencia">Transferencia</option>
+                          <option value="zelle">Zelle</option>
+                          <option value="binance">Binance</option>
+                          <option value="paypal">PayPal</option>
+                        </select>
+                        <select className="crm-select" value={abonoForm.moneda} onChange={e => setAbonoForm({ ...abonoForm, moneda: e.target.value })}>
+                          <option value="usd">USD</option>
+                          <option value="bs">BS</option>
+                          <option value="eur">EUR</option>
+                          <option value="usdt">USDT</option>
+                        </select>
+                      </div>
                       <input className="crm-input" placeholder="Nota opcional" value={abonoForm.nota} onChange={e => setAbonoForm({ ...abonoForm, nota: e.target.value })} />
                       <button className="crm-btn crm-btn--primary" onClick={handleCreatePayment} disabled={!abonoForm.monto}>Guardar abono</button>
                     </div>
@@ -910,10 +949,10 @@ export default function Clientes() {
                     {abonos.length === 0 ? <p className="crm-client-meta">Sin abonos.</p> : abonos.map(abono => (
                       <div key={abono.id} className="crm-payment-line" style={{ gridTemplateColumns: '1fr auto' }}>
                         <div>
-                          <p className="crm-mini-title">{abono.metodo}</p>
+                          <p className="crm-mini-title">{abono.metodo} / {(abono.moneda || 'usd').toUpperCase()}</p>
                           <p className="crm-mini-meta">{niceDate(abono.creado_en)} {abono.nota ? `/ ${abono.nota}` : ''}</p>
                         </div>
-                        <span className="crm-mini-title">{formatPrice(abono.monto)}</span>
+                        <span className="crm-mini-title">{formatPaymentAmount(abono.monto, abono.moneda)}</span>
                       </div>
                     ))}
                   </section>

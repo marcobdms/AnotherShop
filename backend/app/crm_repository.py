@@ -90,6 +90,7 @@ abonos = Table(
     Column("cliente_id", UUID(as_uuid=False), ForeignKey("crm.clientes.id"), nullable=False),
     Column("monto", Numeric(12, 2), nullable=False),
     Column("metodo", Text, nullable=False),
+    Column("moneda", Text, nullable=False),
     Column("usuario", Text, nullable=False),
     Column("nota", Text, nullable=False),
     Column("creado_en", DateTime(timezone=True), nullable=False),
@@ -257,7 +258,8 @@ def get_client(client_id: str) -> Optional[dict[str, Any]]:
         return _client_out(row, _client_balance_rows(connection).get(client_id))
 
 
-PAYMENT_METHODS = {"efectivo", "transferencia", "zelle", "binance", "paypal"}
+PAYMENT_METHODS = {"desconocido", "efectivo", "transferencia", "zelle", "binance", "paypal"}
+PAYMENT_CURRENCIES = {"usd", "bs", "eur", "usdt"}
 
 
 def _field(data: dict[str, Any], *keys: str, default: Any = "") -> Any:
@@ -311,6 +313,43 @@ def _payment_method(value: Any) -> str:
     if method not in PAYMENT_METHODS:
         raise ValueError(f"Metodo de pago invalido: {method}")
     return method
+
+
+def _payment_currency(value: Any) -> str:
+    currency = str(value or "usd").strip().lower()
+    aliases = {
+        "$": "usd",
+        "dolar": "usd",
+        "dolares": "usd",
+        "dólar": "usd",
+        "dólares": "usd",
+        "bolivar": "bs",
+        "bolivares": "bs",
+        "bolívar": "bs",
+        "bolívares": "bs",
+        "ves": "bs",
+        "eur": "eur",
+        "euro": "eur",
+        "euros": "eur",
+        "usdt": "usdt",
+        "binance usdt": "usdt",
+    }
+    currency = aliases.get(currency, currency)
+    if currency not in PAYMENT_CURRENCIES:
+        raise ValueError(f"Moneda invalida: {currency}")
+    return currency
+
+
+def _payment_method_and_currency(method_value: Any, currency_value: Any = None) -> tuple[str, str]:
+    raw_method = str(method_value or "").strip().lower()
+    if raw_method:
+        try:
+            method_as_currency = _payment_currency(raw_method)
+            if raw_method in PAYMENT_CURRENCIES or raw_method not in PAYMENT_METHODS:
+                return "desconocido", method_as_currency
+        except ValueError:
+            pass
+    return _payment_method(method_value or "desconocido"), _payment_currency(currency_value)
 
 
 def _uuid_text(value: Any) -> str:
@@ -497,13 +536,18 @@ def import_history_from_json(payload: Any, usuario: str = "admin") -> dict[str, 
                     continue
                 payment_id = _new_id()
                 payment_date = _date(_field(payment, "fecha", "creado_en", "created_at", "date", default=None), now)
+                method, currency = _payment_method_and_currency(
+                    _field(payment, "metodo", "method", default="desconocido"),
+                    _field(payment, "moneda", "currency", "divisa", default=None),
+                )
                 row = connection.execute(
                     insert(abonos)
                     .values(
                         id=payment_id,
                         cliente_id=client_id,
                         monto=amount,
-                        metodo=_payment_method(_field(payment, "metodo", "method", default="efectivo")),
+                        metodo=method,
+                        moneda=currency,
                         usuario=str(_field(payment, "usuario", "user", default=usuario or "admin")),
                         nota=str(_field(payment, "nota", "notas", "notes", default="")),
                         creado_en=payment_date,
@@ -881,11 +925,9 @@ def _allocate_payment(connection: Connection, client_id: str, payment_id: str, a
 
 def create_payment(client_id: str, fields: dict[str, Any]) -> dict[str, Any]:
     amount = Decimal(str(fields.get("monto") or 0))
-    method = str(fields.get("metodo") or "")
     if amount <= 0:
         raise ValueError("El abono debe ser mayor a cero")
-    if method not in {"efectivo", "transferencia", "zelle", "binance", "paypal"}:
-        raise ValueError("Metodo de pago invalido")
+    method, currency = _payment_method_and_currency(fields.get("metodo"), fields.get("moneda"))
 
     with get_engine().begin() as connection:
         _ensure_client(connection, client_id)
@@ -898,6 +940,7 @@ def create_payment(client_id: str, fields: dict[str, Any]) -> dict[str, Any]:
                 cliente_id=client_id,
                 monto=amount,
                 metodo=method,
+                moneda=currency,
                 usuario=str(fields.get("usuario") or "admin"),
                 nota=str(fields.get("nota") or ""),
                 creado_en=now,
@@ -920,6 +963,7 @@ def _payment_out(row: Any) -> dict[str, Any]:
         "cliente_id": str(data["cliente_id"]),
         "monto": _money(data["monto"]),
         "metodo": data["metodo"],
+        "moneda": data["moneda"] or "usd",
         "usuario": data["usuario"] or "admin",
         "nota": data["nota"] or "",
         "creado_en": data["creado_en"].isoformat() if data.get("creado_en") else "",

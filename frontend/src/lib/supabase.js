@@ -1,17 +1,39 @@
-/**
- * supabase.js — Cliente Supabase singleton
- * Importar desde aquí en toda la app, nunca crear nuevas instancias.
- */
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
+const supabaseAnonKey = (
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+  || import.meta.env.VITE_SUPABASE_KEY
+  || import.meta.env.VITE_SUPABASE_ANON_PUBLIC_KEY
+  || ''
+)
 
-if (!SUPABASE_URL || !SUPABASE_ANON) {
-  console.warn(
-    '[supabase] VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY no están definidas. ' +
-    'Añádelas en frontend/.env.local para desarrollo local.'
-  )
+function createMissingSupabaseClient() {
+  const error = new Error('Faltan VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY')
+  const response = async () => ({ data: null, error })
+
+  return {
+    from() {
+      return {
+        select: () => ({ eq: () => ({ maybeSingle: response, single: response }), maybeSingle: response, single: response }),
+        insert: () => ({ select: () => ({ single: response }) }),
+        update: () => ({ eq: () => ({ select: () => ({ single: response }) }) }),
+        delete: () => ({ eq: response }),
+      }
+    },
+    storage: {
+      from() {
+        return {
+          upload: response,
+          getPublicUrl: () => ({ data: { publicUrl: '' } }),
+        }
+      },
+    },
+  }
 }
 
-export const supabase = createClient(SUPABASE_URL ?? '', SUPABASE_ANON ?? '')
+export const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey)
+
+export const supabase = hasSupabaseConfig
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createMissingSupabaseClient()

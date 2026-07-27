@@ -3,4 +3,4 @@ alter table crm.abonos
 
 alter table crm.abonos
   add constraint abonos_metodo_check
-  check (metodo in ('efectivo', 'transferencia', 'zelle', 'binance', 'paypal'));
+  check (metodo in ('desconocido', 'efectivo', 'transferencia', 'zelle', 'binance', 'paypal'));

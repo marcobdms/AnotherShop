@@ -4,8 +4,17 @@
  * Si cambias la URL del backend, solo tocas este archivo.
  */
 
-const BASE       = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api`   : '/api'
-const ADMIN_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/admin` : '/admin'
+const API_URL = import.meta.env.VITE_API_URL || ''
+const IS_LOCAL = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost'
+  || window.location.hostname === '127.0.0.1'
+  || window.location.hostname.startsWith('192.168.')
+  || window.location.hostname.startsWith('10.')
+)
+const API_ORIGIN = IS_LOCAL ? '' : API_URL
+
+const BASE       = API_ORIGIN ? `${API_ORIGIN}/api`   : '/api'
+const ADMIN_BASE = API_ORIGIN ? `${API_ORIGIN}/admin` : '/admin'
 const CRM_BASE   = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/crm`   : '/crm'
 
 // Token del backend — viene de variable de entorno, nunca lo escribe el usuario
