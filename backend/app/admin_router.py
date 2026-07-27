@@ -1,16 +1,14 @@
 """CRUD protegido del catálogo, respaldado por Supabase/PostgreSQL."""
 
-from datetime import datetime
 import hmac
 import os
-from pathlib import Path
-import re
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app import catalog_repository as repository
+from app.storage import StorageConfigurationError, upload_admin_image
 
 
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "").strip()
@@ -267,55 +265,36 @@ def admin_sync_all(body: SyncBody):
     return {"status": "ok", **result}
 
 
-def _available_image_path(directory: Path, original_name: str) -> Path:
-    """Conserva el nombre si está libre y añade -2, -3… si ya existe."""
-    safe_name = Path(original_name).name
-    stem = re.sub(r"[^a-zA-Z0-9_-]+", "-", Path(safe_name).stem).strip("-")
-    suffix = Path(safe_name).suffix.lower()
-    if not stem or not suffix:
-        raise HTTPException(status_code=400, detail="Nombre de imagen inválido")
-
-    candidate = directory / f"{stem}{suffix}"
-    counter = 2
-    while candidate.exists():
-        candidate = directory / f"{stem}-{counter}{suffix}"
-        counter += 1
-    return candidate
-
-
 @router.post(
     "/upload-image",
-    summary="Subir imagen a frontend/public/images",
+    summary="Subir imagen a Supabase Storage",
     dependencies=protected,
 )
 async def admin_upload_image(file: UploadFile = File(...)):
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="El archivo debe ser una imagen")
 
-    public_images_dir = (
-        Path(__file__).parent.parent.parent / "frontend" / "public" / "images"
-    )
-    public_images_dir.mkdir(parents=True, exist_ok=True)
-    destination = _available_image_path(
-        public_images_dir,
-        file.filename or f"imagen-{datetime.now().timestamp()}.jpg",
-    )
-
     try:
-        with destination.open("xb") as buffer:
-            while chunk := await file.read(1024 * 1024):
-                buffer.write(chunk)
-    except FileExistsError:
-        # Una subida paralela ocupó el nombre después de resolverlo.
-        destination = _available_image_path(public_images_dir, destination.name)
-        with destination.open("xb") as buffer:
-            while chunk := await file.read(1024 * 1024):
-                buffer.write(chunk)
+        contents = await file.read()
+        storage_path, public_url = upload_admin_image(
+            original_name=file.filename or "imagen.jpg",
+            contents=contents,
+            content_type=file.content_type,
+        )
+    except StorageConfigurationError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except (OSError, ValueError) as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(
+            status_code=502,
+            detail="No se pudo subir la imagen a Supabase Storage",
+        ) from error
     finally:
         await file.close()
 
     return {
         "status": "ok",
-        "filename": destination.name,
-        "url": f"/images/{destination.name}",
+        "filename": storage_path.rsplit("/", maxsplit=1)[-1],
+        "url": public_url,
     }

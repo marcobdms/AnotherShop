@@ -1513,10 +1513,8 @@
         "L",
         "XL"
       ],
-      "imagen": "/images/094.jpg",
-      "imagenes": [
-        "/images/094.jpg"
-      ],
+      "imagen": "",
+      "imagenes": [],
       "descripcion": "M",
       "disponible": false,
       "marca": "Pull&Bear",
@@ -1538,10 +1536,8 @@
         "L",
         "XL"
       ],
-      "imagen": "/images/095.jpg",
-      "imagenes": [
-        "/images/095.jpg"
-      ],
+      "imagen": "",
+      "imagenes": [],
       "descripcion": "S",
       "disponible": false,
       "marca": "Pull&Bear",

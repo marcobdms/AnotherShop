@@ -28,6 +28,7 @@ const COLORES_PRESET = [
 function makeRow(overrides = {}) {
   return {
     _id: crypto.randomUUID(),
+    _productId: null, // identidad interna; no se muestra ni se usa como REF
     ref: '',
     nombre: '',
     color: '',
@@ -606,6 +607,7 @@ export default function AdminImport() {
           if (!invEntry || !invEntry.variantes || invEntry.variantes.length === 0) {
             // Producto sin variantes
             initialRows.push(makeRow({
+              _productId: p.id,
               ref: pRef,
               nombre: p.nombre,
               precio_venta: (p.precio ?? 0).toString(),
@@ -629,6 +631,7 @@ export default function AdminImport() {
               if (!v.tallas || Object.keys(v.tallas).length === 0) {
                 // Color sin tallas específicas
                 initialRows.push(makeRow({
+                  _productId: p.id,
                   ref: pRef,
                   nombre: p.nombre,
                   precio_venta: (p.precio ?? 0).toString(),
@@ -647,6 +650,7 @@ export default function AdminImport() {
                 // Tallas para este color
                 Object.entries(v.tallas).forEach(([talla, stock]) => {
                   initialRows.push(makeRow({
+                    _productId: p.id,
                     ref: pRef,
                     nombre: p.nombre,
                     precio_venta: (p.precio ?? 0).toString(),
@@ -846,6 +850,7 @@ export default function AdminImport() {
         const resolvedRef = nombreToRef[nombre] || r.ref.trim() || nombre
 
         byNombreColor[groupKey] = {
+          id: r._productId || undefined,
           ref: resolvedRef,
           nombre,
           precio: parseFloat(r.precio_venta) || 0,

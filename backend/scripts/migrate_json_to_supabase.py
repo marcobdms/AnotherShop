@@ -1,4 +1,4 @@
-"""Migración única de catalog.json + inventory.json a Supabase/PostgreSQL.
+"""Migración única de JSON e imágenes a Supabase.
 
 Por seguridad el comando solo analiza los archivos si no recibe --apply.
 Las tablas deben haberse creado antes con backend/sql/001_catalog_schema.sql.
@@ -16,10 +16,12 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND_DIR))
 
 from app.catalog_repository import export_full, get_history, replace_from_json  # noqa: E402
+from app.storage import migrate_catalog_images  # noqa: E402
 
 
 CATALOG_PATH = BACKEND_DIR / "data" / "catalog.json"
 INVENTORY_PATH = BACKEND_DIR / "data" / "inventory.json"
+IMAGES_DIRECTORY = BACKEND_DIR.parent / "frontend" / "public" / "images"
 
 
 def read_json(path: Path) -> dict:
@@ -92,6 +94,13 @@ def main() -> int:
             "creado y SUPABASE_DATABASE_URL esté configurada."
         )
         return 0
+
+    image_count = migrate_catalog_images(
+        catalog,
+        inventory,
+        images_directory=IMAGES_DIRECTORY,
+    )
+    print(f"Imágenes subidas o verificadas en Storage: {image_count}")
 
     replace_from_json(catalog, inventory)
     migrated = export_full()

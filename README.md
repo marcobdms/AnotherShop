@@ -1,6 +1,6 @@
 # ANOTHER NPC SHOP
 
-Monorepo de la tienda Another NPC Shop. Incluye un frontend web en React/Vite, un backend en FastAPI, datos locales en JSON y un cliente iOS en desarrollo.
+Monorepo de la tienda Another NPC Shop. Incluye un frontend web en React/Vite, un backend en FastAPI, catálogo e inventario en Supabase/PostgreSQL y un cliente iOS en desarrollo.
 
 La app web publica un catalogo de ropa, fichas de producto, favoritos con Supabase y un panel administrativo para disponibilidad, inventario, historial e importacion masiva.
 
@@ -10,9 +10,8 @@ La app web publica un catalogo de ropa, fichas de producto, favoritos con Supaba
 | --- | --- |
 | Frontend web | React 18, Vite, React Router |
 | Estilos | CSS propio en `frontend/src/index.css` + estilos puntuales inline en pantallas admin/cuenta |
-| Backend | FastAPI, Uvicorn |
-| Datos catalogo | `backend/data/catalog.json` |
-| Datos inventario | `backend/data/inventory.json` |
+| Backend | FastAPI, Uvicorn, SQLAlchemy 2, psycopg 3 |
+| Catálogo e inventario | Supabase/PostgreSQL desde FastAPI |
 | Auth/favoritos | Supabase desde el frontend |
 | Cliente nativo | Swift/iOS en `ios/` |
 
@@ -26,10 +25,18 @@ anothershop/
 |-- backend/
 |   |-- app/
 |   |   |-- main.py               # API publica: /api/catalog, /api/products, /api/meta, /api/filters
-|   |   `-- admin_router.py       # API admin: /admin/*
+|   |   |-- admin_router.py       # API admin: /admin/*
+|   |   |-- catalog_repository.py # lecturas/escrituras SQL y transacciones
+|   |   |-- database.py           # conexión privada a PostgreSQL
+|   |   `-- storage.py            # subida y URLs públicas de Supabase Storage
 |   |-- data/
-|   |   |-- catalog.json          # meta, filtros, productos e historial
-|   |   `-- inventory.json        # variantes de color y stock por talla
+|   |   |-- catalog.json          # backup y fuente de la migración inicial
+|   |   `-- inventory.json        # backup y fuente de la migración inicial
+|   |-- scripts/
+|   |   `-- migrate_json_to_supabase.py
+|   |-- sql/
+|   |   |-- 001_catalog_schema.sql
+|   |   `-- 002_catalog_images_storage.sql
 |   `-- requirements.txt
 |-- frontend/
 |   |-- public/
@@ -48,8 +55,6 @@ anothershop/
 `-- ios/                          # app iOS Swift en desarrollo
 ```
 
-No existen actualmente `init.sql`, `backend/scripts/` ni `backup/`; cualquier referencia antigua a esos paths estaba obsoleta.
-
 ## Desarrollo local
 
 Requisitos:
@@ -57,6 +62,7 @@ Requisitos:
 - Node.js
 - Python 3.11+ recomendado
 - `pip`
+- Un proyecto Supabase con el esquema del catálogo aplicado
 
 Instalacion:
 
@@ -106,7 +112,16 @@ Crear `frontend/.env.local` cuando haga falta:
 
 | Variable | Uso | Default |
 | --- | --- | --- |
-| `ADMIN_TOKEN` | Token que protege endpoints admin | `change-me-in-env` |
+| `SUPABASE_DATABASE_URL` | URI privada del Transaction Pooler de Supabase | Obligatoria |
+| `SUPABASE_URL` | URL pública del proyecto, usada por Storage en el backend | Obligatoria |
+| `SUPABASE_STORAGE_BUCKET` | Bucket de imágenes públicas | `catalog-images` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Credencial de Storage exclusiva del backend | Obligatoria |
+| `ADMIN_TOKEN` | Token que protege endpoints admin | Obligatoria |
+
+Usa [backend/.env.example](backend/.env.example) como referencia. La URI y la
+contraseña de Postgres son secretos exclusivos del backend: nunca deben llevar
+prefijo `VITE_` ni aparecer en el frontend. La service role se usa solo para
+subir imágenes desde FastAPI; rótala de inmediato si alguna vez se expone.
 
 ## Rutas web
 
@@ -126,7 +141,7 @@ Crear `frontend/.env.local` cuando haga falta:
 
 | Endpoint | Descripcion |
 | --- | --- |
-| `GET /api/catalog` | Catalogo completo: `meta`, `filtros`, `productos`; el backend expande variantes desde `inventory.json` |
+| `GET /api/catalog` | Catalogo completo: `meta`, `filtros`, `productos`; el backend expande variantes desde PostgreSQL |
 | `GET /api/products` | Lista de productos para tarjetas |
 | `GET /api/products/{id}` | Detalle de producto con variantes y SKUs |
 | `GET /api/meta` | Datos de marca, WhatsApp y PayPal |
@@ -146,24 +161,23 @@ Todos los endpoints `/admin/*` requieren header `X-Admin-Token`.
 | `GET/PUT /admin/inventory/{id}` | Leer/guardar inventario por producto |
 | `GET /admin/export-full` | Exportar catalogo + inventario |
 | `PUT /admin/sync-all` | Sincronizacion masiva de catalogo e inventario |
-| `POST /admin/upload-image` | Subir imagen a `frontend/public/images` |
+| `POST /admin/upload-image` | Subir imagen a Supabase Storage |
 
-## Datos
+## Datos del catálogo
 
-`catalog.json` contiene:
+El esquema está en `backend/sql/001_catalog_schema.sql`:
 
-- `meta`: marca, moneda, WhatsApp, PayPal y recargo PayPal
-- `filtros`: tallas y generos
-- `productos`: productos base
-- `historial`: ultimos cambios administrativos
+- `productos`: identidad y datos comerciales. `id` conserva valores como
+  `"004"`; `ref` puede repetirse y `sync_key` diferencia internamente cada fila.
+- `variantes`: colores e imagen opcional por producto.
+- `inventario`: stock y disponibilidad por variante/talla.
+- `configuracion_catalogo`: `meta` y `filtros`.
+- `historial_catalogo`: últimos cambios administrativos.
 
-`inventory.json` contiene variantes por producto:
-
-- color
-- hex
-- stock por talla
-
-El backend combina ambos archivos para publicar variantes en catalogo y detalle. El toggle `disponible` sigue siendo el control manual principal de visibilidad comercial; el stock informa tallas/colores disponibles.
+FastAPI recompone la misma estructura JSON anterior. El toggle `disponible`
+sigue siendo el control manual principal; el stock informa tallas y colores.
+`catalog.json` e `inventory.json` quedan como backup de solo lectura y el
+backend ya no los modifica.
 
 ## Supabase
 
@@ -209,6 +223,41 @@ create policy "Solo el propio usuario"
   on public.favorites for all using (auth.uid() = user_id);
 ```
 
+### Migración inicial del catálogo
+
+1. Haz backup del proyecto Supabase y de `backend/data/`.
+2. Revisa y ejecuta `backend/sql/001_catalog_schema.sql` en Supabase SQL Editor.
+3. Ejecuta `backend/sql/002_catalog_images_storage.sql` para marcar
+   `catalog-images` como público.
+4. En el backend configura `SUPABASE_DATABASE_URL` con la URI del
+   **Transaction pooler**, además de `SUPABASE_URL` y
+   `SUPABASE_SERVICE_ROLE_KEY`.
+5. Valida los JSON sin escribir:
+
+   ```powershell
+   python backend/scripts/migrate_json_to_supabase.py
+   ```
+
+6. Ejecuta la carga única:
+
+   ```powershell
+   python backend/scripts/migrate_json_to_supabase.py --apply
+   ```
+
+La carga con `--apply` sube las imágenes locales a
+`catalog-images/products/<id>/`, reemplaza sus URLs en la carga a PostgreSQL,
+y compara los conteos migrados. No modifica ni elimina los JSON ni las
+imágenes locales.
+
+### Verificación posterior
+
+- `GET /api/catalog` debe conservar las claves `meta`, `filtros`, `productos`
+  e `historial`.
+- `GET /admin/export-full` debe mostrar todos los productos y variantes.
+- En `/admin`, edita disponibilidad e inventario y confirma el historial.
+- En `/admin/import`, sincroniza sin modificar el formato del JSON de entrada.
+- Confirma que los timestamps de `catalog.json` e `inventory.json` no cambian.
+
 ## Despliegue
 
 ### Backend en Coolify
@@ -217,13 +266,26 @@ create policy "Solo el propio usuario"
 - Build: `pip install -r requirements.txt`
 - Start: `uvicorn app.main:app --host 0.0.0.0 --port 8000`
 - Puerto expuesto: `8000`
-- Env: `ADMIN_TOKEN`
+- Env: `SUPABASE_DATABASE_URL`, `SUPABASE_URL`,
+  `SUPABASE_STORAGE_BUCKET=catalog-images`, `SUPABASE_SERVICE_ROLE_KEY`,
+  `ADMIN_TOKEN`
+
+En Supabase, copia la conexión desde **Project Settings → Database → Connect →
+Transaction pooler**. Sustituye la contraseña, conserva `sslmode=require` y
+añade la URI completa como variable secreta en el servicio backend de Coolify.
+No añadas la contraseña de Postgres ni una service role key a Vercel.
 
 ### Frontend en Vercel
 
 - Directorio raiz: `frontend`
 - Framework: Vite
 - Env: `VITE_API_URL`, `VITE_ADMIN_TOKEN`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+
+Las imágenes del catálogo se sirven desde el bucket público
+`catalog-images`. La migración conserva `frontend/public/images` como backup.
+Las nuevas subidas reciben una ruta UUID en Storage, por lo que referencias
+repetidas no pueden solaparse. Vercel puede cargar estas URLs CDN sin compartir
+filesystem con Coolify.
 
 ## Notas de mantenimiento
 
@@ -232,4 +294,5 @@ create policy "Solo el propio usuario"
 - El catalogo se consume principalmente con `useCatalog()`, que cachea `GET /api/catalog` en memoria.
 - El retorno desde producto a catalogo restaura scroll antes de revelar nav, cinta y grid para evitar saltos visuales.
 - Varias pantallas admin y cuenta aun tienen estilos inline dentro del componente. Si crecen, conviene extraerlos a CSS dedicado.
-- No editar `backend/data/catalog.json` o `backend/data/inventory.json` manualmente salvo para mantenimiento controlado; el flujo normal debe pasar por `/admin`.
+- No editar `backend/data/catalog.json` o `backend/data/inventory.json`: son
+  backups de solo lectura después de la migración.

@@ -188,7 +188,9 @@ Campos frecuentes del catalogo:
 }
 ```
 
-El inventario por color/talla vive aparte en `backend/data/inventory.json` y el backend lo combina con el catalogo.
+El frontend conserva esta forma de objeto, pero el dato vive en las tablas
+`productos`, `variantes` e `inventario` de Supabase/PostgreSQL. FastAPI recompone
+el contrato; `backend/data/*.json` es únicamente el backup de la migración.
 
 ## 14. Coherencia actual revisada
 
@@ -218,5 +220,6 @@ Puntos a vigilar:
 6. Mantener admin como herramienta densa, no como pagina de marketing.
 7. Probar Home, catalogo y producto despues de cambios visuales grandes.
 8. Evitar fades que revelen nav, banner y contenido en momentos distintos.
-9. No editar manualmente `catalog.json`/`inventory.json` salvo mantenimiento controlado.
+9. No editar `catalog.json`/`inventory.json`: son backups de solo lectura; los
+   cambios operativos pasan por `/admin`.
 10. Actualizar este documento si cambia una ruta, layout o regla visual importante.
