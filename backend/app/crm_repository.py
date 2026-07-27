@@ -94,6 +94,7 @@ abonos = Table(
     Column("usuario", Text, nullable=False),
     Column("nota", Text, nullable=False),
     Column("creado_en", DateTime(timezone=True), nullable=False),
+    schema="crm",
 )
 
 abono_asignaciones = Table(

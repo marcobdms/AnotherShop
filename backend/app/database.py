@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import os
+import logging
 from functools import lru_cache
 from pathlib import Path
 
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine, make_url
+
+
+logger = logging.getLogger(__name__)
 
 
 def _load_local_env() -> None:
@@ -33,7 +37,7 @@ def _load_local_env() -> None:
 _load_local_env()
 
 
-def _database_url() -> str:
+def _database_config() -> tuple[str, str]:
     for key in (
         "SUPABASE_DATABASE_URL",
         "DATABASE_URL",
@@ -43,10 +47,14 @@ def _database_url() -> str:
     ):
         value = os.getenv(key, "").strip()
         if value:
-            return value
+            return key, value
     raise RuntimeError(
         "Falta SUPABASE_DATABASE_URL. En local pon la conexion PostgreSQL de Supabase en el .env de la raiz."
     )
+
+
+def _database_url() -> str:
+    return _database_config()[1]
 
 
 def _normalize_url(url: str) -> str:
@@ -61,4 +69,51 @@ def _normalize_url(url: str) -> str:
 
 @lru_cache(maxsize=1)
 def get_engine() -> Engine:
-    return create_engine(_normalize_url(_database_url()), pool_pre_ping=True)
+    source, raw_url = _database_config()
+    normalized_url = _normalize_url(raw_url)
+    parsed_url = make_url(normalized_url)
+    engine = create_engine(
+        normalized_url,
+        pool_pre_ping=True,
+        connect_args={"options": "-csearch_path=crm,public"},
+    )
+    with engine.connect() as connection:
+        diagnostics = connection.execute(
+            text(
+                """
+                select
+                    current_database() as database_name,
+                    current_schema() as current_schema,
+                    current_setting('search_path') as search_path,
+                    to_regclass('crm.abonos') is not null as has_abonos,
+                    exists (
+                        select 1
+                        from information_schema.columns
+                        where table_schema = 'crm'
+                          and table_name = 'abonos'
+                          and column_name = 'moneda'
+                    ) as has_moneda
+                """
+            )
+        ).mappings().one()
+
+    logger.warning(
+        "Database seleccionada: variable=%s host=%s puerto=%s usuario=%s database=%s "
+        "schema=%s search_path=%s crm.abonos=%s moneda=%s",
+        source,
+        parsed_url.host,
+        parsed_url.port,
+        parsed_url.username,
+        diagnostics["database_name"],
+        diagnostics["current_schema"],
+        diagnostics["search_path"],
+        diagnostics["has_abonos"],
+        diagnostics["has_moneda"],
+    )
+    if not diagnostics["has_abonos"] or not diagnostics["has_moneda"]:
+        raise RuntimeError(
+            "La conexion PostgreSQL seleccionada no contiene crm.abonos.moneda. "
+            f"Variable={source}, host={parsed_url.host}, usuario={parsed_url.username}, "
+            f"database={diagnostics['database_name']}, search_path={diagnostics['search_path']}."
+        )
+    return engine
