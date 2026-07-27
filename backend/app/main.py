@@ -6,12 +6,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
-import json
 import unicodedata
 import re
-from pathlib import Path
 
 from app.admin_router import router as admin_router
+from app.catalog_repository import load_catalog, load_inventory
 
 app = FastAPI(
     title="Another NPC Shop API",
@@ -31,22 +30,6 @@ app.add_middleware(
 
 # ── Routers ────────────────────────────────────────────────────────────────────
 app.include_router(admin_router)
-
-CATALOG_PATH = Path(__file__).parent.parent / "data" / "catalog.json"
-INVENTORY_PATH = Path(__file__).parent.parent / "data" / "inventory.json"
-
-
-def load_catalog() -> dict:
-    with open(CATALOG_PATH, encoding="utf-8") as f:
-        return json.load(f)
-
-
-def load_inventory() -> dict:
-    if not INVENTORY_PATH.exists():
-        return {}
-    with open(INVENTORY_PATH, encoding="utf-8") as f:
-        return json.load(f)
-
 
 def _normalize_sku(text: str) -> str:
     """Normaliza texto para SKU: quita acentos, mayúsculas, reemplaza espacios."""
