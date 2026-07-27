@@ -58,7 +58,11 @@ anothershop/
 |   |-- vite.config.js            # dev server en :3000 y proxy a :8000
 |   `-- vercel.json               # rewrite SPA para React Router
 |-- crm-frontend/                 # app Vite separada para despliegue privado del CRM
-|   |-- src/main.jsx              # reutiliza la pantalla /clientes del frontend
+|   |-- src/Clientes.jsx          # pantalla privada del CRM
+|   |-- src/api/catalog.js        # cliente HTTP propio del CRM
+|   |-- src/lib/supabase.js       # cliente Supabase propio del CRM
+|   |-- src/index.css             # estilos propios del CRM
+|   |-- src/main.jsx
 |   `-- vite.config.js            # dev server en :3002 y proxy a :8000
 `-- ios/                          # app iOS Swift en desarrollo
 ```
