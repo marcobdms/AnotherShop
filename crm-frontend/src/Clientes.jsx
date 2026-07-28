@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { hasSupabaseConfig, supabase } from './lib/supabase'
+import { CrmHeader, CrmLogin, useCrmSession } from './CrmChrome'
 import {
   crmAnularVenta,
   crmCrearAbono,
@@ -417,77 +417,8 @@ function productImage(product) {
   return product.imagen || product.variantes.find(variant => variant.imagen)?.imagen || ''
 }
 
-function CrmLogin({ onAuth }) {
-  const [pwd, setPwd] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const adminToken = import.meta.env.VITE_ADMIN_TOKEN || ''
-
-  async function handleSubmit() {
-    if (!pwd) return
-    setLoading(true)
-    setError('')
-    try {
-      if (adminToken) {
-        if (pwd !== adminToken) {
-          setError('Contrasena incorrecta')
-          setPwd('')
-          return
-        }
-        sessionStorage.setItem('admin_auth_user', 'admin')
-        onAuth('admin')
-        return
-      }
-      if (!hasSupabaseConfig) {
-        setError('Falta configurar VITE_ADMIN_TOKEN')
-        return
-      }
-      const { data, error: sbError } = await supabase
-        .from('admin_users')
-        .select('username')
-        .eq('password', pwd)
-        .maybeSingle()
-      if (sbError) throw new Error(sbError.message)
-      if (!data?.username) {
-        setError('Contrasena incorrecta')
-        setPwd('')
-        return
-      }
-      sessionStorage.setItem('admin_auth_user', data.username)
-      onAuth(data.username)
-    } catch (_) {
-      setError('Error de conexion. Intentalo de nuevo.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="crm-page">
-      <style>{css}</style>
-      <div className="crm-empty" style={{ minHeight: '100vh', flexDirection: 'column', gap: '1rem' }}>
-        <p className="crm-brand">Another NPC Shop CRM</p>
-        <input
-          className="crm-input"
-          type="password"
-          placeholder="Contrasena admin"
-          value={pwd}
-          onChange={e => { setPwd(e.target.value); setError('') }}
-          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          style={{ maxWidth: 320 }}
-          autoFocus
-        />
-        <button className="crm-btn crm-btn--primary" onClick={handleSubmit} disabled={!pwd || loading}>
-          {loading ? 'Entrando...' : 'Entrar'}
-        </button>
-        {error && <p className="crm-debt bad">{error}</p>}
-      </div>
-    </div>
-  )
-}
-
 export default function Clientes() {
-  const [usuario, setUsuario] = useState(() => sessionStorage.getItem('admin_auth_user'))
+  const { usuario, login, logout } = useCrmSession()
   const [clientes, setClientes] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [selected, setSelected] = useState(null)
@@ -564,7 +495,7 @@ export default function Clientes() {
     [cart],
   )
 
-  if (!usuario) return <CrmLogin onAuth={setUsuario} />
+  if (!usuario) return <CrmLogin onAuth={login} />
 
   async function handleCreateClient() {
     if (!newClient.nombre.trim()) return
@@ -731,22 +662,7 @@ export default function Clientes() {
   return (
     <div className="crm-page">
       <style>{css}</style>
-      <header className="crm-header">
-        <span className="crm-brand">Another NPC Shop CRM</span>
-        <nav className="crm-nav">
-          <span>CRM privado</span>
-          <span>{usuario}</span>
-          <button
-            className="crm-btn"
-            onClick={() => {
-              sessionStorage.removeItem('admin_auth_user')
-              setUsuario(null)
-            }}
-          >
-            Salir
-          </button>
-        </nav>
-      </header>
+      <CrmHeader usuario={usuario} onLogout={logout} />
 
       <div className="crm-shell">
         <aside className="crm-sidebar">
@@ -932,12 +848,7 @@ export default function Clientes() {
                           <option value="binance">Binance</option>
                           <option value="paypal">PayPal</option>
                         </select>
-                        <select className="crm-select" value={abonoForm.moneda} onChange={e => setAbonoForm({ ...abonoForm, moneda: e.target.value })}>
-                          <option value="usd">USD</option>
-                          <option value="bs">BS</option>
-                          <option value="eur">EUR</option>
-                          <option value="usdt">USDT</option>
-                        </select>
+                        <input className="crm-input" value="USD" aria-label="Moneda USD" disabled />
                       </div>
                       <input className="crm-input" placeholder="Nota opcional" value={abonoForm.nota} onChange={e => setAbonoForm({ ...abonoForm, nota: e.target.value })} />
                       <button className="crm-btn crm-btn--primary" onClick={handleCreatePayment} disabled={!abonoForm.monto}>Guardar abono</button>

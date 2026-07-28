@@ -10,8 +10,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime
 from decimal import Decimal
-import json
-from pathlib import Path
+
 from typing import Any, Iterable, Optional
 import re
 import unicodedata
@@ -40,9 +39,6 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.engine import Connection
 
 from app.database import get_engine
-
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-LOCAL_CATALOG_PATH = DATA_DIR / "catalog.json"
 
 
 metadata = MetaData()
@@ -299,14 +295,15 @@ def _read_history(connection: Connection, limit: int = 200) -> list[dict[str, An
 
 
 def load_catalog() -> dict[str, Any]:
+    """Carga el catálogo completo desde Supabase (PostgreSQL)."""
     with get_engine().connect() as connection:
         config = connection.execute(
             select(configuracion_catalogo).where(configuracion_catalogo.c.id.is_(True))
         ).mappings().first()
         if not config:
             raise RuntimeError(
-                "El catálogo todavía no fue migrado. Ejecuta primero el script "
-                "migrate_json_to_supabase.py."
+                "No se encontró configuración del catálogo en Supabase. "
+                "Verifica que la base de datos esté correctamente inicializada."
             )
         return {
             "meta": dict(config["meta"] or {}),
@@ -319,24 +316,6 @@ def load_catalog() -> dict[str, Any]:
 def load_inventory() -> dict[str, dict[str, Any]]:
     with get_engine().connect() as connection:
         return _inventory_map(connection)
-
-
-def load_catalog() -> dict[str, Any]:
-    with get_engine().connect() as connection:
-        config = connection.execute(
-            select(configuracion_catalogo).where(configuracion_catalogo.c.id.is_(True))
-        ).mappings().first()
-        if not config:
-            if LOCAL_CATALOG_PATH.exists():
-                with LOCAL_CATALOG_PATH.open("r", encoding="utf-8") as file:
-                    return json.load(file)
-            raise RuntimeError("El catalogo todavia no fue migrado.")
-        return {
-            "meta": dict(config["meta"] or {}),
-            "filtros": dict(config["filtros"] or {}),
-            "productos": _read_products(connection),
-            "historial": _read_history(connection),
-        }
 
 
 def get_product(product_id: str) -> Optional[dict[str, Any]]:

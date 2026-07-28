@@ -277,6 +277,14 @@ export async function crmUploadComprobante(clienteId, file, usuario = 'admin') {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+export async function crmFetchDashboard({ desde, hasta, timezone = 'Europe/Madrid' }) {
+  const params = new URLSearchParams({ desde, hasta, timezone })
+  const res = await fetch(`${CRM_BASE}/dashboard/resumen?${params.toString()}`, {
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
 export function formatPrice(price) {
   return price.toLocaleString('en-US', {
     style: 'currency',

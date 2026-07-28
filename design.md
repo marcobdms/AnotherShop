@@ -61,6 +61,7 @@ Evitar hacer crecer tipografia por viewport de forma agresiva. El texto debe cab
 | `/admin` | Pantalla operativa fullscreen sin nav global |
 | `/admin/cambios` | Historial fullscreen utilitario |
 | `/admin/import` | Tabla densa para sincronizacion de drops |
+| `/dashboard` | Analitica CRM fullscreen, densa, monocromatica y orientada a decisiones |
 
 ## 6. Navegacion
 
@@ -139,6 +140,10 @@ Las rutas admin no buscan ser landing ni editorial. Son herramientas:
 - Feedback de guardado/importacion
 - Uso puntual de verde/rojo/azul para estados
 - Sin nav global
+
+El deploy privado del CRM comparte una cabecera propia entre `/clientes` y
+`/dashboard`. El dashboard usa KPIs, barras y tablas sin abandonar los bordes
+finos, la tipografia Inter ni la paleta monocromatica del CRM.
 
 Aunque usen CSS inline, deben respetar Inter, blanco/negro, bordes finos y controles sobrios.
 

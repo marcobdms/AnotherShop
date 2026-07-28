@@ -156,6 +156,7 @@ subir imágenes desde FastAPI; rótala de inmediato si alguna vez se expone.
 | `/admin/cambios` | Historial completo de cambios |
 | `/admin/import` | Importacion/sincronizacion masiva de drops |
 | `/clientes` | CRM interno protegido por la misma sesion admin |
+| `/dashboard` | Resumen privado de ventas, cobros USD, deuda, clientes y stock |
 
 ## API publica
 
@@ -196,6 +197,7 @@ Todos los endpoints `/crm/*` requieren header `X-Admin-Token`.
 | `DELETE /crm/ventas/{id}` | Anular compra y reponer stock |
 | `GET/POST /crm/clientes/{id}/abonos` | Ver y registrar abonos |
 | `GET/POST /crm/clientes/{id}/comprobantes` | Ver/subir imagenes privadas de comprobantes |
+| `GET /crm/dashboard/resumen` | Metricas agregadas del dashboard para un periodo |
 
 ## Datos del catálogo
 
@@ -234,6 +236,9 @@ El esquema esta en `backend/sql/003_crm_schema.sql` y el bucket privado en
 Registrar una compra valida el stock real y descuenta inventario dentro de una
 misma transaccion del backend. Anular una compra repone el stock y deja la venta
 como `anulada` para conservar trazabilidad.
+
+El dashboard privado trabaja en USD. Los abonos de otras monedas no se mezclan
+con ventas, cobros ni deuda y aparecen como avisos de calidad de datos.
 
 ## Supabase
 
@@ -310,8 +315,10 @@ imágenes locales.
 1. Ejecuta `backend/sql/003_crm_schema.sql` en Supabase SQL Editor.
 2. Ejecuta `backend/sql/004_crm_receipts_storage.sql` para crear el bucket
    privado `crm-receipts`.
-3. Configura `SUPABASE_CRM_RECEIPTS_BUCKET=crm-receipts` en el backend.
-4. Entra primero a `/admin` para crear la sesion interna y luego abre
+3. Ejecuta las migraciones CRM restantes en orden, incluida
+   `backend/sql/008_crm_dashboard_indexes.sql`.
+4. Configura `SUPABASE_CRM_RECEIPTS_BUCKET=crm-receipts` en el backend.
+5. Entra primero a `/admin` para crear la sesion interna y luego abre
    `/clientes`.
 
 ### Verificación posterior

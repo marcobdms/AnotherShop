@@ -2,6 +2,7 @@
 
 import hmac
 import os
+from datetime import datetime
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
@@ -63,6 +64,18 @@ class ImportarJsonIn(BaseModel):
 
 
 router = APIRouter(prefix="/crm", tags=["crm"], dependencies=[Depends(verify_token)])
+
+
+@router.get("/dashboard/resumen")
+def crm_dashboard_summary(
+    desde: datetime,
+    hasta: datetime,
+    timezone: str = "Europe/Madrid",
+):
+    try:
+        return repository.dashboard_summary(desde, hasta, timezone)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
 
 @router.get("/clientes")

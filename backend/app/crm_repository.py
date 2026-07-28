@@ -13,6 +13,7 @@ from typing import Any, Iterable, Optional
 import uuid
 
 from sqlalchemy import (
+    case,
     Column,
     DateTime,
     ForeignKey,
@@ -152,6 +153,7 @@ def _client_balance_rows(connection: Connection) -> dict[str, dict[str, float]]:
     payments = dict(
         connection.execute(
             select(abonos.c.cliente_id, func.coalesce(func.sum(abonos.c.monto), 0))
+            .where(abonos.c.moneda == "usd")
             .group_by(abonos.c.cliente_id)
         ).all()
     )
@@ -656,7 +658,16 @@ def _sale_payment_map(connection: Connection, sale_ids: Iterable[str]) -> dict[s
                 abono_asignaciones.c.venta_id,
                 func.coalesce(func.sum(abono_asignaciones.c.monto), 0).label("total"),
             )
-            .where(abono_asignaciones.c.venta_id.in_(ids))
+            .select_from(
+                abono_asignaciones.join(
+                    abonos,
+                    abonos.c.id == abono_asignaciones.c.abono_id,
+                )
+            )
+            .where(
+                abono_asignaciones.c.venta_id.in_(ids),
+                abonos.c.moneda == "usd",
+            )
             .group_by(abono_asignaciones.c.venta_id)
         )
     }
@@ -1040,3 +1051,554 @@ def list_client_receipts(client_id: str) -> list[dict[str, Any]]:
             .order_by(comprobantes_cliente.c.creado_en.desc())
         ).all()
         return [_receipt_out(row) for row in rows]
+
+
+def _dashboard_metric_block(
+    connection: Connection,
+    start: datetime,
+    end: datetime,
+) -> dict[str, float | int]:
+    sale_filter = (
+        ventas.c.estado == "activa",
+        ventas.c.creada_en >= start,
+        ventas.c.creada_en < end,
+    )
+    sale_row = connection.execute(
+        select(
+            func.count(ventas.c.id).label("orders"),
+            func.coalesce(func.sum(ventas.c.total), 0).label("net_sales"),
+            func.count(func.distinct(ventas.c.cliente_id)).label("customers"),
+        ).where(*sale_filter)
+    ).one()
+    units = connection.scalar(
+        select(func.coalesce(func.sum(venta_items.c.cantidad), 0))
+        .select_from(
+            venta_items.join(ventas, ventas.c.id == venta_items.c.venta_id)
+        )
+        .where(*sale_filter)
+    )
+    cancellation_row = connection.execute(
+        select(
+            func.count(ventas.c.id).label("cancelled_orders"),
+            func.coalesce(func.sum(ventas.c.total), 0).label("cancelled_value"),
+        ).where(
+            ventas.c.estado == "anulada",
+            ventas.c.creada_en >= start,
+            ventas.c.creada_en < end,
+        )
+    ).one()
+    orders = int(sale_row.orders or 0)
+    cancelled_orders = int(cancellation_row.cancelled_orders or 0)
+    total_attempts = orders + cancelled_orders
+    net_sales = _money(sale_row.net_sales)
+    return {
+        "net_sales": net_sales,
+        "orders": orders,
+        "units": int(units or 0),
+        "average_ticket": net_sales / orders if orders else 0,
+        "customers": int(sale_row.customers or 0),
+        "cancelled_orders": cancelled_orders,
+        "cancelled_value": _money(cancellation_row.cancelled_value),
+        "cancellation_rate": cancelled_orders / total_attempts if total_attempts else 0,
+    }
+
+
+def dashboard_summary(
+    start: datetime,
+    end: datetime,
+    timezone_name: str = "Europe/Madrid",
+) -> dict[str, Any]:
+    """Resumen operativo del CRM.
+
+    Las ventas se consideran expresadas en USD. Los cobros y asignaciones de
+    otras monedas quedan fuera de los totales y se reportan como calidad de
+    datos para no mezclar importes incompatibles.
+    """
+
+    if end <= start:
+        raise ValueError("El final del periodo debe ser posterior al inicio")
+
+    period_length = end - start
+    previous_start = start - period_length
+    previous_end = start
+
+    with get_engine().connect() as connection:
+        current = _dashboard_metric_block(connection, start, end)
+        previous = _dashboard_metric_block(connection, previous_start, previous_end)
+
+        sale_units = (
+            select(
+                venta_items.c.venta_id,
+                func.sum(venta_items.c.cantidad).label("units"),
+            )
+            .group_by(venta_items.c.venta_id)
+            .subquery()
+        )
+        bucket = func.date_trunc(
+            "day",
+            func.timezone(timezone_name, ventas.c.creada_en),
+        ).label("bucket")
+        series_rows = connection.execute(
+            select(
+                bucket,
+                func.coalesce(func.sum(ventas.c.total), 0).label("sales"),
+                func.count(ventas.c.id).label("orders"),
+                func.coalesce(func.sum(sale_units.c.units), 0).label("units"),
+            )
+            .select_from(
+                ventas.outerjoin(sale_units, sale_units.c.venta_id == ventas.c.id)
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+            )
+            .group_by(bucket)
+            .order_by(bucket)
+        ).all()
+
+        stock_by_product = (
+            select(
+                variantes.c.producto_id.label("producto_id"),
+                func.coalesce(func.sum(inventario.c.stock), 0).label("stock"),
+            )
+            .select_from(
+                variantes.outerjoin(
+                    inventario,
+                    inventario.c.variante_id == variantes.c.id,
+                )
+            )
+            .group_by(variantes.c.producto_id)
+            .subquery()
+        )
+        top_product_rows = connection.execute(
+            select(
+                venta_items.c.producto_id,
+                venta_items.c.producto_nombre,
+                venta_items.c.producto_ref,
+                func.sum(venta_items.c.cantidad).label("units"),
+                func.sum(venta_items.c.subtotal).label("sales"),
+                func.coalesce(stock_by_product.c.stock, 0).label("stock"),
+            )
+            .select_from(
+                venta_items.join(
+                    ventas,
+                    ventas.c.id == venta_items.c.venta_id,
+                ).outerjoin(
+                    stock_by_product,
+                    stock_by_product.c.producto_id == venta_items.c.producto_id,
+                )
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+            )
+            .group_by(
+                venta_items.c.producto_id,
+                venta_items.c.producto_nombre,
+                venta_items.c.producto_ref,
+                stock_by_product.c.stock,
+            )
+            .order_by(
+                func.sum(venta_items.c.cantidad).desc(),
+                func.sum(venta_items.c.subtotal).desc(),
+            )
+            .limit(10)
+        ).all()
+
+        size_rows = connection.execute(
+            select(
+                venta_items.c.talla,
+                func.sum(venta_items.c.cantidad).label("units"),
+                func.sum(venta_items.c.subtotal).label("sales"),
+            )
+            .select_from(
+                venta_items.join(ventas, ventas.c.id == venta_items.c.venta_id)
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+            )
+            .group_by(venta_items.c.talla)
+            .order_by(func.sum(venta_items.c.cantidad).desc())
+        ).all()
+        color_rows = connection.execute(
+            select(
+                venta_items.c.color,
+                venta_items.c.color_hex,
+                func.sum(venta_items.c.cantidad).label("units"),
+                func.sum(venta_items.c.subtotal).label("sales"),
+            )
+            .select_from(
+                venta_items.join(ventas, ventas.c.id == venta_items.c.venta_id)
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+            )
+            .group_by(venta_items.c.color, venta_items.c.color_hex)
+            .order_by(func.sum(venta_items.c.cantidad).desc())
+            .limit(8)
+        ).all()
+
+        paid_by_sale = (
+            select(
+                abono_asignaciones.c.venta_id,
+                func.coalesce(func.sum(abono_asignaciones.c.monto), 0).label("paid"),
+            )
+            .select_from(
+                abono_asignaciones.join(
+                    abonos,
+                    abonos.c.id == abono_asignaciones.c.abono_id,
+                )
+            )
+            .where(abonos.c.moneda == "usd")
+            .group_by(abono_asignaciones.c.venta_id)
+            .subquery()
+        )
+        outstanding_rows = connection.execute(
+            select(
+                ventas.c.id,
+                ventas.c.cliente_id,
+                clientes.c.nombre,
+                ventas.c.creada_en,
+                ventas.c.total,
+                func.coalesce(paid_by_sale.c.paid, 0).label("paid"),
+            )
+            .select_from(
+                ventas.join(
+                    clientes,
+                    clientes.c.id == ventas.c.cliente_id,
+                ).outerjoin(
+                    paid_by_sale,
+                    paid_by_sale.c.venta_id == ventas.c.id,
+                )
+            )
+            .where(ventas.c.estado == "activa")
+            .order_by(ventas.c.creada_en)
+        ).all()
+
+        aging = {
+            "0_7": 0.0,
+            "8_30": 0.0,
+            "31_60": 0.0,
+            "61_plus": 0.0,
+        }
+        debtors: dict[str, dict[str, Any]] = {}
+        now = _now()
+        outstanding_total = 0.0
+        for row in outstanding_rows:
+            pending = max(0.0, _money(row.total) - _money(row.paid))
+            if pending <= 0:
+                continue
+            age_days = max(0, (now - row.creada_en).days)
+            if age_days <= 7:
+                aging["0_7"] += pending
+            elif age_days <= 30:
+                aging["8_30"] += pending
+            elif age_days <= 60:
+                aging["31_60"] += pending
+            else:
+                aging["61_plus"] += pending
+            outstanding_total += pending
+            debtor = debtors.setdefault(
+                str(row.cliente_id),
+                {
+                    "cliente_id": str(row.cliente_id),
+                    "nombre": row.nombre,
+                    "pending": 0.0,
+                    "oldest_days": age_days,
+                    "sales": 0,
+                },
+            )
+            debtor["pending"] += pending
+            debtor["oldest_days"] = max(debtor["oldest_days"], age_days)
+            debtor["sales"] += 1
+
+        customer_rows = connection.execute(
+            select(
+                clientes.c.id,
+                clientes.c.nombre,
+                func.sum(ventas.c.total).label("sales"),
+                func.count(ventas.c.id).label("orders"),
+                func.max(ventas.c.creada_en).label("last_purchase"),
+            )
+            .select_from(
+                clientes.join(ventas, ventas.c.cliente_id == clientes.c.id)
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+            )
+            .group_by(clientes.c.id, clientes.c.nombre)
+            .order_by(func.sum(ventas.c.total).desc())
+            .limit(10)
+        ).all()
+
+        payment_rows = connection.execute(
+            select(
+                abonos.c.metodo,
+                func.sum(abonos.c.monto).label("amount"),
+                func.count(abonos.c.id).label("payments"),
+            )
+            .where(
+                abonos.c.moneda == "usd",
+                abonos.c.creado_en >= start,
+                abonos.c.creado_en < end,
+            )
+            .group_by(abonos.c.metodo)
+            .order_by(func.sum(abonos.c.monto).desc())
+        ).all()
+        collections_total = sum(_money(row.amount) for row in payment_rows)
+
+        inventory_row = connection.execute(
+            select(
+                func.coalesce(func.sum(inventario.c.stock), 0).label("units"),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (
+                                (inventario.c.stock > 0)
+                                & (inventario.c.stock <= 2),
+                                1,
+                            ),
+                            else_=0,
+                        )
+                    ),
+                    0,
+                ).label("low_skus"),
+                func.coalesce(
+                    func.sum(case((inventario.c.stock == 0, 1), else_=0)),
+                    0,
+                ).label("empty_skus"),
+            )
+        ).one()
+
+        product_sales = (
+            select(
+                venta_items.c.producto_id,
+                func.max(venta_items.c.producto_nombre).label("nombre"),
+                func.max(venta_items.c.producto_ref).label("ref"),
+                func.sum(venta_items.c.cantidad).label("sold_units"),
+            )
+            .select_from(
+                venta_items.join(ventas, ventas.c.id == venta_items.c.venta_id)
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+            )
+            .group_by(venta_items.c.producto_id)
+            .subquery()
+        )
+        stock_risk_rows = connection.execute(
+            select(
+                product_sales.c.producto_id,
+                product_sales.c.nombre,
+                product_sales.c.ref,
+                product_sales.c.sold_units,
+                func.coalesce(stock_by_product.c.stock, 0).label("stock"),
+            )
+            .select_from(
+                product_sales.outerjoin(
+                    stock_by_product,
+                    stock_by_product.c.producto_id == product_sales.c.producto_id,
+                )
+            )
+            .where(func.coalesce(stock_by_product.c.stock, 0) <= 5)
+            .order_by(
+                product_sales.c.sold_units.desc(),
+                func.coalesce(stock_by_product.c.stock, 0),
+            )
+            .limit(8)
+        ).all()
+
+        non_usd_rows = connection.execute(
+            select(
+                abonos.c.moneda,
+                func.count(abonos.c.id).label("payments"),
+                func.sum(abonos.c.monto).label("amount"),
+            )
+            .where(
+                abonos.c.moneda != "usd",
+                abonos.c.creado_en >= start,
+                abonos.c.creado_en < end,
+            )
+            .group_by(abonos.c.moneda)
+        ).all()
+        unknown_payments = connection.scalar(
+            select(func.count(abonos.c.id)).where(
+                abonos.c.moneda == "usd",
+                abonos.c.metodo == "desconocido",
+                abonos.c.creado_en >= start,
+                abonos.c.creado_en < end,
+            )
+        )
+        sales_without_items = connection.scalar(
+            select(func.count(ventas.c.id))
+            .select_from(
+                ventas.outerjoin(
+                    venta_items,
+                    venta_items.c.venta_id == ventas.c.id,
+                )
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+                venta_items.c.id.is_(None),
+            )
+        )
+        unmatched_products = connection.scalar(
+            select(func.count(venta_items.c.id))
+            .select_from(
+                venta_items.join(
+                    ventas,
+                    ventas.c.id == venta_items.c.venta_id,
+                ).outerjoin(
+                    productos,
+                    productos.c.id == venta_items.c.producto_id,
+                )
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+                productos.c.id.is_(None),
+            )
+        )
+        sold_products_without_cost = connection.scalar(
+            select(func.count(func.distinct(venta_items.c.producto_id)))
+            .select_from(
+                venta_items.join(
+                    ventas,
+                    ventas.c.id == venta_items.c.venta_id,
+                ).outerjoin(
+                    productos,
+                    productos.c.id == venta_items.c.producto_id,
+                )
+            )
+            .where(
+                ventas.c.estado == "activa",
+                ventas.c.creada_en >= start,
+                ventas.c.creada_en < end,
+                (productos.c.id.is_(None)) | (productos.c.precio_coste <= 0),
+            )
+        )
+
+    sorted_debtors = sorted(
+        debtors.values(),
+        key=lambda row: (row["pending"], row["oldest_days"]),
+        reverse=True,
+    )
+    return {
+        "currency": "USD",
+        "period": {
+            "start": start.isoformat(),
+            "end": end.isoformat(),
+            "previous_start": previous_start.isoformat(),
+            "previous_end": previous_end.isoformat(),
+            "timezone": timezone_name,
+        },
+        "kpis": current,
+        "previous_kpis": previous,
+        "sales_series": [
+            {
+                "date": row.bucket.date().isoformat(),
+                "sales": _money(row.sales),
+                "orders": int(row.orders or 0),
+                "units": int(row.units or 0),
+            }
+            for row in series_rows
+        ],
+        "collections": {
+            "total": collections_total,
+            "by_method": [
+                {
+                    "method": row.metodo,
+                    "amount": _money(row.amount),
+                    "payments": int(row.payments or 0),
+                }
+                for row in payment_rows
+            ],
+        },
+        "receivables": {
+            "total": outstanding_total,
+            "clients": len(debtors),
+            "aging": aging,
+            "top_debtors": sorted_debtors[:10],
+        },
+        "top_products": [
+            {
+                "producto_id": row.producto_id,
+                "name": row.producto_nombre,
+                "ref": row.producto_ref,
+                "units": int(row.units or 0),
+                "sales": _money(row.sales),
+                "stock": int(row.stock or 0),
+            }
+            for row in top_product_rows
+        ],
+        "sizes": [
+            {
+                "size": row.talla or "Sin talla",
+                "units": int(row.units or 0),
+                "sales": _money(row.sales),
+            }
+            for row in size_rows
+        ],
+        "colors": [
+            {
+                "color": row.color or "Sin color",
+                "hex": row.color_hex or "#000000",
+                "units": int(row.units or 0),
+                "sales": _money(row.sales),
+            }
+            for row in color_rows
+        ],
+        "top_customers": [
+            {
+                "cliente_id": str(row.id),
+                "name": row.nombre,
+                "sales": _money(row.sales),
+                "orders": int(row.orders or 0),
+                "pending": debtors.get(str(row.id), {}).get("pending", 0),
+                "last_purchase": row.last_purchase.isoformat() if row.last_purchase else "",
+            }
+            for row in customer_rows
+        ],
+        "inventory": {
+            "units": int(inventory_row.units or 0),
+            "low_skus": int(inventory_row.low_skus or 0),
+            "empty_skus": int(inventory_row.empty_skus or 0),
+            "stock_risk": [
+                {
+                    "producto_id": row.producto_id,
+                    "name": row.nombre,
+                    "ref": row.ref,
+                    "sold_units": int(row.sold_units or 0),
+                    "stock": int(row.stock or 0),
+                }
+                for row in stock_risk_rows
+            ],
+        },
+        "data_quality": {
+            "non_usd_payments": [
+                {
+                    "currency": row.moneda.upper(),
+                    "payments": int(row.payments or 0),
+                    "amount": _money(row.amount),
+                }
+                for row in non_usd_rows
+            ],
+            "unknown_payment_methods": int(unknown_payments or 0),
+            "sales_without_items": int(sales_without_items or 0),
+            "unmatched_product_items": int(unmatched_products or 0),
+            "sold_products_without_cost": int(sold_products_without_cost or 0),
+        },
+    }
