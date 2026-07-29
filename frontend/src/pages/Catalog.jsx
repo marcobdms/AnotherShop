@@ -29,6 +29,15 @@ function FavToast({ msg, onDone }) {
   )
 }
 
+function hasSize(producto, tallaSeleccionada) {
+  const talla = String(tallaSeleccionada).trim().toUpperCase()
+  const tallas = producto.variante_tallas && typeof producto.variante_tallas === 'object'
+    ? Object.keys(producto.variante_tallas)
+    : (producto.tallas || [])
+
+  return tallas.some((valor) => String(valor).trim().toUpperCase() === talla)
+}
+
 export default function Catalog({ onReady }) {
   const { catalog, loading, error } = useCatalog()
   const productos = catalog?.productos ?? []
@@ -116,10 +125,7 @@ export default function Catalog({ onReady }) {
     lista = lista.filter(p => p.genero === activeGenero || p.genero === 'unisex')
   }
   if (activeTalla) {
-    lista = lista.filter(p => {
-      const availableSizesText = (p.descripcion || '').toUpperCase()
-      return new RegExp(`\\b${activeTalla}\\b`, 'i').test(availableSizesText)
-    })
+    lista = lista.filter((producto) => hasSize(producto, activeTalla))
   }
 
   lista.sort((a, b) => {
