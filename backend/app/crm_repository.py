@@ -234,23 +234,71 @@ def update_client(client_id: str, fields: dict[str, Any]) -> Optional[dict[str, 
         return _client_out(row) if row else None
 
 
-def delete_client(client_id: str) -> Optional[dict[str, Any]]:
+def delete_clients(client_ids: list[str]) -> list[dict[str, Any]]:
+    unique_ids = list(dict.fromkeys(str(client_id) for client_id in client_ids if client_id))
+    if not unique_ids:
+        return []
+
     with get_engine().begin() as connection:
-        row = connection.execute(select(clientes).where(clientes.c.id == client_id)).first()
-        if not row:
+        rows = connection.execute(
+            select(clientes).where(clientes.c.id.in_(unique_ids))
+        ).all()
+        if len(rows) != len(unique_ids):
+            raise ValueError("Uno o varios clientes seleccionados ya no existen")
+
+        active_client_ids = set(
+            connection.execute(
+                select(ventas.c.cliente_id)
+                .where(
+                    and_(
+                        ventas.c.cliente_id.in_(unique_ids),
+                        ventas.c.estado != "anulada",
+                    )
+                )
+                .distinct()
+            ).scalars()
+        )
+        if active_client_ids:
+            names = sorted(
+                row.nombre for row in rows if row.id in active_client_ids
+            )
+            raise ValueError(
+                "Anula las compras activas antes de borrar: " + ", ".join(names)
+            )
+
+        sale_ids = select(ventas.c.id).where(ventas.c.cliente_id.in_(unique_ids))
+        payment_ids = select(abonos.c.id).where(abonos.c.cliente_id.in_(unique_ids))
+
+        connection.execute(
+            delete(abono_asignaciones).where(
+                or_(
+                    abono_asignaciones.c.venta_id.in_(sale_ids),
+                    abono_asignaciones.c.abono_id.in_(payment_ids),
+                )
+            )
+        )
+        connection.execute(
+            delete(comprobantes_cliente).where(
+                comprobantes_cliente.c.cliente_id.in_(unique_ids)
+            )
+        )
+        connection.execute(delete(abonos).where(abonos.c.cliente_id.in_(unique_ids)))
+        connection.execute(
+            delete(venta_items).where(venta_items.c.venta_id.in_(sale_ids))
+        )
+        connection.execute(delete(ventas).where(ventas.c.cliente_id.in_(unique_ids)))
+        connection.execute(delete(clientes).where(clientes.c.id.in_(unique_ids)))
+        return [_client_out(row) for row in rows]
+
+
+def delete_client(client_id: str) -> Optional[dict[str, Any]]:
+    try:
+        deleted = delete_clients([client_id])
+    except ValueError as error:
+        if "ya no existen" in str(error):
             return None
-
-        has_sales = connection.scalar(
-            select(func.count()).select_from(ventas).where(ventas.c.cliente_id == client_id)
-        )
-        has_payments = connection.scalar(
-            select(func.count()).select_from(abonos).where(abonos.c.cliente_id == client_id)
-        )
-        if has_sales or has_payments:
-            raise ValueError("No se puede borrar un cliente con compras o abonos")
-
-        connection.execute(delete(clientes).where(clientes.c.id == client_id))
-        return _client_out(row)
+        raise
+    return deleted[0] if deleted else None
 
 
 def get_client(client_id: str) -> Optional[dict[str, Any]]:

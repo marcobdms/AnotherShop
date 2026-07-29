@@ -63,6 +63,10 @@ class ImportarJsonIn(BaseModel):
     usuario: str = "admin"
 
 
+class BorrarClientesIn(BaseModel):
+    ids: list[str] = Field(min_length=1, max_length=500)
+
+
 router = APIRouter(prefix="/crm", tags=["crm"], dependencies=[Depends(verify_token)])
 
 
@@ -86,6 +90,15 @@ def crm_list_clients(q: str = ""):
 @router.post("/clientes", status_code=201)
 def crm_create_client(body: ClienteIn):
     return repository.create_client(body.model_dump())
+
+
+@router.delete("/clientes")
+def crm_delete_clients(body: BorrarClientesIn):
+    try:
+        deleted = repository.delete_clients(body.ids)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    return {"eliminados": len(deleted)}
 
 
 @router.get("/clientes/{client_id}")

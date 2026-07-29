@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CrmHeader, CrmLogin, useCrmSession } from './CrmChrome'
 import {
   crmAnularVenta,
@@ -6,6 +6,7 @@ import {
   crmCrearVenta,
   crmCreateCliente,
   crmDeleteCliente,
+  crmDeleteClientes,
   crmFetchAbonos,
   crmFetchCatalogo,
   crmFetchCliente,
@@ -28,7 +29,7 @@ const css = `
   .crm-textarea { min-height: 78px; resize: vertical; line-height: 1.5; }
   .crm-input:focus, .crm-select:focus, .crm-textarea:focus { border-color: var(--black); }
   .crm-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-  .crm-stack { display: flex; flex-direction: column; gap: 0.6rem; }
+  .crm-stack { display: flex; flex-direction: column; gap: 1rem; }
   .crm-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
   .crm-btn {
     border: 1px solid var(--grey-200); padding: 0.62rem 0.9rem; font-family: var(--font);
@@ -54,8 +55,8 @@ const css = `
   }
   .crm-link-danger:hover { color: #b91c1c; }
   .crm-title { font-size: var(--size-xs); letter-spacing: 0.16em; text-transform: uppercase; color: var(--grey-400); margin-bottom: 0.75rem; }
-  .crm-mini-title { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--black); }
-  .crm-mini-meta { font-size: var(--size-xs); color: var(--grey-400); margin-top: 0.2rem; }
+  .crm-mini-title { font-size: var(--size-xs); line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; color: var(--black); }
+  .crm-mini-meta { font-size: var(--size-xs); line-height: 1.5; color: var(--grey-400); margin-top: 0.35rem; }
   .crm-client-meta { font-size: var(--size-xs); color: var(--grey-400); letter-spacing: 0.06em; }
   .crm-count { font-size: var(--size-xs); color: var(--grey-400); letter-spacing: 0.1em; text-transform: uppercase; }
   .crm-debt { font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-600); }
@@ -65,6 +66,9 @@ const css = `
   .crm-content { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
   .crm-list-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
   .crm-list-head-left { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 200px; flex-wrap: wrap; }
+  .crm-bulk-actions { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding-top: 0.25rem; }
+  .crm-check-cell { width: 42px; padding-right: 0 !important; text-align: center !important; }
+  .crm-checkbox { width: 16px; height: 16px; accent-color: var(--black); cursor: pointer; }
   .crm-table { width: 100%; border-collapse: collapse; }
   .crm-table th { font-size: var(--size-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey-400); padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid var(--grey-200); font-weight: 400; }
   .crm-table td { padding: 0.85rem 1rem; font-size: var(--size-sm); border-bottom: 1px solid var(--grey-200); vertical-align: middle; }
@@ -88,18 +92,36 @@ const css = `
   .crm-tab { flex: 1; padding: 0.65rem 0.5rem; font-size: var(--size-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey-400); background: none; border: none; border-bottom: 2px solid transparent; font-family: var(--font); cursor: pointer; transition: color 160ms ease, border-color 160ms ease; }
   .crm-tab:hover { color: var(--black); }
   .crm-tab--active { color: var(--black); border-bottom-color: var(--black); }
-  .crm-drawer-body { flex: 1; overflow-y: auto; padding: 1.25rem; }
-  .crm-section-divider { border-top: 1px solid var(--grey-200); margin-top: 1rem; padding-top: 1rem; }
+  .crm-drawer-body { flex: 1; overflow-y: auto; padding: 1.5rem; }
+
   .crm-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
   .crm-panel-head .crm-title, .crm-panel-head .crm-modal-title { margin-bottom: 0; }
-  .crm-sale { border-top: 1px solid var(--grey-200); padding: 0.85rem 0; }
+  .crm-sale { border-top: 1px solid var(--grey-200); padding: 1.1rem 0; }
   .crm-sale:first-child { border-top: none; padding-top: 0; }
-  .crm-sale-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+
+  .crm-sale-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin-bottom: 0.6rem; }
   .crm-sale-date { font-size: var(--size-xs); color: var(--grey-400); letter-spacing: 0.08em; }
   .crm-sale-total { font-size: var(--size-sm); color: var(--black); text-align: right; flex-shrink: 0; }
   .crm-sale.cancelled { opacity: 0.48; }
-  .crm-item-line, .crm-payment-line, .crm-receipt-line { display: grid; grid-template-columns: 44px 1fr auto; gap: 0.7rem; align-items: center; padding: 0.55rem 0; border-top: 1px solid var(--grey-200); }
+  .crm-item-line { display: grid; grid-template-columns: 62px minmax(0, 1fr) auto; gap: 0.9rem; align-items: start; padding: 0.9rem 0; border-top: 1px solid var(--grey-200); }
+  .crm-item-main { min-width: 0; padding-top: 0.1rem; }
+  .crm-item-price { padding-top: 0.1rem; white-space: nowrap; }
+  .crm-item-thumb {
+    position: relative; width: 62px; height: 82px; overflow: hidden;
+    background: var(--grey-100); border: 1px solid var(--grey-200);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .crm-item-thumb::after {
+    content: 'Sin imagen'; padding: 0.3rem; text-align: center;
+    font-size: 0.6rem; line-height: 1.3; color: var(--grey-400); text-transform: uppercase;
+  }
+  .crm-item-thumb img { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
+  .crm-payment-line, .crm-receipt-line { display: grid; grid-template-columns: 1fr auto; gap: 0.7rem; align-items: center; padding: 0.65rem 0; border-top: 1px solid var(--grey-200); }
   .crm-thumb { width: 44px; height: 58px; object-fit: cover; background: var(--grey-100); }
+  .crm-sale-amounts { display: flex; gap: 1rem; margin-top: 0.6rem; flex-wrap: wrap; }
+  .crm-amount-paid { font-size: var(--size-xs); color: #15803d; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
+  .crm-amount-pending { font-size: var(--size-xs); color: #b91c1c; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
+  .crm-section-divider { border-top: 1px solid var(--grey-200); margin-top: 1.5rem; padding-top: 1.5rem; }
   .crm-cart-row { display: grid; grid-template-columns: 44px 1fr auto; gap: 0.7rem; border-top: 1px solid var(--grey-200); padding: 0.6rem 0; align-items: center; }
   .crm-catalog-list { max-height: 260px; overflow: auto; border: 1px solid var(--grey-200); }
   .crm-catalog-product { border-top: 1px solid var(--grey-200); padding: 0.7rem; display: grid; grid-template-columns: 58px 1fr; gap: 0.75rem; }
@@ -123,7 +145,7 @@ const css = `
     .crm-form-grid { grid-template-columns: 1fr; }
     .crm-cart-row { grid-template-columns: 44px 1fr; }
     .crm-cart-row .crm-btn { grid-column: 1 / -1; }
-    .crm-table th:nth-child(2), .crm-table td:nth-child(2) { display: none; }
+    .crm-table th:nth-child(3), .crm-table td:nth-child(3) { display: none; }
   }
 `
 
@@ -157,12 +179,23 @@ function productImage(product) {
   return product.imagen || product.variantes.find(v => v.imagen)?.imagen || ''
 }
 
+function saleItemMeta(item) {
+  return [
+    item.producto_ref ? `Ref ${item.producto_ref}` : '',
+    item.color,
+    item.talla,
+    `x${item.cantidad}`,
+  ].filter(Boolean).join(' / ')
+}
+
 export default function Clientes() {
   const { usuario, login, logout } = useCrmSession()
 
   const [clientes, setClientes] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checkedClientIds, setCheckedClientIds] = useState([])
+  const [bulkDeleting, setBulkDeleting] = useState(false)
 
   const [selectedId, setSelectedId] = useState(null)
   const [selected, setSelected] = useState(null)
@@ -197,6 +230,8 @@ export default function Clientes() {
   const refreshClients = useCallback(async () => {
     const data = await crmFetchClientes(search)
     setClientes(data)
+    const visibleIds = new Set(data.map(client => client.id))
+    setCheckedClientIds(current => current.filter(id => visibleIds.has(id)))
   }, [search])
 
   const refreshDetail = useCallback(async (id) => {
@@ -241,6 +276,7 @@ export default function Clientes() {
     () => cart.reduce((sum, item) => sum + Number(item.precio_unitario || 0) * Number(item.cantidad || 0), 0),
     [cart],
   )
+  const allClientsChecked = clientes.length > 0 && checkedClientIds.length === clientes.length
 
   if (!usuario) return <CrmLogin onAuth={login} />
 
@@ -274,10 +310,14 @@ export default function Clientes() {
 
   async function handleDeleteClient() {
     if (!selected) return
-    const ok = window.confirm(`Borrar cliente "${selected.nombre}"?\nSolo es posible si no tiene compras ni abonos registrados.`)
+    const ok = window.confirm(
+      `Borrar cliente "${selected.nombre}"?\n`
+      + 'Debe tener todas sus compras anuladas. También se borrarán sus abonos, comprobantes y el historial de compras anuladas. El stock no se modificará de nuevo.',
+    )
     if (!ok) return
     try {
       await crmDeleteCliente(selected.id)
+      setCheckedClientIds(current => current.filter(id => id !== selected.id))
       setDrawerOpen(false)
       setSelected(null)
       setSelectedId(null)
@@ -285,6 +325,45 @@ export default function Clientes() {
       await refreshClients()
       showToast('Cliente borrado')
     } catch (err) { showToast(err.message, 'error') }
+  }
+
+  function toggleClientChecked(clientId) {
+    setCheckedClientIds(current => (
+      current.includes(clientId)
+        ? current.filter(id => id !== clientId)
+        : [...current, clientId]
+    ))
+  }
+
+  function toggleAllClients() {
+    setCheckedClientIds(allClientsChecked ? [] : clientes.map(client => client.id))
+  }
+
+  async function handleBulkDeleteClients() {
+    if (checkedClientIds.length === 0) return
+    const ok = window.confirm(
+      `Borrar ${checkedClientIds.length} cliente${checkedClientIds.length === 1 ? '' : 's'} seleccionado${checkedClientIds.length === 1 ? '' : 's'}?\n`
+      + 'La operación se cancelará completa si alguno tiene compras activas.',
+    )
+    if (!ok) return
+
+    setBulkDeleting(true)
+    try {
+      const result = await crmDeleteClientes(checkedClientIds)
+      if (selectedId && checkedClientIds.includes(selectedId)) {
+        setDrawerOpen(false)
+        setSelected(null)
+        setSelectedId(null)
+        setCart([])
+      }
+      setCheckedClientIds([])
+      await refreshClients()
+      showToast(`${result.eliminados} cliente${result.eliminados === 1 ? '' : 's'} borrado${result.eliminados === 1 ? '' : 's'}`)
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setBulkDeleting(false)
+    }
   }
 
   function addCartItem(product, variant, talla, stock) {
@@ -394,11 +473,28 @@ export default function Clientes() {
           <button className="crm-btn crm-btn--primary" onClick={() => setNewClientModalOpen(true)}>
             + Nuevo cliente
           </button>
+          {checkedClientIds.length > 0 && (
+            <div className="crm-bulk-actions">
+              <span className="crm-count">{checkedClientIds.length} seleccionados</span>
+              <button className="crm-btn crm-btn--danger" onClick={handleBulkDeleteClients} disabled={bulkDeleting}>
+                {bulkDeleting ? 'Borrando...' : 'Borrar selección'}
+              </button>
+            </div>
+          )}
         </div>
 
         <table className="crm-table">
           <thead>
             <tr>
+              <th className="crm-check-cell">
+                <input
+                  className="crm-checkbox"
+                  type="checkbox"
+                  checked={allClientsChecked}
+                  onChange={toggleAllClients}
+                  aria-label="Seleccionar todos los clientes"
+                />
+              </th>
               <th>Nombre</th>
               <th>Telefono</th>
               <th>Comprado</th>
@@ -407,7 +503,7 @@ export default function Clientes() {
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--grey-400)', padding: '2rem' }}>Cargando...</td></tr>
+              <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--grey-400)', padding: '2rem' }}>Cargando...</td></tr>
             )}
             {clientes.map(cliente => (
               <tr
@@ -415,6 +511,15 @@ export default function Clientes() {
                 className={selectedId === cliente.id && drawerOpen ? 'active' : ''}
                 onClick={() => openClient(cliente.id)}
               >
+                <td className="crm-check-cell" onClick={event => event.stopPropagation()}>
+                  <input
+                    className="crm-checkbox"
+                    type="checkbox"
+                    checked={checkedClientIds.includes(cliente.id)}
+                    onChange={() => toggleClientChecked(cliente.id)}
+                    aria-label={`Seleccionar a ${cliente.nombre}`}
+                  />
+                </td>
                 <td>{cliente.nombre}</td>
                 <td className="crm-mini-meta">{cliente.telefono || '\u2014'}</td>
                 <td>{formatPrice(cliente.total_comprado ?? 0)}</td>
@@ -518,25 +623,39 @@ export default function Clientes() {
                                 <p className="crm-mini-title">Compra {venta.estado === 'anulada' ? 'anulada' : 'activa'}</p>
                                 <p className="crm-sale-date">{niceDate(venta.creada_en)}</p>
                               </div>
-                              <div className="crm-sale-total">
-                                <div>{formatPrice(venta.total)}</div>
-                                <div className={`crm-debt ${venta.pendiente > 0 ? 'bad' : 'ok'}`}>
-                                  {venta.estado === 'anulada' ? 'Anulada' : venta.pendiente > 0 ? `Pendiente ${formatPrice(venta.pendiente)}` : 'Pagada'}
-                                </div>
-                              </div>
+                              <span className="crm-mini-title">{formatPrice(venta.total)}</span>
                             </div>
                             {venta.items.map(item => (
                               <div key={item.id} className="crm-item-line">
-                                <img className="crm-thumb" src={item.imagen} alt="" onError={e => { e.currentTarget.style.visibility = 'hidden' }} />
-                                <div>
-                                  <p className="crm-mini-title">{item.producto_nombre}</p>
-                                  <p className="crm-mini-meta">Ref {item.producto_ref} / {item.color} / {item.talla} / x{item.cantidad}</p>
+                                <div className="crm-item-thumb">
+                                  {item.imagen && (
+                                    <img src={item.imagen} alt="" onError={event => { event.currentTarget.style.display = 'none' }} />
+                                  )}
                                 </div>
-                                <span className="crm-mini-title">{formatPrice(item.subtotal)}</span>
+                                <div className="crm-item-main">
+                                  <p className="crm-mini-title">{item.producto_nombre}</p>
+                                  <p className="crm-mini-meta">{saleItemMeta(item)}</p>
+                                </div>
+                                <span className="crm-mini-title crm-item-price">{formatPrice(item.subtotal)}</span>
                               </div>
                             ))}
+                            {venta.estado !== 'anulada' && (
+                              <div className="crm-sale-amounts">
+                                <span className="crm-amount-paid">
+                                  {formatPrice(venta.total - venta.pendiente)} pagado
+                                </span>
+                                {venta.pendiente > 0 && (
+                                  <span className="crm-amount-pending">
+                                    {formatPrice(venta.pendiente)} pendiente
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {venta.estado === 'anulada' && (
+                              <p className="crm-mini-meta" style={{ marginTop: '0.4rem', color: '#b91c1c', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: 'var(--size-xs)' }}>Anulada</p>
+                            )}
                             {venta.estado === 'activa' && (
-                              <button className="crm-btn crm-btn--danger" style={{ marginTop: '0.5rem' }} onClick={() => handleCancelSale(venta.id)}>
+                              <button className="crm-btn crm-btn--danger" style={{ marginTop: '0.75rem' }} onClick={() => handleCancelSale(venta.id)}>
                                 Anular y reponer stock
                               </button>
                             )}
