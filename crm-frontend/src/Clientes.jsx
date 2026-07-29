@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CrmHeader, CrmLogin, useCrmSession } from './CrmChrome'
 import {
   crmAnularVenta,
@@ -19,101 +19,21 @@ import {
 } from './api/catalog'
 
 const css = `
-  .crm-page {
-    min-height: 100vh;
-    background: var(--white);
-    color: var(--black);
-    font-family: var(--font);
+  .crm-page { min-height: 100vh; background: var(--white); color: var(--black); font-family: var(--font); }
+  .crm-input, .crm-select, .crm-textarea {
+    width: 100%; border: 1px solid var(--grey-200); background: var(--white);
+    color: var(--black); font-family: var(--font); font-size: var(--size-sm);
+    padding: 0.7rem 0.75rem; outline: none;
   }
-  .crm-header {
-    height: 64px;
-    border-bottom: 1px solid var(--grey-200);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: var(--white);
-  }
-  .crm-brand {
-    font-size: var(--size-xs);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-  .crm-nav {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: var(--size-xs);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--grey-600);
-  }
-  .crm-shell {
-    display: grid;
-    grid-template-columns: 360px 1fr;
-    min-height: calc(100vh - 64px);
-  }
-  .crm-sidebar {
-    border-right: 1px solid var(--grey-200);
-    padding: 1rem;
-    overflow: auto;
-  }
-  .crm-main {
-    padding: 1.25rem;
-    overflow: auto;
-  }
-  .crm-section {
-    border-bottom: 1px solid var(--grey-200);
-    padding: 1rem 0;
-  }
-  .crm-section:first-child { padding-top: 0; }
-  .crm-title {
-    font-size: var(--size-xs);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--grey-400);
-    margin-bottom: 0.75rem;
-  }
-  .crm-input,
-  .crm-select,
-  .crm-textarea {
-    width: 100%;
-    border: 1px solid var(--grey-200);
-    background: var(--white);
-    color: var(--black);
-    font-family: var(--font);
-    font-size: var(--size-sm);
-    padding: 0.7rem 0.75rem;
-    outline: none;
-  }
-  .crm-textarea {
-    min-height: 78px;
-    resize: vertical;
-    line-height: 1.5;
-  }
-  .crm-input:focus,
-  .crm-select:focus,
-  .crm-textarea:focus { border-color: var(--black); }
-  .crm-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.6rem;
-  }
+  .crm-textarea { min-height: 78px; resize: vertical; line-height: 1.5; }
+  .crm-input:focus, .crm-select:focus, .crm-textarea:focus { border-color: var(--black); }
+  .crm-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
   .crm-stack { display: flex; flex-direction: column; gap: 0.6rem; }
   .crm-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
   .crm-btn {
-    border: 1px solid var(--grey-200);
-    padding: 0.62rem 0.9rem;
-    font-family: var(--font);
-    font-size: var(--size-xs);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--grey-600);
-    background: var(--white);
+    border: 1px solid var(--grey-200); padding: 0.62rem 0.9rem; font-family: var(--font);
+    font-size: var(--size-xs); letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--grey-600); background: var(--white); cursor: pointer;
     transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
   }
   .crm-btn:hover:not(:disabled) { border-color: var(--black); color: var(--black); }
@@ -121,253 +41,89 @@ const css = `
   .crm-btn--primary { background: var(--black); border-color: var(--black); color: var(--white); }
   .crm-btn--primary:hover:not(:disabled) { color: var(--white); opacity: 0.82; }
   .crm-btn--danger { border-color: #fecaca; color: #b91c1c; }
-  .crm-panel-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-  .crm-panel-head .crm-title { margin-bottom: 0; }
   .crm-icon-btn {
-    width: 34px;
-    height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--grey-200);
-    background: var(--white);
-    color: var(--grey-600);
-    font-size: var(--size-sm);
+    width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--grey-200); background: var(--white); color: var(--grey-600);
+    font-size: var(--size-sm); cursor: pointer; flex-shrink: 0;
   }
   .crm-icon-btn:hover { border-color: var(--black); color: var(--black); }
-  .crm-client-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    margin-top: 0.75rem;
+  .crm-link-danger {
+    font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--grey-400); background: none; border: none; font-family: var(--font);
+    padding: 0; cursor: pointer; transition: color 160ms ease;
   }
-  .crm-client-row {
-    width: 100%;
-    text-align: left;
-    border: 1px solid var(--grey-200);
-    padding: 0.75rem;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.35rem;
-    align-items: center;
-  }
-  .crm-client-row.active { border-color: var(--black); background: var(--grey-100); }
-  .crm-client-name {
-    font-size: var(--size-sm);
-    letter-spacing: 0.04em;
-    color: var(--black);
-  }
-  .crm-client-meta {
-    font-size: var(--size-xs);
-    color: var(--grey-400);
-    letter-spacing: 0.06em;
-  }
-  .crm-debt {
-    font-size: var(--size-xs);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--grey-600);
-  }
+  .crm-link-danger:hover { color: #b91c1c; }
+  .crm-title { font-size: var(--size-xs); letter-spacing: 0.16em; text-transform: uppercase; color: var(--grey-400); margin-bottom: 0.75rem; }
+  .crm-mini-title { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--black); }
+  .crm-mini-meta { font-size: var(--size-xs); color: var(--grey-400); margin-top: 0.2rem; }
+  .crm-client-meta { font-size: var(--size-xs); color: var(--grey-400); letter-spacing: 0.06em; }
+  .crm-count { font-size: var(--size-xs); color: var(--grey-400); letter-spacing: 0.1em; text-transform: uppercase; }
+  .crm-debt { font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-600); }
   .crm-debt.ok { color: #15803d; }
   .crm-debt.bad { color: #b91c1c; }
   .crm-debt.credit { color: #2563eb; }
-  .crm-summary {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+  .crm-content { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+  .crm-list-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .crm-list-head-left { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 200px; flex-wrap: wrap; }
+  .crm-table { width: 100%; border-collapse: collapse; }
+  .crm-table th { font-size: var(--size-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey-400); padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid var(--grey-200); font-weight: 400; }
+  .crm-table td { padding: 0.85rem 1rem; font-size: var(--size-sm); border-bottom: 1px solid var(--grey-200); vertical-align: middle; }
+  .crm-table tbody tr { cursor: pointer; transition: background 160ms ease; }
+  .crm-table tbody tr:hover { background: var(--grey-100); }
+  .crm-table tbody tr.active { background: var(--grey-100); }
+  .crm-drawer-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.18); }
+  .crm-drawer {
+    position: fixed; top: 64px; right: 0; bottom: 0; width: min(680px, 100vw);
+    background: var(--white); border-left: 1px solid var(--grey-200);
+    z-index: 70; display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.07);
   }
-  .crm-metric {
-    border: 1px solid var(--grey-200);
-    padding: 0.8rem;
-  }
-  .crm-metric span {
-    display: block;
-    font-size: var(--size-xs);
-    color: var(--grey-400);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 0.35rem;
-  }
-  .crm-metric strong {
-    font-size: var(--size-lg);
-    font-weight: 400;
-  }
-  .crm-detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 1.25rem;
-    align-items: start;
-  }
-  .crm-panel {
-    border: 1px solid var(--grey-200);
-    padding: 1rem;
-  }
-  .crm-panel + .crm-panel { margin-top: 1rem; }
-  .crm-sale {
-    border-top: 1px solid var(--grey-200);
-    padding: 0.85rem 0;
-  }
+  .crm-drawer-head { padding: 1rem 1.25rem 0; border-bottom: 1px solid var(--grey-200); flex-shrink: 0; }
+  .crm-drawer-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; gap: 1rem; }
+  .crm-drawer-name { font-size: 1.1rem; letter-spacing: 0.02em; font-weight: 400; }
+  .crm-metrics-row { display: flex; gap: 1.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .crm-metric-inline span { font-size: var(--size-xs); color: var(--grey-400); letter-spacing: 0.1em; text-transform: uppercase; display: block; }
+  .crm-metric-inline strong { font-size: var(--size-sm); font-weight: 500; }
+  .crm-tab-bar { display: flex; margin-top: 0.5rem; }
+  .crm-tab { flex: 1; padding: 0.65rem 0.5rem; font-size: var(--size-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey-400); background: none; border: none; border-bottom: 2px solid transparent; font-family: var(--font); cursor: pointer; transition: color 160ms ease, border-color 160ms ease; }
+  .crm-tab:hover { color: var(--black); }
+  .crm-tab--active { color: var(--black); border-bottom-color: var(--black); }
+  .crm-drawer-body { flex: 1; overflow-y: auto; padding: 1.25rem; }
+  .crm-section-divider { border-top: 1px solid var(--grey-200); margin-top: 1rem; padding-top: 1rem; }
+  .crm-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .crm-panel-head .crm-title, .crm-panel-head .crm-modal-title { margin-bottom: 0; }
+  .crm-sale { border-top: 1px solid var(--grey-200); padding: 0.85rem 0; }
   .crm-sale:first-child { border-top: none; padding-top: 0; }
-  .crm-sale-head {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-  .crm-sale-date {
-    font-size: var(--size-xs);
-    color: var(--grey-400);
-    letter-spacing: 0.08em;
-  }
-  .crm-sale-total {
-    font-size: var(--size-sm);
-    color: var(--black);
-    text-align: right;
-  }
+  .crm-sale-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+  .crm-sale-date { font-size: var(--size-xs); color: var(--grey-400); letter-spacing: 0.08em; }
+  .crm-sale-total { font-size: var(--size-sm); color: var(--black); text-align: right; flex-shrink: 0; }
   .crm-sale.cancelled { opacity: 0.48; }
-  .crm-item-line,
-  .crm-payment-line,
-  .crm-receipt-line {
-    display: grid;
-    grid-template-columns: 44px 1fr auto;
-    gap: 0.7rem;
-    align-items: center;
-    padding: 0.55rem 0;
-    border-top: 1px solid var(--grey-200);
-  }
-  .crm-thumb {
-    width: 44px;
-    height: 58px;
-    object-fit: cover;
-    background: var(--grey-100);
-  }
-  .crm-mini-title {
-    font-size: var(--size-xs);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--black);
-  }
-  .crm-mini-meta {
-    font-size: var(--size-xs);
-    color: var(--grey-400);
-    margin-top: 0.2rem;
-  }
-  .crm-cart-row {
-    display: grid;
-    grid-template-columns: 44px 1fr auto;
-    gap: 0.7rem;
-    border-top: 1px solid var(--grey-200);
-    padding: 0.6rem 0;
-    align-items: center;
-  }
-  .crm-catalog-list {
-    max-height: 260px;
-    overflow: auto;
-    border: 1px solid var(--grey-200);
-  }
-  .crm-catalog-product {
-    border-top: 1px solid var(--grey-200);
-    padding: 0.7rem;
-    display: grid;
-    grid-template-columns: 58px 1fr;
-    gap: 0.75rem;
-  }
+  .crm-item-line, .crm-payment-line, .crm-receipt-line { display: grid; grid-template-columns: 44px 1fr auto; gap: 0.7rem; align-items: center; padding: 0.55rem 0; border-top: 1px solid var(--grey-200); }
+  .crm-thumb { width: 44px; height: 58px; object-fit: cover; background: var(--grey-100); }
+  .crm-cart-row { display: grid; grid-template-columns: 44px 1fr auto; gap: 0.7rem; border-top: 1px solid var(--grey-200); padding: 0.6rem 0; align-items: center; }
+  .crm-catalog-list { max-height: 260px; overflow: auto; border: 1px solid var(--grey-200); }
+  .crm-catalog-product { border-top: 1px solid var(--grey-200); padding: 0.7rem; display: grid; grid-template-columns: 58px 1fr; gap: 0.75rem; }
   .crm-catalog-product:first-child { border-top: none; }
-  .crm-catalog-img {
-    width: 58px;
-    height: 76px;
-    object-fit: cover;
-    background: var(--grey-100);
-    border: 1px solid var(--grey-200);
-  }
+  .crm-catalog-img { width: 58px; height: 76px; object-fit: cover; background: var(--grey-100); border: 1px solid var(--grey-200); }
   .crm-catalog-body { min-width: 0; }
-  .crm-variant-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-top: 0.55rem;
-  }
-  .crm-size-btn {
-    border: 1px solid var(--grey-200);
-    padding: 0.35rem 0.5rem;
-    font-size: var(--size-xs);
-    color: var(--grey-600);
-  }
-  .crm-size-btn.active,
+  .crm-variant-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.55rem; }
+  .crm-size-btn { border: 1px solid var(--grey-200); padding: 0.35rem 0.5rem; font-size: var(--size-xs); color: var(--grey-600); background: var(--white); font-family: var(--font); cursor: pointer; }
   .crm-size-btn:hover { border-color: var(--black); color: var(--black); }
-  .crm-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 80;
-    background: rgba(0,0,0,0.36);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  .crm-modal {
-    width: min(760px, 100%);
-    max-height: min(720px, calc(100vh - 2rem));
-    background: var(--white);
-    border: 1px solid var(--grey-200);
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-  }
-  .crm-modal .crm-catalog-list {
-    max-height: min(520px, calc(100vh - 190px));
-  }
-  .crm-swatch {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border: 1px solid rgba(0,0,0,0.15);
-    margin-right: 0.35rem;
-    vertical-align: middle;
-  }
-  .crm-empty {
-    min-height: 42vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--grey-400);
-    font-size: var(--size-sm);
-    letter-spacing: 0.08em;
-    text-align: center;
-  }
-  .crm-toast {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    background: var(--white);
-    border: 1px solid var(--grey-200);
-    padding: 0.85rem 1rem;
-    font-size: var(--size-xs);
-    color: var(--black);
-    letter-spacing: 0.08em;
-    z-index: 90;
-  }
+  .crm-swatch { display: inline-block; width: 10px; height: 10px; border: 1px solid rgba(0,0,0,0.15); margin-right: 0.35rem; vertical-align: middle; }
+  .crm-modal-backdrop { position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,0.36); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .crm-modal { width: min(760px, 100%); max-height: min(720px, calc(100vh - 2rem)); background: var(--white); border: 1px solid var(--grey-200); padding: 1rem; display: flex; flex-direction: column; gap: 0.85rem; overflow-y: auto; }
+  .crm-modal--sm { width: min(420px, 100%); }
+  .crm-modal .crm-catalog-list { max-height: min(520px, calc(100vh - 190px)); }
+  .crm-modal-title { font-size: var(--size-sm); letter-spacing: 0.1em; text-transform: uppercase; }
+  .crm-empty { min-height: 40vh; display: flex; align-items: center; justify-content: center; color: var(--grey-400); font-size: var(--size-sm); letter-spacing: 0.08em; text-align: center; }
+  .crm-toast { position: fixed; bottom: 1rem; right: 1rem; background: var(--white); border: 1px solid var(--grey-200); padding: 0.85rem 1rem; font-size: var(--size-xs); color: var(--black); letter-spacing: 0.08em; z-index: 90; }
   .crm-toast.error { border-color: #fecaca; color: #b91c1c; }
-  @media (max-width: 1100px) {
-    .crm-shell,
-    .crm-detail-grid { grid-template-columns: 1fr; }
-    .crm-sidebar { border-right: none; border-bottom: 1px solid var(--grey-200); }
-  }
   @media (max-width: 640px) {
-    .crm-header { padding: 0 1rem; }
-    .crm-summary,
+    .crm-content { padding: 1rem; }
     .crm-form-grid { grid-template-columns: 1fr; }
-    .crm-main { padding: 1rem; }
     .crm-cart-row { grid-template-columns: 44px 1fr; }
     .crm-cart-row .crm-btn { grid-column: 1 / -1; }
+    .crm-table th:nth-child(2), .crm-table td:nth-child(2) { display: none; }
   }
 `
 
@@ -385,61 +141,53 @@ function debtLabel(value) {
 
 function niceDate(value) {
   if (!value) return ''
-  return new Date(value).toLocaleString([], {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return new Date(value).toLocaleString([], { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
 function formatPaymentAmount(amount, currency = 'usd') {
   const code = String(currency || 'usd').toLowerCase()
   if (code === 'usd') return formatPrice(amount)
-  if (code === 'eur') {
-    return Number(amount || 0).toLocaleString('es-ES', {
-      style: 'currency',
-      currency: 'EUR',
-    })
-  }
-  return `${Number(amount || 0).toLocaleString('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} ${code.toUpperCase()}`
+  if (code === 'eur') return Number(amount || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
+  return `${Number(amount || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${code.toUpperCase()}`
 }
 
-function emptyClientForm() {
-  return { nombre: '', telefono: '', notas: '' }
-}
+function emptyClientForm() { return { nombre: '', telefono: '', notas: '' } }
 
 function productImage(product) {
-  return product.imagen || product.variantes.find(variant => variant.imagen)?.imagen || ''
+  return product.imagen || product.variantes.find(v => v.imagen)?.imagen || ''
 }
 
 export default function Clientes() {
   const { usuario, login, logout } = useCrmSession()
+
   const [clientes, setClientes] = useState([])
+  const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(false)
+
   const [selectedId, setSelectedId] = useState(null)
   const [selected, setSelected] = useState(null)
   const [clientForm, setClientForm] = useState(emptyClientForm)
-  const [newClient, setNewClient] = useState(emptyClientForm)
   const [ventas, setVentas] = useState([])
   const [abonos, setAbonos] = useState([])
   const [comprobantes, setComprobantes] = useState([])
-  const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [toast, setToast] = useState(null)
+
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerTab, setDrawerTab] = useState('ficha')
+
+  const [newClientModalOpen, setNewClientModalOpen] = useState(false)
+  const [importModalOpen, setImportModalOpen] = useState(false)
+  const [newClient, setNewClient] = useState(emptyClientForm)
 
   const [catalogSearch, setCatalogSearch] = useState('')
   const [catalog, setCatalog] = useState([])
   const [cart, setCart] = useState([])
-  const [purchaseOpen, setPurchaseOpen] = useState(true)
   const [catalogPickerOpen, setCatalogPickerOpen] = useState(false)
+
   const [abonoForm, setAbonoForm] = useState({ monto: '', metodo: 'desconocido', moneda: 'usd', nota: '' })
   const [importText, setImportText] = useState('')
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
+  const [toast, setToast] = useState(null)
 
   const showToast = useCallback((message, type = 'ok') => {
     setToast({ message, type, key: Date.now() })
@@ -449,8 +197,7 @@ export default function Clientes() {
   const refreshClients = useCallback(async () => {
     const data = await crmFetchClientes(search)
     setClientes(data)
-    if (!selectedId && data[0]) setSelectedId(data[0].id)
-  }, [search, selectedId])
+  }, [search])
 
   const refreshDetail = useCallback(async (id) => {
     if (!id) return
@@ -471,13 +218,13 @@ export default function Clientes() {
     if (!usuario) return
     setLoading(true)
     refreshClients()
-      .catch(error => showToast(error.message, 'error'))
+      .catch(err => showToast(err.message, 'error'))
       .finally(() => setLoading(false))
   }, [usuario, refreshClients, showToast])
 
   useEffect(() => {
     if (!usuario || !selectedId) return
-    refreshDetail(selectedId).catch(error => showToast(error.message, 'error'))
+    refreshDetail(selectedId).catch(err => showToast(err.message, 'error'))
   }, [usuario, selectedId, refreshDetail, showToast])
 
   useEffect(() => {
@@ -485,7 +232,7 @@ export default function Clientes() {
     const timer = window.setTimeout(() => {
       crmFetchCatalogo(catalogSearch)
         .then(setCatalog)
-        .catch(error => showToast(error.message, 'error'))
+        .catch(err => showToast(err.message, 'error'))
     }, 220)
     return () => window.clearTimeout(timer)
   }, [usuario, catalogSearch, showToast])
@@ -497,17 +244,22 @@ export default function Clientes() {
 
   if (!usuario) return <CrmLogin onAuth={login} />
 
+  function openClient(id) {
+    setSelectedId(id)
+    setDrawerOpen(true)
+    setDrawerTab('ficha')
+  }
+
   async function handleCreateClient() {
     if (!newClient.nombre.trim()) return
     try {
       const created = await crmCreateCliente(newClient)
       setNewClient(emptyClientForm())
+      setNewClientModalOpen(false)
       await refreshClients()
-      setSelectedId(created.id)
+      openClient(created.id)
       showToast('Cliente creado')
-    } catch (error) {
-      showToast(error.message, 'error')
-    }
+    } catch (err) { showToast(err.message, 'error') }
   }
 
   async function handleSaveClient() {
@@ -517,53 +269,35 @@ export default function Clientes() {
       setSelected(updated)
       await refreshClients()
       showToast('Ficha actualizada')
-    } catch (error) {
-      showToast(error.message, 'error')
-    }
+    } catch (err) { showToast(err.message, 'error') }
   }
 
   async function handleDeleteClient() {
     if (!selected) return
-    const ok = window.confirm(`Borrar cliente "${selected.nombre}"? Solo se puede borrar si no tiene compras ni abonos.`)
+    const ok = window.confirm(`Borrar cliente "${selected.nombre}"?\nSolo es posible si no tiene compras ni abonos registrados.`)
     if (!ok) return
     try {
       await crmDeleteCliente(selected.id)
+      setDrawerOpen(false)
       setSelected(null)
       setSelectedId(null)
       setCart([])
       await refreshClients()
       showToast('Cliente borrado')
-    } catch (error) {
-      showToast(error.message, 'error')
-    }
+    } catch (err) { showToast(err.message, 'error') }
   }
 
   function addCartItem(product, variant, talla, stock) {
     const key = `${variant.id}-${talla}`
     setCart(prev => {
       const found = prev.find(item => item.key === key)
-      if (found) {
-        return prev.map(item => item.key === key
-          ? { ...item, cantidad: Math.min(stock, Number(item.cantidad) + 1) }
-          : item)
-      }
-      return [
-        ...prev,
-        {
-          key,
-          producto_id: product.id,
-          variante_id: variant.id,
-          talla,
-          color: variant.color,
-          color_hex: variant.hex,
-          producto_nombre: product.nombre,
-          producto_ref: product.ref,
-          imagen: variant.imagen || product.imagen,
-          cantidad: 1,
-          stock,
-          precio_unitario: product.precio,
-        },
-      ]
+      if (found) return prev.map(item => item.key === key ? { ...item, cantidad: Math.min(stock, Number(item.cantidad) + 1) } : item)
+      return [...prev, {
+        key, producto_id: product.id, variante_id: variant.id, talla,
+        color: variant.color, color_hex: variant.hex, producto_nombre: product.nombre,
+        producto_ref: product.ref, imagen: variant.imagen || product.imagen,
+        cantidad: 1, stock, precio_unitario: product.precio,
+      }]
     })
   }
 
@@ -573,19 +307,14 @@ export default function Clientes() {
       await crmCrearVenta(selected.id, {
         usuario,
         items: cart.map(item => ({
-          producto_id: item.producto_id,
-          variante_id: item.variante_id,
-          talla: item.talla,
-          cantidad: Number(item.cantidad),
-          precio_unitario: Number(item.precio_unitario),
+          producto_id: item.producto_id, variante_id: item.variante_id, talla: item.talla,
+          cantidad: Number(item.cantidad), precio_unitario: Number(item.precio_unitario),
         })),
       })
       setCart([])
       await Promise.all([refreshDetail(selected.id), refreshClients(), crmFetchCatalogo(catalogSearch).then(setCatalog)])
       showToast('Compra registrada y stock descontado')
-    } catch (error) {
-      showToast(error.message, 'error')
-    }
+    } catch (err) { showToast(err.message, 'error') }
   }
 
   async function handleCancelSale(saleId) {
@@ -593,9 +322,7 @@ export default function Clientes() {
       await crmAnularVenta(saleId)
       await Promise.all([refreshDetail(selected.id), refreshClients(), crmFetchCatalogo(catalogSearch).then(setCatalog)])
       showToast('Compra anulada y stock repuesto')
-    } catch (error) {
-      showToast(error.message, 'error')
-    }
+    } catch (err) { showToast(err.message, 'error') }
   }
 
   async function handleCreatePayment() {
@@ -605,9 +332,7 @@ export default function Clientes() {
       setAbonoForm({ monto: '', metodo: 'desconocido', moneda: 'usd', nota: '' })
       await Promise.all([refreshDetail(selected.id), refreshClients()])
       showToast('Abono registrado')
-    } catch (error) {
-      showToast(error.message, 'error')
-    }
+    } catch (err) { showToast(err.message, 'error') }
   }
 
   async function handleUploadReceipt(event) {
@@ -617,11 +342,8 @@ export default function Clientes() {
       await crmUploadComprobante(selected.id, file, usuario)
       await refreshDetail(selected.id)
       showToast('Comprobante subido')
-    } catch (error) {
-      showToast(error.message, 'error')
-    } finally {
-      event.target.value = ''
-    }
+    } catch (err) { showToast(err.message, 'error') }
+    finally { event.target.value = '' }
   }
 
   function handleImportFile(event) {
@@ -637,13 +359,7 @@ export default function Clientes() {
   async function handleImportHistory() {
     if (!importText.trim()) return
     let datos
-    try {
-      datos = JSON.parse(importText)
-    } catch (_) {
-      showToast('JSON invalido', 'error')
-      return
-    }
-
+    try { datos = JSON.parse(importText) } catch (_) { showToast('JSON invalido', 'error'); return }
     setImporting(true)
     setImportResult(null)
     try {
@@ -652,167 +368,126 @@ export default function Clientes() {
       await refreshClients()
       if (selectedId) await refreshDetail(selectedId)
       showToast(`Importados ${result.clientes_creados + result.clientes_actualizados} clientes`)
-    } catch (error) {
-      showToast(error.message, 'error')
-    } finally {
-      setImporting(false)
-    }
+    } catch (err) { showToast(err.message, 'error') }
+    finally { setImporting(false) }
   }
 
   return (
     <div className="crm-page">
       <style>{css}</style>
-      <CrmHeader usuario={usuario} onLogout={logout} />
+      <CrmHeader usuario={usuario} onLogout={logout} extra={
+        <button className="crm-btn" onClick={() => setImportModalOpen(true)}>Importar JSON</button>
+      } />
 
-      <div className="crm-shell">
-        <aside className="crm-sidebar">
-          <section className="crm-section">
-            <p className="crm-title">Nuevo cliente</p>
-            <div className="crm-stack">
-              <input className="crm-input" placeholder="Nombre" value={newClient.nombre} onChange={e => setNewClient({ ...newClient, nombre: e.target.value })} />
-              <input className="crm-input" placeholder="Telefono" value={newClient.telefono} onChange={e => setNewClient({ ...newClient, telefono: e.target.value })} />
-              <textarea className="crm-textarea" placeholder="Notas" value={newClient.notas} onChange={e => setNewClient({ ...newClient, notas: e.target.value })} />
-              <button className="crm-btn crm-btn--primary" onClick={handleCreateClient} disabled={!newClient.nombre.trim()}>
-                Crear cliente
-              </button>
-            </div>
-          </section>
+      <div className="crm-content">
+        <div className="crm-list-head">
+          <div className="crm-list-head-left">
+            <span className="crm-count">Clientes ({clientes.length})</span>
+            <input
+              className="crm-input"
+              placeholder="Buscar nombre, telefono..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ maxWidth: 320 }}
+            />
+          </div>
+          <button className="crm-btn crm-btn--primary" onClick={() => setNewClientModalOpen(true)}>
+            + Nuevo cliente
+          </button>
+        </div>
 
-          <section className="crm-section">
-            <p className="crm-title">Importar JSON</p>
-            <div className="crm-stack">
-              <label className="crm-btn">
-                Cargar archivo
-                <input type="file" accept="application/json,.json" onChange={handleImportFile} style={{ display: 'none' }} />
-              </label>
-              <textarea
-                className="crm-textarea"
-                placeholder='{"clientes":[...]}'
-                value={importText}
-                onChange={e => setImportText(e.target.value)}
-                style={{ minHeight: 130 }}
-              />
-              <button className="crm-btn crm-btn--primary" onClick={handleImportHistory} disabled={!importText.trim() || importing}>
-                {importing ? 'Importando...' : 'Importar historico'}
-              </button>
-              <p className="crm-client-meta">Registra historicos sin descontar stock actual.</p>
-              {importResult && (
-                <p className="crm-client-meta">
-                  {importResult.clientes_creados} nuevos / {importResult.clientes_actualizados} actualizados / {importResult.ventas_creadas} compras / {importResult.abonos_creados} abonos
-                </p>
-              )}
-            </div>
-          </section>
+        <table className="crm-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Telefono</th>
+              <th>Comprado</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && (
+              <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--grey-400)', padding: '2rem' }}>Cargando...</td></tr>
+            )}
+            {clientes.map(cliente => (
+              <tr
+                key={cliente.id}
+                className={selectedId === cliente.id && drawerOpen ? 'active' : ''}
+                onClick={() => openClient(cliente.id)}
+              >
+                <td>{cliente.nombre}</td>
+                <td className="crm-mini-meta">{cliente.telefono || '\u2014'}</td>
+                <td>{formatPrice(cliente.total_comprado ?? 0)}</td>
+                <td><span className={`crm-debt ${debtClass(cliente.deuda)}`}>{debtLabel(cliente.deuda)}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-          <section className="crm-section">
-            <p className="crm-title">Clientes</p>
-            <input className="crm-input" placeholder="Buscar nombre, telefono o nota" value={search} onChange={e => setSearch(e.target.value)} />
-            <div className="crm-client-list">
-              {loading && <p className="crm-client-meta">Cargando...</p>}
-              {clientes.map(cliente => (
-                <button
-                  key={cliente.id}
-                  className={`crm-client-row${selectedId === cliente.id ? ' active' : ''}`}
-                  onClick={() => setSelectedId(cliente.id)}
-                >
-                  <span>
-                    <span className="crm-client-name">{cliente.nombre}</span>
-                    <span className="crm-client-meta">{cliente.telefono || 'Sin telefono'}</span>
-                  </span>
-                  <span className={`crm-debt ${debtClass(cliente.deuda)}`}>{debtLabel(cliente.deuda)}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-        </aside>
+        {clientes.length === 0 && !loading && (
+          <div className="crm-empty" style={{ minHeight: '30vh' }}>
+            {search ? 'Sin resultados.' : 'No hay clientes aun. Crea el primero.'}
+          </div>
+        )}
+      </div>
 
-        <main className="crm-main">
-          {!selected ? (
-            <div className="crm-empty">Selecciona o crea un cliente para empezar.</div>
-          ) : (
-            <>
-              <div className="crm-summary">
-                <div className="crm-metric"><span>Comprado</span><strong>{formatPrice(selected.total_comprado)}</strong></div>
-                <div className="crm-metric"><span>Abonado</span><strong>{formatPrice(selected.total_abonado)}</strong></div>
-                <div className="crm-metric"><span>Estado</span><strong className={`crm-debt ${debtClass(selected.deuda)}`}>{debtLabel(selected.deuda)}</strong></div>
+      {drawerOpen && (
+        <>
+          <div className="crm-drawer-backdrop" onClick={() => setDrawerOpen(false)} />
+          <div className="crm-drawer">
+            <div className="crm-drawer-head">
+              <div className="crm-drawer-title-row">
+                <span className="crm-drawer-name">{selected ? selected.nombre : '...'}</span>
+                <button className="crm-icon-btn" onClick={() => setDrawerOpen(false)} title="Cerrar">x</button>
               </div>
-
-              <div className="crm-detail-grid">
-                <div>
-                  <section className="crm-panel">
-                    <p className="crm-title">Ficha del cliente</p>
-                    <div className="crm-form-grid">
-                      <input className="crm-input" placeholder="Nombre" value={clientForm.nombre} onChange={e => setClientForm({ ...clientForm, nombre: e.target.value })} />
-                      <input className="crm-input" placeholder="Telefono" value={clientForm.telefono} onChange={e => setClientForm({ ...clientForm, telefono: e.target.value })} />
-                    </div>
-                    <div style={{ marginTop: '0.6rem' }}>
-                      <textarea className="crm-textarea" placeholder="Notas" value={clientForm.notas} onChange={e => setClientForm({ ...clientForm, notas: e.target.value })} />
-                    </div>
-                    <div className="crm-actions" style={{ marginTop: '0.75rem' }}>
-                      <button className="crm-btn crm-btn--primary" onClick={handleSaveClient}>Guardar ficha</button>
-                      <label className="crm-btn">
-                        Subir comprobante
-                        <input type="file" accept="image/*" onChange={handleUploadReceipt} style={{ display: 'none' }} />
-                      </label>
-                      <button className="crm-btn crm-btn--danger" onClick={handleDeleteClient}>Borrar cliente</button>
-                    </div>
-                  </section>
-
-                  <section className="crm-panel">
-                    <p className="crm-title">Historial de compras</p>
-                    {ventas.length === 0 ? (
-                      <p className="crm-client-meta">Sin compras registradas.</p>
-                    ) : ventas.map(venta => (
-                      <article key={venta.id} className={`crm-sale ${venta.estado === 'anulada' ? 'cancelled' : ''}`}>
-                        <div className="crm-sale-head">
-                          <div>
-                            <p className="crm-mini-title">Compra {venta.estado === 'anulada' ? 'anulada' : 'activa'}</p>
-                            <p className="crm-sale-date">{niceDate(venta.creada_en)}</p>
-                          </div>
-                          <div className="crm-sale-total">
-                            <div>{formatPrice(venta.total)}</div>
-                            <div className={`crm-debt ${venta.pendiente > 0 ? 'bad' : 'ok'}`}>
-                              {venta.estado === 'anulada' ? 'Anulada' : venta.pendiente > 0 ? `Pendiente ${formatPrice(venta.pendiente)}` : 'Pagada'}
-                            </div>
-                          </div>
-                        </div>
-                        {venta.items.map(item => (
-                          <div key={item.id} className="crm-item-line">
-                            <img className="crm-thumb" src={item.imagen} alt="" onError={e => { e.currentTarget.style.visibility = 'hidden' }} />
-                            <div>
-                              <p className="crm-mini-title">{item.producto_nombre}</p>
-                              <p className="crm-mini-meta">
-                                Ref {item.producto_ref} / {item.color} / {item.talla} / x{item.cantidad}
-                              </p>
-                            </div>
-                            <span className="crm-mini-title">{formatPrice(item.subtotal)}</span>
-                          </div>
-                        ))}
-                        {venta.estado === 'activa' && (
-                          <button className="crm-btn crm-btn--danger" onClick={() => handleCancelSale(venta.id)}>
-                            Anular y reponer stock
-                          </button>
-                        )}
-                      </article>
-                    ))}
-                  </section>
+              {selected && (
+                <div className="crm-metrics-row">
+                  <div className="crm-metric-inline"><span>Comprado</span><strong>{formatPrice(selected.total_comprado)}</strong></div>
+                  <div className="crm-metric-inline"><span>Abonado</span><strong>{formatPrice(selected.total_abonado)}</strong></div>
+                  <div className="crm-metric-inline"><span>Estado</span><strong className={`crm-debt ${debtClass(selected.deuda)}`}>{debtLabel(selected.deuda)}</strong></div>
                 </div>
+              )}
+              <div className="crm-tab-bar">
+                {[['ficha','Ficha'],['compras','Compras'],['abonos','Abonos'],['comprobantes','Comprobantes']].map(([key, label]) => (
+                  <button key={key} className={`crm-tab ${drawerTab === key ? 'crm-tab--active' : ''}`} onClick={() => setDrawerTab(key)}>{label}</button>
+                ))}
+              </div>
+            </div>
 
-                <aside>
-                  <section className="crm-panel">
-                    <div className="crm-panel-head">
-                      <p className="crm-title">Nueva compra</p>
-                      <button className="crm-icon-btn" onClick={() => setPurchaseOpen(open => !open)} title={purchaseOpen ? 'Colapsar compra' : 'Abrir compra'}>
-                        {purchaseOpen ? '-' : '+'}
-                      </button>
+            <div className="crm-drawer-body">
+              {!selected ? <p className="crm-mini-meta">Cargando...</p> : (
+                <>
+                  {drawerTab === 'ficha' && (
+                    <div className="crm-stack">
+                      <div className="crm-form-grid">
+                        <input className="crm-input" placeholder="Nombre" value={clientForm.nombre} onChange={e => setClientForm({ ...clientForm, nombre: e.target.value })} />
+                        <input className="crm-input" placeholder="Telefono" value={clientForm.telefono} onChange={e => setClientForm({ ...clientForm, telefono: e.target.value })} />
+                      </div>
+                      <textarea className="crm-textarea" placeholder="Notas" value={clientForm.notas} onChange={e => setClientForm({ ...clientForm, notas: e.target.value })} />
+                      <div className="crm-actions">
+                        <button className="crm-btn crm-btn--primary" onClick={handleSaveClient}>Guardar ficha</button>
+                        <label className="crm-btn">
+                          Subir comprobante
+                          <input type="file" accept="image/*" onChange={handleUploadReceipt} style={{ display: 'none' }} />
+                        </label>
+                      </div>
+                      <div className="crm-section-divider">
+                        <button className="crm-link-danger" onClick={handleDeleteClient}>Borrar este cliente</button>
+                      </div>
                     </div>
-                    {purchaseOpen && (
-                      <div className="crm-stack">
+                  )}
+
+                  {drawerTab === 'compras' && (
+                    <div className="crm-stack">
+                      <div>
+                        <p className="crm-title">Nueva compra</p>
                         <button className="crm-btn" onClick={() => setCatalogPickerOpen(true)}>Añadir prendas</button>
-                        <p className="crm-client-meta">Al guardar la compra se descuenta stock del catalogo real.</p>
+                        <p className="crm-mini-meta" style={{ marginTop: '0.4rem' }}>Al guardar la compra se descuenta stock del catalogo real.</p>
+                      </div>
+                      {cart.length > 0 && (
                         <div>
-                          <p className="crm-title">Prendas</p>
-                          {cart.length === 0 ? <p className="crm-client-meta">Selecciona tallas desde el catalogo.</p> : cart.map(item => (
+                          <p className="crm-title" style={{ marginBottom: 0 }}>Prendas seleccionadas</p>
+                          {cart.map(item => (
                             <div key={item.key} className="crm-cart-row">
                               <img className="crm-thumb" src={item.imagen} alt="" onError={e => { e.currentTarget.style.visibility = 'hidden' }} />
                               <div>
@@ -831,13 +506,49 @@ export default function Clientes() {
                             <button className="crm-btn crm-btn--primary" onClick={handleCreateSale} disabled={!cart.length}>Guardar compra</button>
                           </div>
                         </div>
+                      )}
+                      <div className="crm-section-divider">
+                        <p className="crm-title">Historial de compras</p>
+                        {ventas.length === 0 ? (
+                          <p className="crm-mini-meta">Sin compras registradas.</p>
+                        ) : ventas.map(venta => (
+                          <article key={venta.id} className={`crm-sale ${venta.estado === 'anulada' ? 'cancelled' : ''}`}>
+                            <div className="crm-sale-head">
+                              <div>
+                                <p className="crm-mini-title">Compra {venta.estado === 'anulada' ? 'anulada' : 'activa'}</p>
+                                <p className="crm-sale-date">{niceDate(venta.creada_en)}</p>
+                              </div>
+                              <div className="crm-sale-total">
+                                <div>{formatPrice(venta.total)}</div>
+                                <div className={`crm-debt ${venta.pendiente > 0 ? 'bad' : 'ok'}`}>
+                                  {venta.estado === 'anulada' ? 'Anulada' : venta.pendiente > 0 ? `Pendiente ${formatPrice(venta.pendiente)}` : 'Pagada'}
+                                </div>
+                              </div>
+                            </div>
+                            {venta.items.map(item => (
+                              <div key={item.id} className="crm-item-line">
+                                <img className="crm-thumb" src={item.imagen} alt="" onError={e => { e.currentTarget.style.visibility = 'hidden' }} />
+                                <div>
+                                  <p className="crm-mini-title">{item.producto_nombre}</p>
+                                  <p className="crm-mini-meta">Ref {item.producto_ref} / {item.color} / {item.talla} / x{item.cantidad}</p>
+                                </div>
+                                <span className="crm-mini-title">{formatPrice(item.subtotal)}</span>
+                              </div>
+                            ))}
+                            {venta.estado === 'activa' && (
+                              <button className="crm-btn crm-btn--danger" style={{ marginTop: '0.5rem' }} onClick={() => handleCancelSale(venta.id)}>
+                                Anular y reponer stock
+                              </button>
+                            )}
+                          </article>
+                        ))}
                       </div>
-                    )}
-                  </section>
+                    </div>
+                  )}
 
-                  <section className="crm-panel">
-                    <p className="crm-title">Registrar abono</p>
+                  {drawerTab === 'abonos' && (
                     <div className="crm-stack">
+                      <p className="crm-title">Registrar abono</p>
                       <input className="crm-input" type="number" min="0" step="0.01" placeholder="Monto" value={abonoForm.monto} onChange={e => setAbonoForm({ ...abonoForm, monto: e.target.value })} />
                       <div className="crm-form-grid">
                         <select className="crm-select" value={abonoForm.metodo} onChange={e => setAbonoForm({ ...abonoForm, metodo: e.target.value })}>
@@ -848,51 +559,107 @@ export default function Clientes() {
                           <option value="binance">Binance</option>
                           <option value="paypal">PayPal</option>
                         </select>
-                        <input className="crm-input" value="USD" aria-label="Moneda USD" disabled />
+                        <select className="crm-select" value={abonoForm.moneda} onChange={e => setAbonoForm({ ...abonoForm, moneda: e.target.value })}>
+                          <option value="usd">USD</option>
+                          <option value="bs">BS</option>
+                          <option value="eur">EUR</option>
+                          <option value="usdt">USDT</option>
+                        </select>
                       </div>
                       <input className="crm-input" placeholder="Nota opcional" value={abonoForm.nota} onChange={e => setAbonoForm({ ...abonoForm, nota: e.target.value })} />
                       <button className="crm-btn crm-btn--primary" onClick={handleCreatePayment} disabled={!abonoForm.monto}>Guardar abono</button>
-                    </div>
-                  </section>
-
-                  <section className="crm-panel">
-                    <p className="crm-title">Abonos</p>
-                    {abonos.length === 0 ? <p className="crm-client-meta">Sin abonos.</p> : abonos.map(abono => (
-                      <div key={abono.id} className="crm-payment-line" style={{ gridTemplateColumns: '1fr auto' }}>
-                        <div>
-                          <p className="crm-mini-title">{abono.metodo} / {(abono.moneda || 'usd').toUpperCase()}</p>
-                          <p className="crm-mini-meta">{niceDate(abono.creado_en)} {abono.nota ? `/ ${abono.nota}` : ''}</p>
-                        </div>
-                        <span className="crm-mini-title">{formatPaymentAmount(abono.monto, abono.moneda)}</span>
+                      <div className="crm-section-divider">
+                        <p className="crm-title">Historial de abonos</p>
+                        {abonos.length === 0 ? <p className="crm-mini-meta">Sin abonos.</p> : abonos.map(abono => (
+                          <div key={abono.id} className="crm-payment-line" style={{ gridTemplateColumns: '1fr auto' }}>
+                            <div>
+                              <p className="crm-mini-title">{abono.metodo} / {(abono.moneda || 'usd').toUpperCase()}</p>
+                              <p className="crm-mini-meta">{niceDate(abono.creado_en)}{abono.nota ? ` / ${abono.nota}` : ''}</p>
+                            </div>
+                            <span className="crm-mini-title">{formatPaymentAmount(abono.monto, abono.moneda)}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </section>
+                    </div>
+                  )}
 
-                  <section className="crm-panel">
-                    <p className="crm-title">Comprobantes</p>
-                    {comprobantes.length === 0 ? <p className="crm-client-meta">Sin imagenes.</p> : comprobantes.map(item => (
-                      <a key={item.id} className="crm-receipt-line" style={{ gridTemplateColumns: '1fr auto' }} href={item.url} target="_blank" rel="noreferrer">
-                        <div>
-                          <p className="crm-mini-title">{item.nombre_archivo}</p>
-                          <p className="crm-mini-meta">{niceDate(item.creado_en)}</p>
-                        </div>
-                        <span className="crm-mini-meta">Abrir</span>
-                      </a>
-                    ))}
-                  </section>
-                </aside>
+                  {drawerTab === 'comprobantes' && (
+                    <div className="crm-stack">
+                      <label className="crm-btn" style={{ textAlign: 'center' }}>
+                        Subir comprobante
+                        <input type="file" accept="image/*" onChange={handleUploadReceipt} style={{ display: 'none' }} />
+                      </label>
+                      {comprobantes.length === 0 ? <p className="crm-mini-meta">Sin imagenes subidas.</p> : comprobantes.map(item => (
+                        <a key={item.id} className="crm-receipt-line" style={{ gridTemplateColumns: '1fr auto' }} href={item.url} target="_blank" rel="noreferrer">
+                          <div>
+                            <p className="crm-mini-title">{item.nombre_archivo}</p>
+                            <p className="crm-mini-meta">{niceDate(item.creado_en)}</p>
+                          </div>
+                          <span className="crm-mini-meta">Abrir</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {newClientModalOpen && (
+        <div className="crm-modal-backdrop" onClick={() => { setNewClientModalOpen(false); setNewClient(emptyClientForm()) }}>
+          <div className="crm-modal crm-modal--sm" onClick={e => e.stopPropagation()}>
+            <div className="crm-panel-head">
+              <p className="crm-modal-title">Nuevo cliente</p>
+              <button className="crm-icon-btn" onClick={() => { setNewClientModalOpen(false); setNewClient(emptyClientForm()) }}>x</button>
+            </div>
+            <div className="crm-stack">
+              <input className="crm-input" placeholder="Nombre *" value={newClient.nombre} onChange={e => setNewClient({ ...newClient, nombre: e.target.value })} onKeyDown={e => e.key === 'Enter' && handleCreateClient()} autoFocus />
+              <input className="crm-input" placeholder="Telefono" value={newClient.telefono} onChange={e => setNewClient({ ...newClient, telefono: e.target.value })} />
+              <textarea className="crm-textarea" placeholder="Notas" value={newClient.notas} onChange={e => setNewClient({ ...newClient, notas: e.target.value })} />
+              <div className="crm-actions" style={{ justifyContent: 'flex-end' }}>
+                <button className="crm-btn" onClick={() => { setNewClientModalOpen(false); setNewClient(emptyClientForm()) }}>Cancelar</button>
+                <button className="crm-btn crm-btn--primary" onClick={handleCreateClient} disabled={!newClient.nombre.trim()}>Crear cliente</button>
               </div>
-            </>
-          )}
-        </main>
-      </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {importModalOpen && (
+        <div className="crm-modal-backdrop" onClick={() => setImportModalOpen(false)}>
+          <div className="crm-modal" style={{ width: 'min(540px, 100%)' }} onClick={e => e.stopPropagation()}>
+            <div className="crm-panel-head">
+              <p className="crm-modal-title">Importar historico JSON</p>
+              <button className="crm-icon-btn" onClick={() => setImportModalOpen(false)}>x</button>
+            </div>
+            <div className="crm-stack">
+              <label className="crm-btn" style={{ textAlign: 'center' }}>
+                Cargar archivo .json
+                <input type="file" accept="application/json,.json" onChange={handleImportFile} style={{ display: 'none' }} />
+              </label>
+              <textarea className="crm-textarea" placeholder='{"clientes":[...]}' value={importText} onChange={e => setImportText(e.target.value)} style={{ minHeight: 160 }} />
+              <button className="crm-btn crm-btn--primary" onClick={handleImportHistory} disabled={!importText.trim() || importing}>
+                {importing ? 'Importando...' : 'Importar historico'}
+              </button>
+              <p className="crm-mini-meta">Registra historicos sin descontar stock actual.</p>
+              {importResult && (
+                <p className="crm-mini-meta">
+                  OK: {importResult.clientes_creados} nuevos / {importResult.clientes_actualizados} actualizados / {importResult.ventas_creadas} compras / {importResult.abonos_creados} abonos
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {catalogPickerOpen && (
         <div className="crm-modal-backdrop" onClick={() => setCatalogPickerOpen(false)}>
           <div className="crm-modal" onClick={e => e.stopPropagation()}>
             <div className="crm-panel-head">
               <p className="crm-title">Seleccionar prendas</p>
-              <button className="crm-icon-btn" onClick={() => setCatalogPickerOpen(false)} title="Cerrar selector">x</button>
+              <button className="crm-icon-btn" onClick={() => setCatalogPickerOpen(false)} title="Cerrar">x</button>
             </div>
             <input className="crm-input" placeholder="Buscar producto, ref, color o talla" value={catalogSearch} onChange={e => setCatalogSearch(e.target.value)} autoFocus />
             <div className="crm-catalog-list">
@@ -923,7 +690,7 @@ export default function Clientes() {
             </div>
             <div className="crm-actions" style={{ justifyContent: 'space-between' }}>
               <span className="crm-mini-title">{cart.length} prendas seleccionadas</span>
-              <button className="crm-btn crm-btn--primary" onClick={() => setCatalogPickerOpen(false)}>Añadir</button>
+              <button className="crm-btn crm-btn--primary" onClick={() => setCatalogPickerOpen(false)}>Listo</button>
             </div>
           </div>
         </div>

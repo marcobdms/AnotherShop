@@ -92,7 +92,7 @@ export function CrmLogin({ onAuth }) {
   )
 }
 
-export function CrmHeader({ usuario, onLogout }) {
+export function CrmHeader({ usuario, onLogout, extra }) {
   return (
     <header className="crm-header">
       <span className="crm-brand">Another NPC Shop CRM</span>
@@ -109,6 +109,7 @@ export function CrmHeader({ usuario, onLogout }) {
         >
           Clientes
         </NavLink>
+        {extra && extra}
         <span className="crm-nav-user">{usuario}</span>
         <button className="crm-btn" onClick={onLogout}>Salir</button>
       </nav>
