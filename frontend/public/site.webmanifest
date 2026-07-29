@@ -1,0 +1,15 @@
+{
+  "name": "ANOTHER NPC SHOP",
+  "short_name": "Another Shop",
+  "icons": [
+    {
+      "src": "/another-shop-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#f6efe3",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}
