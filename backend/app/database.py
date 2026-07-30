@@ -7,7 +7,7 @@ import logging
 from functools import lru_cache
 from pathlib import Path
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine, make_url
 
 
@@ -75,8 +75,16 @@ def get_engine() -> Engine:
     engine = create_engine(
         normalized_url,
         pool_pre_ping=True,
+        pool_recycle=1800,
         connect_args={"options": "-csearch_path=crm,public"},
     )
+
+    # Supabase usa PgBouncer en modo transaction, que es incompatible con los
+    # prepared statements de servidor que psycopg3 activa por defecto.
+    # Desactivarlos evita el error DuplicatePreparedStatement (_pg3_0).
+    @event.listens_for(engine, "connect")
+    def disable_prepared_statements(dbapi_connection, connection_record):
+        dbapi_connection.prepare_threshold = None
     with engine.connect() as connection:
         diagnostics = connection.execute(
             text(
