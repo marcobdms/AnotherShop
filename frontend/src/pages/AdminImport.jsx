@@ -40,7 +40,9 @@ function makeRow(overrides = {}) {
     precio_venta: '',
     genero: 'mujer',
     imagen: '',
+    imagen2: '',
     _imgPreview: null,   // URL local (blob) para preview de drag-drop
+    _imgPreview2: null,
     disponible: true,
     ...overrides,
   }
@@ -299,6 +301,33 @@ const css = `
     max-width: 60px;
   }
   .imp-img-drop-label:hover { color: var(--black); }
+
+  /* Botón ✕ para borrar imagen ya cargada */
+  .imp-img-clear {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(192, 57, 43, 0.92);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 150ms ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .imp-img-drop-wrap:hover .imp-img-clear {
+    opacity: 1;
+  }
 
   /* Color selector — swatches compact inline */
   .imp-color-selector {
@@ -1326,7 +1355,20 @@ export default function AdminImport() {
                     <td style={{ width: 130 }}>
                       <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
                         {/* Foto 1 */}
+                        {/* Foto 1 */}
                         <div className="imp-img-drop-wrap">
+                          {(row._imgPreview || row.imagen) && (
+                            <button
+                              className="imp-img-clear"
+                              title="Quitar imagen 1"
+                              onClick={e => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                updateRow(row._id, 'imagen', '')
+                                updateRow(row._id, '_imgPreview', null)
+                              }}
+                            >✕</button>
+                          )}
                           <label
                             className={`imp-img-placeholder${row._dragOver ? ' drag-over' : ''}`}
                             style={row._imgPreview || row.imagen ? { border: 'none', background: 'transparent', padding: 0 } : {}}
@@ -1345,7 +1387,10 @@ export default function AdminImport() {
                                 const renamedFile = new File([file], `${refClean}.${ext}`, { type: file.type })
                                 const res = await adminUploadImage(renamedFile)
                                 updateRow(row._id, 'imagen', res.url)
-                              } catch (err) { alert('Error subiendo la imagen') }
+                              } catch (err) {
+                                updateRow(row._id, '_imgPreview', null)
+                                alert('Error subiendo la imagen: ' + err.message)
+                              }
                             }}
                             title="Foto 1 (principal)"
                           >
@@ -1365,12 +1410,28 @@ export default function AdminImport() {
                                 const renamedFile = new File([file], `${refClean}.${ext}`, { type: file.type })
                                 const res = await adminUploadImage(renamedFile)
                                 updateRow(row._id, 'imagen', res.url)
-                              } catch (err) { alert('Error subiendo la imagen') }
+                              } catch (err) {
+                                updateRow(row._id, '_imgPreview', null)
+                                alert('Error subiendo la imagen: ' + err.message)
+                              }
+                              e.target.value = ''
                             }} />
                           </label>
                         </div>
                         {/* Foto 2 */}
                         <div className="imp-img-drop-wrap">
+                          {(row._imgPreview2 || row.imagen2) && (
+                            <button
+                              className="imp-img-clear"
+                              title="Quitar imagen 2"
+                              onClick={e => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                updateRow(row._id, 'imagen2', '')
+                                updateRow(row._id, '_imgPreview2', null)
+                              }}
+                            >✕</button>
+                          )}
                           <label
                             className={`imp-img-placeholder${row._dragOver2 ? ' drag-over' : ''}`}
                             style={row._imgPreview2 || row.imagen2 ? { border: 'none', background: 'transparent', padding: 0 } : {}}
@@ -1389,7 +1450,10 @@ export default function AdminImport() {
                                 const renamedFile = new File([file], `${refClean}_2.${ext}`, { type: file.type })
                                 const res = await adminUploadImage(renamedFile)
                                 updateRow(row._id, 'imagen2', res.url)
-                              } catch (err) { alert('Error subiendo la imagen 2') }
+                              } catch (err) {
+                                updateRow(row._id, '_imgPreview2', null)
+                                alert('Error subiendo la imagen 2: ' + err.message)
+                              }
                             }}
                             title="Foto 2 (carrusel)"
                           >
@@ -1409,7 +1473,11 @@ export default function AdminImport() {
                                 const renamedFile = new File([file], `${refClean}_2.${ext}`, { type: file.type })
                                 const res = await adminUploadImage(renamedFile)
                                 updateRow(row._id, 'imagen2', res.url)
-                              } catch (err) { alert('Error subiendo la imagen 2') }
+                              } catch (err) {
+                                updateRow(row._id, '_imgPreview2', null)
+                                alert('Error subiendo la imagen 2: ' + err.message)
+                              }
+                              e.target.value = ''
                             }} />
                           </label>
                         </div>

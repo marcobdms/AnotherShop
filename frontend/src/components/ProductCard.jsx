@@ -5,7 +5,7 @@
  * Sin flechas visibles — interacción implícita.
  */
 import { useNavigate } from 'react-router-dom'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { formatPrice } from '../api/catalog'
 
 function HeartIcon({ filled }) {
@@ -23,6 +23,7 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
   const navigate = useNavigate()
   const images = producto.imagenes?.length > 0 ? producto.imagenes : [producto.imagen]
   const hasMultiple = images.length > 1
+  const carouselRef = useRef(null)
 
   // displayIndex controla qué imagen se muestra
   // Desktop: hover → 1, blur → 0
@@ -54,28 +55,46 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
   }, [])
 
   // ── Mobile swipe ────────────────────────────────────────────────────────────
-  const handleTouchStart = useCallback((e) => {
-    touchStartX.current = e.touches[0].clientX
-    isDragging.current = false
-  }, [])
+  useEffect(() => {
+    const el = carouselRef.current
+    if (!el) return
 
-  const handleTouchMove = useCallback((e) => {
-    if (touchStartX.current === null) return
-    const diff = Math.abs(e.touches[0].clientX - touchStartX.current)
-    if (diff > 8) isDragging.current = true
-  }, [])
+    const handleTouchStart = (e) => {
+      touchStartX.current = e.touches[0].clientX
+      isDragging.current = false
+    }
 
-  const handleTouchEnd = useCallback((e) => {
-    if (touchStartX.current === null) return
-    const diff = touchStartX.current - e.changedTouches[0].clientX
-    if (Math.abs(diff) > 40 && hasMultiple) {
-      if (diff > 0) {
-        setDisplayIndex(i => Math.min(i + 1, images.length - 1))
-      } else {
-        setDisplayIndex(i => Math.max(i - 1, 0))
+    const handleTouchMove = (e) => {
+      if (touchStartX.current === null) return
+      const diff = e.touches[0].clientX - touchStartX.current
+      if (Math.abs(diff) > 8) {
+        isDragging.current = true
+        e.preventDefault()
       }
     }
-    touchStartX.current = null
+
+    const handleTouchEnd = (e) => {
+      if (touchStartX.current === null) return
+      const diff = touchStartX.current - e.changedTouches[0].clientX
+      if (Math.abs(diff) > 40 && hasMultiple) {
+        if (diff > 0) {
+          setDisplayIndex(i => Math.min(i + 1, images.length - 1))
+        } else {
+          setDisplayIndex(i => Math.max(i - 1, 0))
+        }
+      }
+      touchStartX.current = null
+    }
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: true })
+    el.addEventListener('touchmove', handleTouchMove, { passive: false })
+    el.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart)
+      el.removeEventListener('touchmove', handleTouchMove)
+      el.removeEventListener('touchend', handleTouchEnd)
+    }
   }, [hasMultiple, images.length])
 
   return (
@@ -85,14 +104,14 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
       onKeyDown={e => e.key === 'Enter' && handleClick()}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       role="link"
       tabIndex={0}
       aria-label={`Ver ${producto.nombre}`}
     >
-      <div className={`product-card__img-wrap ${!producto.disponible ? 'sold-out' : ''}`}>
+      <div 
+        ref={carouselRef}
+        className={`product-card__img-wrap ${!producto.disponible ? 'sold-out' : ''}`}
+      >
         {/* Carrusel */}
         <div className="product-card__carousel">
           {images.map((src, i) => (
