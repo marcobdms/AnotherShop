@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { adminFetchHistory } from '../api/catalog'
-import { crmPath } from '../utils/crm'
 
 const css = `
   .adm-cambios {
@@ -114,14 +113,13 @@ const css = `
   }
 `
 
-export default function AdminCambios() {
+export default function AdminCambios({ active = true }) {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const authedUser = sessionStorage.getItem('admin_auth_user')
 
   useEffect(() => {
-    if (!authedUser) return
+    if (!active) return
 
     adminFetchHistory()
       .then(data => {
@@ -134,11 +132,7 @@ export default function AdminCambios() {
       .finally(() => {
         setLoading(false)
       })
-  }, [authedUser])
-
-  if (!authedUser) {
-    return <Navigate to="/admin" replace />
-  }
+  }, [active])
 
   return (
     <div className="adm-cambios">
@@ -146,9 +140,9 @@ export default function AdminCambios() {
       
       <header className="adm-cambios__header">
         <Link to="/admin" className="adm-cambios__brand">← Volver al Panel</Link>
-        <a href={crmPath('/import')} style={{ fontSize: 'var(--size-xs)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--grey-400)', textDecoration: 'none' }}>
+        <Link to="/import" style={{ fontSize: 'var(--size-xs)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--grey-400)', textDecoration: 'none' }}>
           Importar productos →
-        </a>
+        </Link>
       </header>
 
       <main className="adm-cambios__container">

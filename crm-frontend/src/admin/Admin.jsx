@@ -5,11 +5,9 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { adminFetchProducts, adminFetchHistory, adminPublishDraft, adminFetchInventory, formatPrice } from '../api/catalog'
-import { supabase } from '../lib/supabase'
-import InventoryModal from '../components/InventoryModal'
-import { crmPath } from '../utils/crm'
+import InventoryModal from './InventoryModal'
 
 const TALLAS_GLOBALES = ['XS', 'S', 'M', 'L', 'XL']
 
@@ -43,75 +41,6 @@ const css = `
     to   { transform: translateX(-50%); }
   }
 
-  .adm-login {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--white);
-    font-family: var(--font);
-  }
-  .adm-login__card {
-    width: 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-  .adm-login__brand {
-    font-size: var(--size-xs);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-weight: 500;
-    color: var(--black);
-    margin-bottom: 0.25rem;
-  }
-  .adm-login__title {
-    font-size: var(--size-sm);
-    color: var(--grey-400);
-    letter-spacing: 0.08em;
-    font-weight: 300;
-  }
-  .adm-login__divider {
-    height: 1px;
-    background: var(--grey-200);
-    margin: 0.25rem 0;
-  }
-  .adm-login__input {
-    width: 100%;
-    border: 1px solid var(--grey-200);
-    padding: 0.85rem 1rem;
-    font-family: var(--font);
-    font-size: var(--size-sm);
-    color: var(--black);
-    background: var(--white);
-    outline: none;
-    transition: border-color 200ms ease;
-    letter-spacing: 0.05em;
-  }
-  .adm-login__input:focus { border-color: var(--black); }
-  .adm-login__input::placeholder { color: var(--grey-400); letter-spacing: 0.05em; }
-  .adm-login__btn {
-    width: 100%;
-    background: var(--black);
-    color: var(--white);
-    border: none;
-    padding: 0.85rem 1rem;
-    font-family: var(--font);
-    font-size: var(--size-xs);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: opacity 200ms ease;
-  }
-  .adm-login__btn:hover:not(:disabled) { opacity: 0.75; }
-  .adm-login__btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .adm-login__error {
-    font-size: var(--size-xs);
-    color: #c0392b;
-    letter-spacing: 0.08em;
-    text-align: center;
-  }
-
   .adm-header {
     position: sticky;
     top: 0;
@@ -123,22 +52,13 @@ const css = `
     align-items: center;
     justify-content: space-between;
   }
-  .adm-header__brand {
-    font-size: var(--size-xs);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-weight: 500;
+  .adm-header--tools {
+    justify-content: flex-end;
   }
   .adm-header__right {
     display: flex;
     align-items: center;
     gap: 1.5rem;
-  }
-  .adm-header__badge {
-    font-size: var(--size-xs);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--grey-400);
   }
   .adm-header__logout {
     font-size: var(--size-xs);
@@ -397,73 +317,8 @@ function Toast({ msg, type, onDone }) {
   return <div className={`adm-toast ${type}`}>{msg}</div>
 }
 
-// ── Login Screen ───────────────────────────────────────────────────────────────
-function LoginScreen({ onAuth }) {
-  const [pwd, setPwd] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async () => {
-    if (!pwd) return
-    setLoading(true)
-    setError('')
-
-    try {
-      // Validar contraseña contra la tabla admin_users en Supabase
-      const { data, error: sbError } = await supabase
-        .from('admin_users')
-        .select('username')
-        .eq('password', pwd)
-        .maybeSingle()
-
-      if (sbError) throw new Error(sbError.message)
-
-      if (data?.username) {
-        sessionStorage.setItem('admin_auth_user', data.username)
-        onAuth(data.username)
-      } else {
-        setError('Contraseña incorrecta')
-        setPwd('')
-      }
-    } catch (e) {
-      setError('Error de conexión. Inténtalo de nuevo.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="adm-login">
-      <div className="adm-login__card">
-        <div>
-          <p className="adm-login__brand">Another NPC Shop</p>
-          <p className="adm-login__title">Panel de administración</p>
-        </div>
-        <div className="adm-login__divider" />
-        <input
-          className="adm-login__input"
-          type="password"
-          placeholder="Contraseña"
-          value={pwd}
-          onChange={e => { setPwd(e.target.value); setError('') }}
-          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          autoFocus
-        />
-        <button
-          className="adm-login__btn"
-          onClick={handleSubmit}
-          disabled={!pwd || loading}
-        >
-          {loading ? '...' : 'Acceder'}
-        </button>
-        {error && <p className="adm-login__error">{error}</p>}
-      </div>
-    </div>
-  )
-}
-
 // ── Admin Panel (Contenedor Principal) ─────────────────────────────────────────
-function AdminPanel({ onLogout, usuario }) {
+function AdminPanel({ active = true, catalogRevision = 0, usuario, onCatalogChanged }) {
   const [productos, setProductos] = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [productInventory, setProductInventory] = useState(null) // inventario real del producto seleccionado
@@ -476,7 +331,7 @@ function AdminPanel({ onLogout, usuario }) {
   const [toast, setToast] = useState(null)
   const [error, setError] = useState(null)
   const [inventoryProduct, setInventoryProduct] = useState(null)
-  const navigate = useNavigate()
+  const [loadedRevision, setLoadedRevision] = useState(null)
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type, key: Date.now() })
@@ -491,18 +346,27 @@ function AdminPanel({ onLogout, usuario }) {
     }
   }, [])
 
+  const loadAdminData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [prods] = await Promise.all([adminFetchProducts(), fetchHistory()])
+      setProductos(prods)
+      setLoadedRevision(catalogRevision)
+      setError(null)
+    } catch (e) {
+      showToast(e.message, 'error')
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [catalogRevision, fetchHistory, showToast])
+
   useEffect(() => {
-    Promise.all([adminFetchProducts(), fetchHistory()])
-      .then(([prods]) => {
-        setProductos(prods)
-        setError(null)
-      })
-      .catch(e => {
-        showToast(e.message, 'error')
-        setError(e.message)
-      })
-      .finally(() => setLoading(false))
-  }, [showToast, fetchHistory])
+    if (!active) return
+    if (loadedRevision === catalogRevision) return
+    if (pendingEvents.length > 0) return
+    loadAdminData()
+  }, [active, catalogRevision, loadedRevision, pendingEvents.length, loadAdminData])
 
   // Cargar inventario real cuando se selecciona un producto
   useEffect(() => {
@@ -552,12 +416,13 @@ function AdminPanel({ onLogout, usuario }) {
       await adminPublishDraft(productos, pendingEvents)
       setPendingEvents([])
       await fetchHistory()
+      onCatalogChanged?.()
       showToast('Cambios guardados en producción', 'success')
       setShowHistory(false)
     } catch (e) {
       showToast(e.message, 'error')
     }
-  }, [pendingEvents, productos, fetchHistory, showToast])
+  }, [pendingEvents, productos, fetchHistory, onCatalogChanged, showToast])
 
   const combinedHistory = [...pendingEvents, ...history]
 
@@ -576,25 +441,23 @@ function AdminPanel({ onLogout, usuario }) {
   return (
     <>
       <AdminBanner />
-      <header className="adm-header" style={{ position: 'relative' }}>
-        <span className="adm-header__brand">Another NPC Shop</span>
+      <header className="adm-header adm-header--tools" style={{ position: 'relative' }}>
         <div className="adm-header__right">
           {pendingEvents.length > 0 && (
             <button className="adm-header__save" onClick={handleSave}>
               Guardar ({pendingEvents.length})
             </button>
           )}
-          <a
-            href={crmPath('/import')}
+          <Link
+            to="/import"
             className="adm-header__logout"
             style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
           >
             + Productos
-          </a>
+          </Link>
           <button className="adm-header__logout" onClick={() => setShowHistory(!showHistory)}>
             Cambios ({pendingEvents.length > 0 ? '*' : ''}{combinedHistory.length})
           </button>
-          <button className="adm-header__logout" onClick={onLogout}>Salir</button>
         </div>
 
         {showHistory && (
@@ -727,6 +590,12 @@ function AdminPanel({ onLogout, usuario }) {
                   key={p.id}
                   className="product-card"
                   onClick={() => setSelectedProduct(p)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelectedProduct(p)
+                    }
+                  }}
                   role="button"
                   tabIndex={0}
                 >
@@ -779,6 +648,7 @@ function AdminPanel({ onLogout, usuario }) {
           onClose={() => setInventoryProduct(null)}
           onSaved={() => {
             showToast(`Inventario de ${inventoryProduct.nombre} guardado`, 'success')
+            onCatalogChanged?.()
           }}
         />
       )}
@@ -787,23 +657,16 @@ function AdminPanel({ onLogout, usuario }) {
 }
 
 // ── Componente principal ───────────────────────────────────────────────────────
-export default function Admin() {
-  const [authedUser, setAuthedUser] = useState(
-    () => sessionStorage.getItem('admin_auth_user')
-  )
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('admin_auth_user')
-    setAuthedUser(null)
-  }
-
+export default function Admin({ active = true, catalogRevision = 0, usuario = 'admin', onCatalogChanged }) {
   return (
     <>
       <style>{css}</style>
-      {authedUser
-        ? <AdminPanel onLogout={handleLogout} usuario={authedUser} />
-        : <LoginScreen onAuth={(user) => setAuthedUser(user)} />
-      }
+      <AdminPanel
+        active={active}
+        catalogRevision={catalogRevision}
+        usuario={usuario}
+        onCatalogChanged={onCatalogChanged}
+      />
     </>
   )
 }

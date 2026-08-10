@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import AdminCatalog from './AdminCatalog.jsx'
+import Admin from './admin/Admin.jsx'
+import AdminCambios from './admin/AdminCambios.jsx'
 import AdminImport from './AdminImport.jsx'
 import Clientes from './Clientes.jsx'
 import { CrmHeader, CrmLogin, CrmSkeleton, CrmSpinner, useCrmSession } from './CrmChrome'
 import Dashboard from './Dashboard.jsx'
 
-const VIEW_PATHS = new Set(['/clientes', '/dashboard', '/import', '/admin'])
+const VIEW_PATHS = new Set(['/clientes', '/dashboard', '/import', '/admin', '/admin/cambios'])
 
 function normalizePath(pathname) {
   if (pathname === '/') return '/clientes'
@@ -21,7 +22,7 @@ function viewClass(path, activePath) {
 function skeletonVariant(path) {
   if (path === '/dashboard') return 'dashboard'
   if (path === '/import') return 'import'
-  if (path === '/admin') return 'admin'
+  if (path.startsWith('/admin')) return 'admin'
   return 'clients'
 }
 
@@ -61,7 +62,7 @@ export default function CrmApp() {
 
   return (
     <div className="crm-page">
-      <CrmHeader usuario={usuario} onLogout={logout} />
+      <CrmHeader onLogout={logout} />
 
       {isSettling && (
         <div className={`crm-route-loading crm-route-loading--${skeletonVariant(activePath)}`}>
@@ -100,12 +101,16 @@ export default function CrmApp() {
       </section>
 
       <section className={viewClass('/admin', activePath)} hidden={!isViewActive('/admin')}>
-        <AdminCatalog
+        <Admin
           active={isViewActive('/admin')}
           catalogRevision={catalogRevision}
           usuario={usuario}
           onCatalogChanged={() => setCatalogRevision(version => version + 1)}
         />
+      </section>
+
+      <section className={viewClass('/admin/cambios', activePath)} hidden={!isViewActive('/admin/cambios')}>
+        <AdminCambios active={isViewActive('/admin/cambios')} />
       </section>
     </div>
   )

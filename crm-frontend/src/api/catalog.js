@@ -84,15 +84,6 @@ export async function adminFetchProducts() {
   return handleResponse(res)
 }
 
-export async function adminToggleProductAvailability(productId, disponible, usuario = 'admin') {
-  const res = await fetch(`${ADMIN_BASE}/products/${encodeURIComponent(productId)}/disponible`, {
-    method: 'PATCH',
-    headers: adminHeaders(),
-    body: JSON.stringify({ disponible, usuario }),
-  })
-  return handleResponse(res)
-}
-
 export async function adminFetchHistory() {
   const res = await fetch(`${ADMIN_BASE}/history`, {
     headers: adminHeaders(),

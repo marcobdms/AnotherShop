@@ -11,18 +11,16 @@ import Product from './pages/Product'
 import About from './pages/About'
 import { useCatalog } from './hooks/useCatalog'
 import { useAuth } from './hooks/useAuth'
-import Admin from './pages/Admin'
-import AdminCambios from './pages/AdminCambios'
 import Clientes from './pages/Clientes'
 import Login from './pages/Login'
 import Account from './pages/Account'
 import TopBanner from './components/TopBanner'
 import { crmPath } from './utils/crm'
 
-function CrmImportRedirect() {
+function CrmRedirect({ path }) {
   useEffect(() => {
-    window.location.replace(crmPath('/import'))
-  }, [])
+    window.location.replace(crmPath(path))
+  }, [path])
 
   return <main className="page-state">Redirigiendo al CRM...</main>
 }
@@ -66,9 +64,9 @@ function AppLayout() {
         <Route path="/nosotros" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cuenta" element={<Account />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/admin/cambios" element={<AdminCambios />} />
-        <Route path="/admin/import" element={<CrmImportRedirect />} />
+        <Route path="/admin" element={<CrmRedirect path="/admin" />} />
+        <Route path="/admin/cambios" element={<CrmRedirect path="/admin/cambios" />} />
+        <Route path="/admin/import" element={<CrmRedirect path="/import" />} />
         <Route path="/clientes" element={<Clientes />} />
         {/* Fallback */}
         <Route path="*" element={<Home />} />

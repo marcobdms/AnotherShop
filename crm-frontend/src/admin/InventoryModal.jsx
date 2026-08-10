@@ -422,7 +422,7 @@ export default function InventoryModal({ product, onClose, onSaved, usuario = 'a
     } finally {
       setSaving(false)
     }
-  }, [product.id, variantes, onSaved])
+  }, [product.id, variantes, usuario, onSaved])
 
   const skus = generateSkus(product.id, variantes)
   const totalStock = variantes.reduce(
