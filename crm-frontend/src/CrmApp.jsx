@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import AdminCatalog from './AdminCatalog.jsx'
 import AdminImport from './AdminImport.jsx'
 import Clientes from './Clientes.jsx'
 import { CrmHeader, CrmLogin, CrmSkeleton, CrmSpinner, useCrmSession } from './CrmChrome'
 import Dashboard from './Dashboard.jsx'
 
-const VIEW_PATHS = new Set(['/clientes', '/dashboard', '/import'])
+const VIEW_PATHS = new Set(['/clientes', '/dashboard', '/import', '/admin'])
 
 function normalizePath(pathname) {
   if (pathname === '/') return '/clientes'
@@ -20,6 +21,7 @@ function viewClass(path, activePath) {
 function skeletonVariant(path) {
   if (path === '/dashboard') return 'dashboard'
   if (path === '/import') return 'import'
+  if (path === '/admin') return 'admin'
   return 'clients'
 }
 
@@ -91,6 +93,15 @@ export default function CrmApp() {
       <section className={viewClass('/import', activePath)} hidden={!isViewActive('/import')}>
         <AdminImport
           active={isViewActive('/import')}
+          catalogRevision={catalogRevision}
+          usuario={usuario}
+          onCatalogChanged={() => setCatalogRevision(version => version + 1)}
+        />
+      </section>
+
+      <section className={viewClass('/admin', activePath)} hidden={!isViewActive('/admin')}>
+        <AdminCatalog
+          active={isViewActive('/admin')}
           catalogRevision={catalogRevision}
           usuario={usuario}
           onCatalogChanged={() => setCatalogRevision(version => version + 1)}

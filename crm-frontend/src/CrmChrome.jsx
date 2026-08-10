@@ -115,6 +115,12 @@ export function CrmHeader({ usuario, onLogout, extra }) {
         >
           Importar
         </NavLink>
+        <NavLink
+          to="/admin"
+          className={({ isActive }) => `crm-nav-link${isActive ? ' active' : ''}`}
+        >
+          Admin
+        </NavLink>
         {extra && extra}
         <span className="crm-nav-user">{usuario}</span>
         <button className="crm-btn" onClick={onLogout}>Salir</button>
