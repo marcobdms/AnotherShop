@@ -1,11 +1,11 @@
 /**
  * AdminImport.jsx — Importador masivo de productos
- * Ruta: /admin/import
+ * Ruta: /import
  * Tabla editable tipo spreadsheet para crear/actualizar productos en bloque.
  */
-import { useState, useCallback, useEffect, useRef, Fragment } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-import { adminUploadImage, adminExportFull, adminSyncAll } from '../api/catalog'
+import { useState, useCallback, useEffect, Fragment, useMemo } from 'react'
+import { adminUploadImage, adminExportFull, adminSyncAll } from './api/catalog'
+import { CrmSkeleton } from './CrmChrome'
 
 const TALLAS = ['XS', 'S', 'M', 'L', 'XL']
 const GENEROS = ['mujer', 'hombre', 'unisex']
@@ -51,11 +51,33 @@ function makeRow(overrides = {}) {
 // ── Estilos ───────────────────────────────────────────────────────────────────
 const css = `
   .imp-page {
-    min-height: 100vh;
+    min-height: calc(100vh - 64px);
     background: var(--white);
     font-family: var(--font);
     display: flex;
     flex-direction: column;
+  }
+
+  .imp-page--drop .imp-header,
+  .imp-page--drop .imp-stats,
+  .imp-table-wrap--ready {
+    animation: imp-soft-enter 320ms ease-out both;
+  }
+
+  .imp-page--drop .imp-stats {
+    animation-delay: 40ms;
+  }
+
+  .imp-table-wrap--ready {
+    animation-delay: 90ms;
+  }
+
+  .imp-drop-picker {
+    animation: imp-soft-enter 260ms ease-out both;
+  }
+
+  .imp-drop-picker__content {
+    animation: imp-drop-content-enter 340ms ease-out both;
   }
 
   /* Header */
@@ -600,14 +622,33 @@ const css = `
     .imp-table-wrap { padding: 1rem; }
     .imp-stats { padding: 0.5rem 1rem; gap: 1rem; }
   }
+
+  @keyframes imp-soft-enter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes imp-drop-content-enter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .imp-page--drop .imp-header,
+    .imp-page--drop .imp-stats,
+    .imp-table-wrap--ready,
+    .imp-drop-picker,
+    .imp-drop-picker__content {
+      animation: none;
+    }
+  }
 `
 
 // ── Componente ────────────────────────────────────────────────────────────────
-export default function AdminImport() {
-  const authedUser = sessionStorage.getItem('admin_auth_user')
+export default function AdminImport({ active = true, catalogRevision = 0, usuario, onCatalogChanged }) {
+  const authedUser = usuario
   const [rows, setRows] = useState([])
   const [selectedDrop, setSelectedDrop] = useState(null)
-  const initialRowsRef = useRef([])
   const [hasChanges, setHasChanges] = useState(false)
   const [showJson, setShowJson] = useState(false)
 
@@ -619,11 +660,16 @@ export default function AdminImport() {
   const [result, setResult] = useState(null)
   const [isImported, setIsImported] = useState(false)
   const [loadingInitial, setLoadingInitial] = useState(true)
+  const [dropImagesReady, setDropImagesReady] = useState(false)
+  const [loadedRevision, setLoadedRevision] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
 
   // ── Carga inicial (Mirror del catálogo) ─────────────────────────────────────
   useEffect(() => {
+    if (!active || !authedUser || loadedRevision === catalogRevision) return
+
     async function loadCatalog() {
+      setLoadingInitial(true)
       try {
         const data = await adminExportFull()
         const initialRows = []
@@ -704,8 +750,8 @@ export default function AdminImport() {
         })
         
         setRows(initialRows)
-        initialRowsRef.current = JSON.parse(JSON.stringify(initialRows))
         setHasChanges(false)
+        setLoadedRevision(catalogRevision)
       } catch (e) {
         console.error("Error al cargar el catálogo:", e)
         alert("Error cargando el catálogo global.")
@@ -713,13 +759,8 @@ export default function AdminImport() {
         setLoadingInitial(false)
       }
     }
-    
-    if (authedUser) {
-      loadCatalog()
-    }
-  }, [authedUser])
-
-  if (!authedUser) return <Navigate to="/admin" replace />
+    loadCatalog()
+  }, [active, authedUser, catalogRevision, loadedRevision])
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const updateRow = useCallback((id, field, value) => {
@@ -849,8 +890,6 @@ export default function AdminImport() {
   try { pastePreviewCount = jsonToRows(pasteText).length } catch {}
 
   // ── Agrupar por REF para stats ──────────────────────────────────────────────
-  const refsUnicos = [...new Set(rows.map(r => r.ref).filter(Boolean))]
-  const totalStock = rows.reduce((acc, r) => acc + (parseInt(r.stock) || 0), 0)
 
   // ── Convertir filas a estructura de productos para importar ─────────────────
   function rowsToProductos() {
@@ -945,7 +984,7 @@ export default function AdminImport() {
       setResult({ ok: true, msg })
       setIsImported(true)
       setHasChanges(false)
-      initialRowsRef.current = JSON.parse(JSON.stringify(rows))
+      onCatalogChanged?.()
       setTimeout(() => setResult(null), 5000)
     } catch (e) {
       setResult({ ok: false, msg: `Error: ${e.message}` })
@@ -957,7 +996,7 @@ export default function AdminImport() {
 
   const productosValidos = rowsToProductos().filter(p => p.nombre && p.ref)
 
-  const visibleRows = rows.filter(r => {
+  const visibleRows = useMemo(() => rows.filter(r => {
     if (r._drop !== selectedDrop) return false
     if (!searchTerm.trim()) return true
     const term = searchTerm.trim().toLowerCase()
@@ -966,15 +1005,54 @@ export default function AdminImport() {
       (r.nombre && r.nombre.toLowerCase().includes(term)) ||
       (r.color && r.color.toLowerCase().includes(term))
     )
-  })
+  }), [rows, searchTerm, selectedDrop])
   const visibleRefsUnicos = [...new Set(visibleRows.map(r => r.ref).filter(Boolean))]
   const visibleStock = visibleRows.reduce((acc, r) => acc + (parseInt(r.stock) || 0), 0)
+  const visibleImageSignature = useMemo(() => [
+    ...new Set(
+      visibleRows
+        .flatMap(row => [row._imgPreview || row.imagen, row._imgPreview2 || row.imagen2])
+        .filter(Boolean)
+    ),
+  ].join('\n'), [visibleRows])
 
   // ── Render ──────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!active || !selectedDrop || loadingInitial) {
+      setDropImagesReady(false)
+      return
+    }
+
+    const imageUrls = visibleImageSignature ? visibleImageSignature.split('\n') : []
+
+    if (imageUrls.length === 0) {
+      setDropImagesReady(true)
+      return
+    }
+
+    let cancelled = false
+    setDropImagesReady(false)
+
+    Promise.all(
+      imageUrls.map(src => new Promise(resolve => {
+        const img = new Image()
+        img.onload = resolve
+        img.onerror = resolve
+        img.src = src
+      }))
+    ).then(() => {
+      if (!cancelled) setDropImagesReady(true)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [active, loadingInitial, selectedDrop, visibleImageSignature])
+
   if (!selectedDrop) {
     return (
-      <div style={{
-        minHeight: '100vh',
+      <div className="imp-drop-picker" style={{
+        minHeight: 'calc(100vh - 64px)',
         background: 'var(--white)',
         fontFamily: "'Inter', sans-serif",
         display: 'flex',
@@ -988,7 +1066,7 @@ export default function AdminImport() {
         {/* Back to catalog */}
         <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem' }}>
           <a
-            href="/admin"
+            href="/clientes"
             style={{
               fontFamily: "'Inter', sans-serif",
               fontSize: '0.65rem',
@@ -1004,11 +1082,11 @@ export default function AdminImport() {
             onMouseEnter={e => e.currentTarget.style.color = 'var(--black)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--grey-400)'}
           >
-            ← Catálogo
+            ← CRM
           </a>
         </div>
 
-        <div style={{ textAlign: 'center', maxWidth: 520 }}>
+        <div className="imp-drop-picker__content" style={{ textAlign: 'center', maxWidth: 520 }}>
           <p style={{
             fontFamily: "'Inter', sans-serif",
             fontSize: '0.6rem',
@@ -1100,7 +1178,7 @@ export default function AdminImport() {
   }
 
   return (
-    <div className="imp-page">
+    <div className="imp-page imp-page--drop">
       <style>{css}</style>
 
       {/* Header */}
@@ -1168,9 +1246,9 @@ export default function AdminImport() {
 
       {/* Table */}
       {/* Loader inicial */}
-      {loadingInitial ? (
-        <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--grey-500)' }}>
-          Cargando espejo del catálogo...
+      {loadingInitial || !dropImagesReady ? (
+        <div className="imp-table-wrap imp-table-wrap--ready">
+          <CrmSkeleton rows={14} variant="import" />
         </div>
       ) : (
         <div className="imp-table-wrap">

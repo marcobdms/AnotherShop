@@ -109,10 +109,35 @@ export function CrmHeader({ usuario, onLogout, extra }) {
         >
           Clientes
         </NavLink>
+        <NavLink
+          to="/import"
+          className={({ isActive }) => `crm-nav-link${isActive ? ' active' : ''}`}
+        >
+          Importar
+        </NavLink>
         {extra && extra}
         <span className="crm-nav-user">{usuario}</span>
         <button className="crm-btn" onClick={onLogout}>Salir</button>
       </nav>
     </header>
+  )
+}
+
+export function CrmSkeleton({ rows = 10, variant = 'page' }) {
+  return (
+    <div className={`crm-skeleton crm-skeleton--${variant}`} aria-busy="true">
+      {Array.from({ length: rows }).map((_, index) => (
+        <span key={index} className="crm-skeleton__line" />
+      ))}
+    </div>
+  )
+}
+
+export function CrmSpinner({ label = 'Cargando' }) {
+  return (
+    <div className="crm-spinner-wrap" role="status" aria-live="polite">
+      <span className="crm-spinner" aria-hidden="true" />
+      <span className="crm-spinner-label">{label}</span>
+    </div>
   )
 }

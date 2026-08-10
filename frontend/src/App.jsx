@@ -13,11 +13,19 @@ import { useCatalog } from './hooks/useCatalog'
 import { useAuth } from './hooks/useAuth'
 import Admin from './pages/Admin'
 import AdminCambios from './pages/AdminCambios'
-import AdminImport from './pages/AdminImport'
 import Clientes from './pages/Clientes'
 import Login from './pages/Login'
 import Account from './pages/Account'
 import TopBanner from './components/TopBanner'
+import { crmPath } from './utils/crm'
+
+function CrmImportRedirect() {
+  useEffect(() => {
+    window.location.replace(crmPath('/import'))
+  }, [])
+
+  return <main className="page-state">Redirigiendo al CRM...</main>
+}
 
 function AppLayout() {
   const { catalog } = useCatalog()
@@ -60,7 +68,7 @@ function AppLayout() {
         <Route path="/cuenta" element={<Account />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/cambios" element={<AdminCambios />} />
-        <Route path="/admin/import" element={<AdminImport />} />
+        <Route path="/admin/import" element={<CrmImportRedirect />} />
         <Route path="/clientes" element={<Clientes />} />
         {/* Fallback */}
         <Route path="*" element={<Home />} />

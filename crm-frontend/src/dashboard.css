@@ -3,6 +3,143 @@
   background: var(--white);
   color: var(--black);
   font-family: var(--font);
+  overflow-x: clip;
+}
+
+.crm-view {
+  min-height: calc(100vh - 64px);
+  overflow-x: clip;
+}
+
+.crm-view.active {
+  animation: crm-view-enter 260ms ease-out both;
+}
+
+.crm-route-loading {
+  min-height: calc(100vh - 64px);
+  padding: 1.5rem;
+  animation: crm-route-loading-enter 180ms ease-out both;
+}
+
+.crm-route-loading--import {
+  display: grid;
+  place-items: center;
+}
+
+.crm-view[hidden] {
+  display: none !important;
+}
+
+.crm-spinner-wrap {
+  min-height: 42vh;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  color: var(--grey-400);
+}
+
+.crm-spinner {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--grey-200);
+  border-top-color: var(--black);
+  border-radius: 999px;
+  animation: crm-spinner-rotate 720ms linear infinite;
+}
+
+.crm-spinner-label {
+  font-size: var(--size-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.crm-skeleton {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.crm-skeleton--dashboard {
+  width: min(1500px, 100%);
+}
+
+.crm-skeleton--import {
+  width: 100%;
+  padding: 1rem;
+}
+
+.crm-skeleton__line {
+  display: block;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--grey-100), var(--grey-200), var(--grey-100));
+  background-size: 220% 100%;
+  animation: crm-skeleton-shimmer 1.15s ease-in-out infinite;
+}
+
+.crm-skeleton__line:nth-child(4n + 1) {
+  width: 96%;
+}
+
+.crm-skeleton__line:nth-child(4n + 2) {
+  width: 74%;
+}
+
+.crm-skeleton__line:nth-child(4n + 3) {
+  width: 88%;
+}
+
+.crm-skeleton__line:nth-child(4n + 4) {
+  width: 58%;
+}
+
+@keyframes crm-skeleton-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes crm-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes crm-view-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes crm-route-loading-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crm-view.active,
+  .crm-route-loading,
+  .crm-skeleton__line {
+    animation: none;
+  }
+
+  .crm-spinner {
+    animation-duration: 1.6s;
+  }
 }
 
 .crm-header {

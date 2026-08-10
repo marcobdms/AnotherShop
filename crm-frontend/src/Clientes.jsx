@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CrmHeader, CrmLogin, useCrmSession } from './CrmChrome'
 import {
   crmAnularVenta,
   crmCrearAbono,
@@ -18,6 +17,7 @@ import {
   crmUploadComprobante,
   formatPrice,
 } from './api/catalog'
+import { CrmSkeleton } from './CrmChrome'
 
 const css = `
   .crm-page { min-height: 100vh; background: var(--white); color: var(--black); font-family: var(--font); }
@@ -188,9 +188,7 @@ function saleItemMeta(item) {
   ].filter(Boolean).join(' / ')
 }
 
-export default function Clientes() {
-  const { usuario, login, logout } = useCrmSession()
-
+export default function Clientes({ active = true, catalogRevision = 0, usuario, onCatalogChanged }) {
   const [clientes, setClientes] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
@@ -250,35 +248,33 @@ export default function Clientes() {
   }, [])
 
   useEffect(() => {
-    if (!usuario) return
+    if (!active || !usuario) return
     setLoading(true)
     refreshClients()
       .catch(err => showToast(err.message, 'error'))
       .finally(() => setLoading(false))
-  }, [usuario, refreshClients, showToast])
+  }, [active, catalogRevision, usuario, refreshClients, showToast])
 
   useEffect(() => {
-    if (!usuario || !selectedId) return
+    if (!active || !usuario || !selectedId) return
     refreshDetail(selectedId).catch(err => showToast(err.message, 'error'))
-  }, [usuario, selectedId, refreshDetail, showToast])
+  }, [active, catalogRevision, usuario, selectedId, refreshDetail, showToast])
 
   useEffect(() => {
-    if (!usuario) return
+    if (!active || !usuario) return
     const timer = window.setTimeout(() => {
       crmFetchCatalogo(catalogSearch)
         .then(setCatalog)
         .catch(err => showToast(err.message, 'error'))
     }, 220)
     return () => window.clearTimeout(timer)
-  }, [usuario, catalogSearch, showToast])
+  }, [active, catalogRevision, usuario, catalogSearch, showToast])
 
   const cartTotal = useMemo(
     () => cart.reduce((sum, item) => sum + Number(item.precio_unitario || 0) * Number(item.cantidad || 0), 0),
     [cart],
   )
   const allClientsChecked = clientes.length > 0 && checkedClientIds.length === clientes.length
-
-  if (!usuario) return <CrmLogin onAuth={login} />
 
   function openClient(id) {
     setSelectedId(id)
@@ -293,6 +289,7 @@ export default function Clientes() {
       setNewClient(emptyClientForm())
       setNewClientModalOpen(false)
       await refreshClients()
+      onCatalogChanged?.()
       openClient(created.id)
       showToast('Cliente creado')
     } catch (err) { showToast(err.message, 'error') }
@@ -304,6 +301,7 @@ export default function Clientes() {
       const updated = await crmUpdateCliente(selected.id, clientForm)
       setSelected(updated)
       await refreshClients()
+      onCatalogChanged?.()
       showToast('Ficha actualizada')
     } catch (err) { showToast(err.message, 'error') }
   }
@@ -323,6 +321,7 @@ export default function Clientes() {
       setSelectedId(null)
       setCart([])
       await refreshClients()
+      onCatalogChanged?.()
       showToast('Cliente borrado')
     } catch (err) { showToast(err.message, 'error') }
   }
@@ -358,6 +357,7 @@ export default function Clientes() {
       }
       setCheckedClientIds([])
       await refreshClients()
+      onCatalogChanged?.()
       showToast(`${result.eliminados} cliente${result.eliminados === 1 ? '' : 's'} borrado${result.eliminados === 1 ? '' : 's'}`)
     } catch (err) {
       showToast(err.message, 'error')
@@ -392,6 +392,7 @@ export default function Clientes() {
       })
       setCart([])
       await Promise.all([refreshDetail(selected.id), refreshClients(), crmFetchCatalogo(catalogSearch).then(setCatalog)])
+      onCatalogChanged?.()
       showToast('Compra registrada y stock descontado')
     } catch (err) { showToast(err.message, 'error') }
   }
@@ -400,6 +401,7 @@ export default function Clientes() {
     try {
       await crmAnularVenta(saleId)
       await Promise.all([refreshDetail(selected.id), refreshClients(), crmFetchCatalogo(catalogSearch).then(setCatalog)])
+      onCatalogChanged?.()
       showToast('Compra anulada y stock repuesto')
     } catch (err) { showToast(err.message, 'error') }
   }
@@ -410,6 +412,7 @@ export default function Clientes() {
       await crmCrearAbono(selected.id, { ...abonoForm, monto: Number(abonoForm.monto), usuario })
       setAbonoForm({ monto: '', metodo: 'desconocido', moneda: 'usd', nota: '' })
       await Promise.all([refreshDetail(selected.id), refreshClients()])
+      onCatalogChanged?.()
       showToast('Abono registrado')
     } catch (err) { showToast(err.message, 'error') }
   }
@@ -446,17 +449,15 @@ export default function Clientes() {
       setImportResult(result)
       await refreshClients()
       if (selectedId) await refreshDetail(selectedId)
+      onCatalogChanged?.()
       showToast(`Importados ${result.clientes_creados + result.clientes_actualizados} clientes`)
     } catch (err) { showToast(err.message, 'error') }
     finally { setImporting(false) }
   }
 
   return (
-    <div className="crm-page">
+    <>
       <style>{css}</style>
-      <CrmHeader usuario={usuario} onLogout={logout} extra={
-        <button className="crm-btn" onClick={() => setImportModalOpen(true)}>Importar JSON</button>
-      } />
 
       <div className="crm-content">
         <div className="crm-list-head">
@@ -470,9 +471,12 @@ export default function Clientes() {
               style={{ maxWidth: 320 }}
             />
           </div>
-          <button className="crm-btn crm-btn--primary" onClick={() => setNewClientModalOpen(true)}>
-            + Nuevo cliente
-          </button>
+          <div className="crm-actions">
+            <button className="crm-btn" onClick={() => setImportModalOpen(true)}>Importar JSON</button>
+            <button className="crm-btn crm-btn--primary" onClick={() => setNewClientModalOpen(true)}>
+              + Nuevo cliente
+            </button>
+          </div>
           {checkedClientIds.length > 0 && (
             <div className="crm-bulk-actions">
               <span className="crm-count">{checkedClientIds.length} seleccionados</span>
@@ -502,8 +506,12 @@ export default function Clientes() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
-              <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--grey-400)', padding: '2rem' }}>Cargando...</td></tr>
+            {loading && clientes.length === 0 && (
+              <tr>
+                <td colSpan="5" style={{ padding: '1.25rem 1rem 2rem' }}>
+                  <CrmSkeleton rows={9} variant="clients" />
+                </td>
+              </tr>
             )}
             {clientes.map(cliente => (
               <tr
@@ -816,6 +824,6 @@ export default function Clientes() {
       )}
 
       {toast && <div key={toast.key} className={`crm-toast ${toast.type}`}>{toast.message}</div>}
-    </div>
+    </>
   )
 }

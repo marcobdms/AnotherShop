@@ -9,6 +9,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { adminFetchProducts, adminFetchHistory, adminPublishDraft, adminFetchInventory, formatPrice } from '../api/catalog'
 import { supabase } from '../lib/supabase'
 import InventoryModal from '../components/InventoryModal'
+import { crmPath } from '../utils/crm'
 
 const TALLAS_GLOBALES = ['XS', 'S', 'M', 'L', 'XL']
 
@@ -583,13 +584,13 @@ function AdminPanel({ onLogout, usuario }) {
               Guardar ({pendingEvents.length})
             </button>
           )}
-          <Link
-            to="/admin/import"
+          <a
+            href={crmPath('/import')}
             className="adm-header__logout"
             style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
           >
             + Productos
-          </Link>
+          </a>
           <button className="adm-header__logout" onClick={() => setShowHistory(!showHistory)}>
             Cambios ({pendingEvents.length > 0 ? '*' : ''}{combinedHistory.length})
           </button>

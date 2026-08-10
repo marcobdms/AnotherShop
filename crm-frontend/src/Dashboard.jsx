@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { crmFetchDashboard } from './api/catalog'
-import { CrmHeader, CrmLogin, useCrmSession } from './CrmChrome'
+import { CrmSkeleton } from './CrmChrome'
 
 function inputDate(date) {
   const year = date.getFullYear()
@@ -171,8 +171,7 @@ function QualityPanel({ quality }) {
   )
 }
 
-export default function Dashboard() {
-  const { usuario, login, logout } = useCrmSession()
+export default function Dashboard({ active = true, catalogRevision = 0, usuario }) {
   const [range, setRange] = useState(() => makeRange(30))
   const [preset, setPreset] = useState(30)
   const [data, setData] = useState(null)
@@ -181,7 +180,7 @@ export default function Dashboard() {
   const [refreshVersion, setRefreshVersion] = useState(0)
 
   const loadDashboard = useCallback(async () => {
-    if (!usuario || !range.from || !range.to || range.from > range.to) return
+    if (!active || !usuario || !range.from || !range.to || range.from > range.to) return
     setLoading(true)
     setError('')
     try {
@@ -192,11 +191,11 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }, [range, usuario])
+  }, [active, range, usuario])
 
   useEffect(() => {
     loadDashboard()
-  }, [loadDashboard, refreshVersion])
+  }, [catalogRevision, loadDashboard, refreshVersion])
 
   const agingRows = useMemo(() => {
     if (!data) return []
@@ -214,11 +213,7 @@ export default function Dashboard() {
     setRange(makeRange(days))
   }
 
-  if (!usuario) return <CrmLogin onAuth={login} />
-
   return (
-    <div className="crm-page">
-      <CrmHeader usuario={usuario} onLogout={logout} />
       <main className="dashboard">
         <section className="dashboard-intro">
           <div>
@@ -283,7 +278,9 @@ export default function Dashboard() {
         )}
 
         {!data && loading ? (
-          <div className="dashboard-loading">Construyendo resumen...</div>
+          <div className="dashboard-loading">
+            <CrmSkeleton rows={12} variant="dashboard" />
+          </div>
         ) : data && (
           <>
             <section className="dash-metrics">
@@ -514,6 +511,5 @@ export default function Dashboard() {
           </>
         )}
       </main>
-    </div>
   )
 }

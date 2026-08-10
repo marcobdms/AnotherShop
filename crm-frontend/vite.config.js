@@ -5,7 +5,7 @@ export default defineConfig(({ mode }) => {
   const rootEnv = loadEnv(mode, '..', '')
   const localEnv = loadEnv(mode, '.', '')
   const env = { ...rootEnv, ...localEnv }
-  const backendTarget = env.VITE_LOCAL_API_URL || 'http://localhost:8000'
+  const backendTarget = env.VITE_LOCAL_API_URL || 'http://localhost:8010'
 
   return {
     plugins: [react()],
@@ -20,7 +20,14 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         '/api': backendTarget,
-        '/admin': backendTarget,
+        '/admin/products': backendTarget,
+        '/admin/publish': backendTarget,
+        '/admin/history': backendTarget,
+        '/admin/meta': backendTarget,
+        '/admin/inventory': backendTarget,
+        '/admin/export-full': backendTarget,
+        '/admin/sync-all': backendTarget,
+        '/admin/upload-image': backendTarget,
         '/crm': backendTarget,
       },
     },

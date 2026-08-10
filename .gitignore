@@ -29,6 +29,10 @@ backend/scripts/__pycache__/
 # OS
 .DS_Store
 Thumbs.db
+.tmp/
+**/xcuserdata/
+*.xcuserstate
+*.xcbkptlist
 
 # Editor
 .vscode/

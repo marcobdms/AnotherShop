@@ -117,38 +117,6 @@ export async function adminSaveInventory(productId, variantes, usuario = 'admin'
 }
 
 
-export async function adminExportFull() {
-  const res = await fetch(`${ADMIN_BASE}/export-full`, {
-    headers: adminHeaders()
-  })
-  return handleResponse(res)
-}
-
-export async function adminSyncAll(productos, usuario = 'admin') {
-  const res = await fetch(`${ADMIN_BASE}/sync-all`, {
-    method: 'PUT',
-    headers: adminHeaders(),
-    body: JSON.stringify({ productos, usuario }),
-  })
-  return handleResponse(res)
-}
-
-export async function adminUploadImage(file) {
-  const formData = new FormData()
-  formData.append('file', file)
-  
-  // Need to get headers but exclude Content-Type so the browser sets the boundary correctly
-  const headers = adminHeaders()
-  delete headers['Content-Type']
-
-  const res = await fetch(`${ADMIN_BASE}/upload-image`, {
-    method: 'POST',
-    headers,
-    body: formData,
-  })
-  return handleResponse(res)
-}
-
 // â”€â”€ CRM interno â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function crmFetchClientes(q = '') {

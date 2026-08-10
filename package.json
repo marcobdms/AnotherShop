@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n BACK,FRONT,CRM -c \"bgBlue.bold,bgGreen.bold,bgMagenta.bold\" \"npm run backend\" \"npm run frontend\" \"npm run crm-frontend\"",
-    "backend": "python -m uvicorn app.main:app --reload --port 8000 --app-dir backend",
+    "backend": "python -m uvicorn app.main:app --reload --port 8010 --app-dir backend",
     "frontend": "npm run dev --prefix frontend",
     "crm-frontend": "npm run dev --prefix crm-frontend"
   },

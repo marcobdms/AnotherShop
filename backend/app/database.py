@@ -15,10 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 def _load_local_env() -> None:
-    """Carga .env en desarrollo sin obligar a instalar python-dotenv."""
+    """Carga .env local en desarrollo sin obligar a instalar python-dotenv."""
+    root_dir = Path(__file__).resolve().parents[2]
+    backend_dir = Path(__file__).resolve().parents[1]
     candidates = [
-        Path(__file__).resolve().parents[2] / ".env",
-        Path(__file__).resolve().parents[1] / ".env",
+        root_dir / ".env.local",
+        backend_dir / ".env.local",
+        root_dir / ".env",
+        backend_dir / ".env",
     ]
     for path in candidates:
         if not path.exists():
@@ -49,7 +53,7 @@ def _database_config() -> tuple[str, str]:
         if value:
             return key, value
     raise RuntimeError(
-        "Falta SUPABASE_DATABASE_URL. En local pon la conexion PostgreSQL de Supabase en el .env de la raiz."
+        "Falta SUPABASE_DATABASE_URL. En local pon una conexion PostgreSQL local o staging en .env.local."
     )
 
 

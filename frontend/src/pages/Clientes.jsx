@@ -16,6 +16,7 @@ import {
   crmUploadComprobante,
   formatPrice,
 } from '../api/catalog'
+import { crmPath } from '../utils/crm'
 
 const css = `
   .crm-page {
@@ -588,7 +589,7 @@ export default function Clientes() {
         <span className="crm-brand">Another NPC Shop CRM</span>
         <nav className="crm-nav">
           <Link to="/admin">Admin</Link>
-          <Link to="/admin/import">Import</Link>
+          <a href={crmPath('/import')}>Import</a>
           <span>{usuario}</span>
           <button
             className="crm-btn"
