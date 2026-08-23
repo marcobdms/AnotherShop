@@ -36,16 +36,6 @@ function SearchIcon() {
   )
 }
 
-function BagIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M6.5 8.5h11l.8 12h-12.6l.8-12Z" />
-      <path d="M9 8.5v-2a3 3 0 0 1 6 0v2" />
-    </svg>
-  )
-}
-
 function HamburgerIcon({ open }) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -111,12 +101,12 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
               <SearchIcon />
             </a>
             <Link
-              to={user ? '/cuenta' : '/login'}
+              to="/cuenta"
               className="nav__catalog-icon"
-              aria-label={user ? 'Abrir bolsa' : 'Iniciar sesion'}
-              title={user ? user.email : 'Iniciar sesion'}
+              aria-label="Abrir favoritos"
+              title="Favoritos"
             >
-              <BagIcon />
+              <HeartIcon />
             </Link>
           </div>
         )}

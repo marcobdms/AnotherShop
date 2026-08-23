@@ -6,7 +6,7 @@
  *   GET /api/meta           → { marca, whatsapp, paypal, recargo_paypal, ... }
  */
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { fetchProduct, fetchMeta, formatPrice, buildWhatsAppLink, buildPayPalLink } from '../api/catalog'
 import { useAuth } from '../hooks/useAuth'
 import { useFavorites } from '../hooks/useFavorites'
@@ -45,8 +45,6 @@ function FavToast({ msg, onDone }) {
 
 export default function Product() {
   const { id } = useParams()
-  const navigate = useNavigate()
-
   const [producto, setProducto]   = useState(null)
   const [meta,     setMeta]       = useState(null)
   const [loading,  setLoading]    = useState(true)
@@ -79,10 +77,6 @@ export default function Product() {
   }, [])
 
   const handleFavoriteClick = async () => {
-    if (!user) {
-      navigate('/login')
-      return
-    }
     const wasAdded = await toggleFavorite(producto.id)
     showFavToast(wasAdded !== false ? 'Añadido a favoritos' : 'Eliminado de favoritos')
   }

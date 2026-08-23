@@ -5,7 +5,7 @@
  *   GET /api/catalog → { productos, filtros, meta }
  */
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFavorites } from '../hooks/useFavorites'
 import { useCatalog } from '../hooks/useCatalog'
@@ -56,7 +56,6 @@ export default function Catalog({ onReady }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [showTopBtn, setShowTopBtn] = useState(false)
 
-  const navigate = useNavigate()
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
 
@@ -100,10 +99,6 @@ export default function Catalog({ onReady }) {
   }, [loading, onReady])
 
   const handleFavoriteClick = async (producto) => {
-    if (!user) {
-      navigate('/login')
-      return
-    }
     const wasAdded = await toggleFavorite(producto.id)
     showFavToast(wasAdded !== false ? 'Añadido a favoritos' : 'Eliminado de favoritos')
   }
@@ -145,22 +140,21 @@ export default function Catalog({ onReady }) {
         </section>
 
         <div className="catalog-layout">
-          {/* Columna principal */}
-          <div className="catalog-main">
-            <FilterChips
-              generos={filtros.generos}
-              tallas={filtros.tallas}
-              activeGenero={activeGenero}
-              activeTalla={activeTalla}
-              onGenero={setActiveGenero}
-              onTalla={setActiveTalla}
-              searchTerm={searchTerm}
-              onSearch={setSearchTerm}
-              productCount={lista.length}
-              showTopButton={showTopBtn}
-              onBackToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            />
+          <FilterChips
+            generos={filtros.generos}
+            tallas={filtros.tallas}
+            activeGenero={activeGenero}
+            activeTalla={activeTalla}
+            onGenero={setActiveGenero}
+            onTalla={setActiveTalla}
+            searchTerm={searchTerm}
+            onSearch={setSearchTerm}
+            productCount={lista.length}
+            showTopButton={showTopBtn}
+            onBackToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          />
 
+          <div className="catalog-main">
             {lista.length > 0 ? (
               <div className="product-grid">
                 {lista.map(p => (

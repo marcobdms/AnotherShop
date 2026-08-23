@@ -1,45 +1,55 @@
-/**
- * Account.jsx — Página de cuenta del usuario
- * Ruta: /cuenta
- * Sin sesión → redirige a /login
- * Muestra las prendas marcadas como favoritas.
- */
 import { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFavorites } from '../hooks/useFavorites'
-import { supabase } from '../lib/supabase'
-import { fetchProducts, formatPrice } from '../api/catalog'
+import { fetchProducts } from '../api/catalog'
+import ProductCard from '../components/ProductCard'
 import Footer from '../components/Footer'
 
 const css = `
   .account-page {
-    max-width: var(--max-width);
+    max-width: min(100%, 86rem);
     margin: 0 auto;
-    padding: var(--gap-lg) var(--gap);
+    padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 4vw, 3rem);
     animation: fadeIn 0.4s ease forwards;
   }
 
   .account-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 3rem;
+    align-items: flex-start;
+    margin-bottom: 2.4rem;
     flex-wrap: wrap;
     gap: 1rem;
   }
 
   .account-header__title {
-    font-size: var(--size-xl);
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.2rem);
     font-weight: 300;
     letter-spacing: 0.2em;
     text-transform: uppercase;
   }
 
   .account-header__email {
+    margin: 0.6rem 0 0;
     font-size: var(--size-xs);
     letter-spacing: 0.12em;
     color: var(--grey-400);
+    text-transform: uppercase;
+  }
+
+  .account-notice {
+    max-width: 44rem;
+    margin: -1rem 0 2.6rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(34, 34, 34, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--grey-600);
+    font-size: 0.78rem;
+    line-height: 1.65;
+    letter-spacing: 0.07em;
   }
 
   .account-section__label {
@@ -89,34 +99,39 @@ const css = `
     font-family: var(--font);
   }
   .account-signout:hover { color: var(--black); border-color: var(--black); }
+
+  .account-page .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 64rem) {
+    .account-page .product-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
 `
 
 export default function Account() {
   const { user, loading: authLoading, signOut } = useAuth()
-  const { favorites, loading: favLoading } = useFavorites(user)
+  const { favorites, loading: favLoading, isFavorite, toggleFavorite } = useFavorites(user)
   const navigate = useNavigate()
 
-  const [products, setProducts]   = useState([])
+  const [products, setProducts] = useState([])
   const [prodsLoading, setProdsLoading] = useState(true)
 
-  // Guard: sin sesión → /login
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/login', { replace: true })
-    }
-  }, [user, authLoading, navigate])
-
-  // Carga todos los productos para cruzar con los favoritos
-  useEffect(() => {
-    if (!user) return
     fetchProducts()
       .then(setProducts)
       .finally(() => setProdsLoading(false))
-  }, [user])
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
     navigate('/', { replace: true })
+  }
+
+  const handleFavoriteClick = async (producto) => {
+    await toggleFavorite(producto.id)
   }
 
   if (authLoading || prodsLoading || favLoading) {
@@ -131,13 +146,26 @@ export default function Account() {
       <main className="account-page">
         <div className="account-header">
           <div>
-            <h1 className="account-header__title">Mi cuenta</h1>
-            <p className="account-header__email">{user?.email}</p>
+            <h1 className="account-header__title">
+              {user ? 'Mi cuenta' : 'Favoritos'}
+            </h1>
+            <p className="account-header__email">
+              {user?.email || 'Guardados en este navegador'}
+            </p>
           </div>
-          <button className="account-signout" onClick={handleSignOut}>
-            Cerrar sesión
-          </button>
+          {user && (
+            <button className="account-signout" onClick={handleSignOut}>
+              Cerrar sesion
+            </button>
+          )}
         </div>
+
+        {!user && (
+          <p className="account-notice">
+            Tus favoritos se mantienen al cerrar la pestana en este dispositivo.
+            Pueden perderse si borras los datos del navegador, usas incognito o cambias de dispositivo.
+          </p>
+        )}
 
         <span className="account-section__label">
           Prendas guardadas ({favoriteProducts.length})
@@ -145,38 +173,18 @@ export default function Account() {
 
         {favoriteProducts.length === 0 ? (
           <div className="account-empty">
-            <p>Todavía no has guardado ninguna prenda.</p>
-            <Link to="/catalogo">Explorar catálogo</Link>
+            <p>Todavia no has guardado ninguna prenda.</p>
+            <Link to="/catalogo">Explorar catalogo</Link>
           </div>
         ) : (
           <div className="product-grid">
             {favoriteProducts.map(p => (
-              <article
-                key={p.id}
-                className="product-card"
-                onClick={() => navigate(`/producto/${p.id}`)}
-                onKeyDown={e => e.key === 'Enter' && navigate(`/producto/${p.id}`)}
-                role="link"
-                tabIndex={0}
-                aria-label={`Ver ${p.nombre}`}
-              >
-                <div className={`product-card__img-wrap ${!p.disponible ? 'sold-out' : ''}`}>
-                  <img
-                    src={p.imagen}
-                    alt={p.nombre}
-                    loading="lazy"
-                    onError={e => { e.target.style.visibility = 'hidden' }}
-                  />
-                  {!p.disponible && <div className="sold-out-overlay">Agotado</div>}
-                </div>
-                <div className="product-card__info">
-                  <p className="product-card__name">{p.nombre}</p>
-                  {p.disponible
-                    ? <p className="product-card__price">{formatPrice(p.precio)}</p>
-                    : <p className="product-card__unavailable">No disponible</p>
-                  }
-                </div>
-              </article>
+              <ProductCard
+                key={p.variante_color ? `${p.id}-${p.variante_color}` : p.id}
+                producto={p}
+                isFavorite={isFavorite(p.id)}
+                onFavoriteClick={handleFavoriteClick}
+              />
             ))}
           </div>
         )}

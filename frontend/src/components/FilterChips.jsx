@@ -246,6 +246,22 @@ export default function FilterChips({
         </div>
       )}
 
+      <aside className="desktop-filter-card" aria-label="Filtros de catalogo">
+        <div className="desktop-filter-card__header">
+          <span>Filtros</span>
+          <strong>{productCount}</strong>
+        </div>
+        <FiltersPanel
+          generos={generos}
+          tallas={tallas}
+          activeGenero={activeGenero}
+          activeTalla={activeTalla}
+          onGenero={onGenero}
+          onTalla={onTalla}
+          onClear={handleClearFilters}
+        />
+      </aside>
+
       <div className="floating-filter" aria-label="Acciones de catalogo">
         <button className="floating-filter__main" onClick={() => setDrawerMode('filters')} type="button">
           <FilterIcon />

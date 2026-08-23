@@ -1,20 +1,40 @@
-/**
- * useFavorites.js — Hook de favoritos del usuario
- * Requiere sesión activa. Sin sesión, todas las operaciones son no-op.
- * Expone: { favorites, loading, isFavorite, toggleFavorite }
- *   favorites  → Set<string> de product_ids
- */
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+
+const LOCAL_FAVORITES_KEY = 'anothernpcshop:favorites'
+const FAVORITES_UPDATED_EVENT = 'favorites-updated'
+
+function readLocalFavorites() {
+  if (typeof window === 'undefined') return new Set()
+
+  try {
+    const raw = window.localStorage.getItem(LOCAL_FAVORITES_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return new Set(Array.isArray(parsed) ? parsed.filter(Boolean).map(String) : [])
+  } catch (error) {
+    console.warn('[useFavorites] No se pudieron leer favoritos locales:', error)
+    return new Set()
+  }
+}
+
+function writeLocalFavorites(favorites) {
+  if (typeof window === 'undefined') return
+
+  window.localStorage.setItem(
+    LOCAL_FAVORITES_KEY,
+    JSON.stringify([...favorites]),
+  )
+  window.dispatchEvent(new Event(FAVORITES_UPDATED_EVENT))
+}
 
 export function useFavorites(user) {
   const [favorites, setFavorites] = useState(new Set())
-  const [loading, setLoading]     = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  // Carga favoritos cuando hay sesión
   useEffect(() => {
     if (!user) {
-      setFavorites(new Set())
+      setFavorites(readLocalFavorites())
+      setLoading(false)
       return
     }
 
@@ -33,22 +53,43 @@ export function useFavorites(user) {
       .finally(() => setLoading(false))
   }, [user])
 
+  useEffect(() => {
+    if (user || typeof window === 'undefined') return
+
+    function syncLocalFavorites() {
+      setFavorites(readLocalFavorites())
+    }
+
+    window.addEventListener('storage', syncLocalFavorites)
+    window.addEventListener(FAVORITES_UPDATED_EVENT, syncLocalFavorites)
+    return () => {
+      window.removeEventListener('storage', syncLocalFavorites)
+      window.removeEventListener(FAVORITES_UPDATED_EVENT, syncLocalFavorites)
+    }
+  }, [user])
+
   const isFavorite = useCallback(
     (productId) => favorites.has(productId),
-    [favorites]
+    [favorites],
   )
 
   const toggleFavorite = useCallback(async (productId) => {
-    if (!user) return false  // sin sesión: el componente debe redirigir a /login
+    if (!productId) return false
 
     const alreadyFav = favorites.has(productId)
 
-    // Optimistic update — la UI responde de inmediato
     setFavorites(prev => {
       const next = new Set(prev)
       alreadyFav ? next.delete(productId) : next.add(productId)
       return next
     })
+
+    if (!user) {
+      const next = new Set(favorites)
+      alreadyFav ? next.delete(productId) : next.add(productId)
+      writeLocalFavorites(next)
+      return !alreadyFav
+    }
 
     if (alreadyFav) {
       const { error } = await supabase
@@ -59,7 +100,6 @@ export function useFavorites(user) {
 
       if (error) {
         console.error('[useFavorites] Error al eliminar favorito:', error.message)
-        // Revertir si falla
         setFavorites(prev => { const next = new Set(prev); next.add(productId); return next })
         return false
       }
@@ -73,6 +113,10 @@ export function useFavorites(user) {
         setFavorites(prev => { const next = new Set(prev); next.delete(productId); return next })
         return false
       }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(FAVORITES_UPDATED_EVENT))
     }
 
     return !alreadyFav
