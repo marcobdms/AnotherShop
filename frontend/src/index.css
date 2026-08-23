@@ -1525,7 +1525,7 @@ button.size-tag--selected, button.size-tag--selected:hover {
   max-width: none;
   min-height: 100vh;
   margin: 0;
-  padding: 3rem var(--catalog-page-padding) 7.5rem;
+  padding: 3rem var(--catalog-page-padding) 8rem;
   color: var(--catalog-ink);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(251, 250, 247, 0) 12rem),
@@ -1706,7 +1706,7 @@ button.size-tag--selected, button.size-tag--selected:hover {
 
 .catalog-page .product-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 2.3rem var(--catalog-grid-gap);
 }
 
@@ -1890,22 +1890,6 @@ button.size-tag--selected, button.size-tag--selected:hover {
   text-transform: uppercase;
 }
 
-.catalog-page::after {
-  content: "";
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 110;
-  height: 5.25rem;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(251, 250, 247, 0),
-    rgba(251, 250, 247, 0.94) 46%,
-    var(--catalog-canvas) 100%
-  );
-}
-
 .floating-filter__main,
 .floating-filter__backtop {
   border: 0;
@@ -1993,17 +1977,15 @@ button.size-tag--selected, button.size-tag--selected:hover {
   }
 
   .catalog-layout {
-    display: grid;
-    grid-template-columns: minmax(14.5rem, 17rem) minmax(0, 1fr);
-    gap: clamp(1.5rem, 3vw, 2.75rem);
-    align-items: start;
+    display: block;
   }
 
   .catalog-filter-panel {
-    position: sticky;
-    top: 1.25rem;
-    align-self: start;
-    margin-bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2.4rem;
   }
 
   .filter-summary {
@@ -2016,50 +1998,33 @@ button.size-tag--selected, button.size-tag--selected:hover {
   }
 
   .filter-count {
-    display: none;
+    display: inline-flex;
   }
 
   .desktop-filter-card {
-    display: block;
-    padding: 1.2rem;
-    border: 1px solid var(--catalog-border);
-    border-radius: 1.25rem;
-    background: var(--catalog-surface-raised);
-    box-shadow: var(--catalog-shadow-sm), var(--catalog-shadow-inner-light);
+    display: none;
   }
 
-  .desktop-filter-card .catalog-drawer-fields {
-    gap: 1.35rem;
-  }
-
-  .desktop-filter-card .filter-radio-list,
-  .desktop-filter-card .filter-chips-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.55rem;
-  }
-
-  .desktop-filter-card .filter-radio,
-  .desktop-filter-card .filter-chip {
-    justify-content: flex-start;
-    min-height: 2.55rem;
-    width: 100%;
+  .catalog-active-filters {
+    grid-column: 1 / -1;
   }
 
   .catalog-page .product-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 2.85rem 1.35rem;
   }
 
-  .floating-filter,
-  .catalog-page::after {
-    display: none;
+  .floating-filter {
+    position: static;
+    inset: auto;
+    z-index: 1;
+    max-width: none;
+    margin: 0;
+    box-shadow: var(--catalog-shadow-md), var(--catalog-shadow-inner-dark);
   }
-}
 
-@media (min-width: 88rem) {
-  .catalog-page .product-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .floating-filter__backtop {
+    display: none;
   }
 }
 
@@ -2077,6 +2042,7 @@ button.size-tag--selected, button.size-tag--selected:hover {
   .catalog-page {
     --catalog-page-padding: 1.5rem;
     padding-top: 2.1rem;
+    padding-bottom: 8.25rem;
   }
 
   .catalog-heading h1 {
@@ -2107,7 +2073,7 @@ button.size-tag--selected, button.size-tag--selected:hover {
   }
 
   .catalog-page .product-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 2rem var(--catalog-grid-gap);
   }
 
