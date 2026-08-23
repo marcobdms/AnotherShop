@@ -51,9 +51,17 @@ export default function CrmApp() {
     window.scrollTo({ top: scrollPositionsRef.current[activePath] ?? 0, left: 0 })
 
     setSettlingPath(activePath)
-    const timer = window.setTimeout(() => setSettlingPath(null), 180)
-    return () => window.clearTimeout(timer)
   }, [activePath])
+
+  useEffect(() => {
+    if (!settlingPath) return
+
+    const timer = window.setTimeout(() => {
+      setSettlingPath(current => current === settlingPath ? null : current)
+    }, 180)
+
+    return () => window.clearTimeout(timer)
+  }, [settlingPath])
 
   if (!usuario) return <CrmLogin onAuth={login} />
 

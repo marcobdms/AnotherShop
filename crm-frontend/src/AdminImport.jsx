@@ -9,6 +9,77 @@ import { CrmSkeleton } from './CrmChrome'
 
 const TALLAS = ['XS', 'S', 'M', 'L', 'XL']
 const GENEROS = ['mujer', 'hombre', 'unisex']
+const MARCAS = [
+  { label: 'Mango Outlet',        code: 'MNG'  },
+  { label: 'Abercrombie & Fitch', code: 'A&F'  },
+  { label: 'Hollister',           code: 'HCO'  },
+  { label: 'Lefties',             code: 'LFTS' },
+  { label: 'Pull&Bear',           code: 'P&B'  },
+  { label: 'Zara',                code: 'ZARA' },
+]
+
+const MARCAS_LEGACY_POR_REF = {
+  '028': 'MNG',
+  '039': 'MNG',
+  '042': 'MNG',
+  '044': 'MNG',
+  '053': 'MNG',
+}
+
+const PREFIJOS_ZARA = new Set(['0085', '1044', '3253', '4174', '4424', '5643', '5644', '6050'])
+const PREFIJOS_PULL_BEAR = new Set(['3024', '3230', '3231', '3460', '7472'])
+
+function normalizeMarca(value) {
+  const raw = String(value || '').trim().toUpperCase()
+  if (!raw) return ''
+  if (raw === 'MNG' || raw.includes('MANGO')) return 'MNG'
+  if (raw === 'A&F' || raw === 'ABF' || raw.includes('ABERCROMBIE')) return 'A&F'
+  if (raw === 'HCO' || raw.includes('HOLLISTER')) return 'HCO'
+  if (raw === 'LFTS' || raw.includes('LEFTIES')) return 'LFTS'
+  if (raw === 'P&B' || raw.includes('PULL&BEAR') || raw.includes('PULL AND BEAR')) return 'P&B'
+  if (raw === 'ZARA') return 'ZARA'
+  return ''
+}
+
+// Detecta la marca a partir de la REF o el nombre del producto.
+// Devuelve el código si lo reconoce, o '' si no hay pista.
+// NOTA: NO normalizamos & para que A&F funcione correctamente.
+function autodetectMarca(ref, nombre) {
+  const compactRef = String(ref || '').trim().toUpperCase().replace(/\s+/g, '')
+
+  // Las importaciones reales suelen traer solo la referencia, sin la marca.
+  if (MARCAS_LEGACY_POR_REF[compactRef]) return MARCAS_LEGACY_POR_REF[compactRef]
+  if (/^AF-/.test(compactRef)) return 'A&F'
+  if (/^324[-/]?609/.test(compactRef)) return 'HCO'
+  if (/^PB-/.test(compactRef)) return 'P&B'
+  if (/^\d{4}\/\d{3}\/\d{3}$/.test(compactRef)) return 'LFTS'
+  if (/^\d{4}\/\d{3}$/.test(compactRef)) {
+    const prefix = compactRef.slice(0, 4)
+    if (PREFIJOS_PULL_BEAR.has(prefix)) return 'P&B'
+    if (PREFIJOS_ZARA.has(prefix)) return 'ZARA'
+  }
+  if (/^(?:17|77|87)\d{6}/.test(compactRef)) return 'MNG'
+
+  // Unir ref y nombre, pasar a mayúsculas. Conservar & tal cual.
+  const raw = `${ref || ''} ${nombre || ''}`.toUpperCase()
+  // Versiones sin caracteres especiales para •word-boundary• en palabras simples
+  const plain = raw.replace(/[^A-Z0-9 ]/g, ' ')
+
+  // Mango Outlet
+  if (/\bMNG\b/.test(plain) || /\bMANGO\b/.test(plain))           return 'MNG'
+  // Abercrombie — buscar en raw para pillar A&F
+  if (/A\s*&\s*F/.test(raw) || /\bABERCROMBIE?\b/.test(plain) || /\bABF\b/.test(plain)) return 'A&F'
+  // Hollister
+  if (/\bHCO\b/.test(plain) || /\bHOLLISTER\b/.test(plain))       return 'HCO'
+  // Lefties
+  if (/\bLFTS\b/.test(plain) || /\bLEFTIES\b/.test(plain))        return 'LFTS'
+  // Pull&Bear — evitar falso positivo con palabras genricas (pull de lana, etc.)
+  // Solo matchear P&B literal, PULLBEAR o PULL BEAR sin texto adicional tipo "de"
+  if (/P\s*&\s*B/.test(raw) || /\bPULL\s*BEAR\b/.test(plain) || /\bPULLBEAR\b/.test(plain) || /\bP\s*AND\s*B\b/.test(plain)) return 'P&B'
+  // Zara
+  if (/\bZARA\b/.test(plain))                                      return 'ZARA'
+  return ''
+}
 
 const COLORES_PRESET = [
   { nombre: 'Negro',   hex: '#000000' },
@@ -44,6 +115,8 @@ function makeRow(overrides = {}) {
     _imgPreview: null,   // URL local (blob) para preview de drag-drop
     _imgPreview2: null,
     disponible: true,
+    marca: '',
+    _marcaManual: false,
     ...overrides,
   }
 }
@@ -181,7 +254,7 @@ const css = `
   .imp-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1100px;
+    min-width: 1120px;
     font-size: var(--size-xs);
   }
   .imp-table thead th {
@@ -660,7 +733,6 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
   const [result, setResult] = useState(null)
   const [isImported, setIsImported] = useState(false)
   const [loadingInitial, setLoadingInitial] = useState(true)
-  const [dropImagesReady, setDropImagesReady] = useState(false)
   const [loadedRevision, setLoadedRevision] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -677,9 +749,18 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
         data.productos.forEach(p => {
           const pRef = p.ref || p.id
           const pDrop = p.drop || 'Drop 1'
-          const invEntry = data.inventario[p.id]
+          // Usar la marca del DB; si no tiene, intentar autodetectar.
+          const storedMarca = normalizeMarca(p.marca)
+          const pMarcaManual = Boolean(storedMarca)
+          const pMarca = storedMarca || autodetectMarca(pRef, p.nombre || '') || ''
+
+          // El nuevo export_full embebe las variantes directamente en el producto.
+          // Soporte también del formato antiguo {productos, inventario}.
+          const variantes = Array.isArray(p.variantes)
+            ? p.variantes
+            : (data.inventario?.[p.id]?.variantes || [])
           
-          if (!invEntry || !invEntry.variantes || invEntry.variantes.length === 0) {
+          if (!variantes || variantes.length === 0) {
             // Producto sin variantes
             initialRows.push(makeRow({
               _productId: p.id,
@@ -693,6 +774,8 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
               imagen2: (p.imagenes && p.imagenes[1]) || '',
               disponible: p.disponible !== false,
               _drop: pDrop,
+              marca: pMarca,
+              _marcaManual: pMarcaManual,
               color: '',
               hex: '#888888',
               talla: '',
@@ -700,7 +783,7 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
             }))
           } else {
             // Producto con variantes
-            invEntry.variantes.forEach(v => {
+            variantes.forEach(v => {
               const color = v.color || ''
               const hex = v.hex || '#000000'
               
@@ -718,6 +801,8 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
                   imagen2: (p.imagenes && p.imagenes[1]) || '',
                   disponible: p.disponible !== false,
                   _drop: pDrop,
+                  marca: pMarca,
+                  _marcaManual: pMarcaManual,
                   color,
                   hex,
                   talla: '',
@@ -738,6 +823,8 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
                     imagen2: (p.imagenes && p.imagenes[1]) || '',
                     disponible: p.disponible !== false,
                     _drop: pDrop,
+                    marca: pMarca,
+                    _marcaManual: pMarcaManual,
                     color,
                     hex,
                     talla,
@@ -775,6 +862,11 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
         const margen = parseFloat(field === 'margen' ? value : r.margen) || 1
         if (coste > 0) updated.precio_venta = (coste * margen).toFixed(2)
       }
+      if ((field === 'ref' || field === 'nombre') && !r._marcaManual) {
+        const nextRef = field === 'ref' ? value : r.ref
+        const nextNombre = field === 'nombre' ? value : r.nombre
+        updated.marca = autodetectMarca(nextRef, nextNombre)
+      }
       return updated
     }))
   }, [])
@@ -793,10 +885,16 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
       // Heredar ref/nombre/genero/precio de la última fila visible si no se pasa template
       const lastVisible = [...prev].reverse().find(r => r._drop === selectedDrop)
       const last = lastVisible || prev[prev.length - 1]
+      const resolvedRef   = template.ref   ?? last?.ref   ?? ''
+      const resolvedNombre = template.nombre ?? last?.nombre ?? ''
+      const inheritedMarca = template.marca ?? last?.marca ?? ''
+      const resolvedMarca = inheritedMarca || autodetectMarca(resolvedRef, resolvedNombre) || ''
       return [...prev, makeRow({
         _drop: selectedDrop || 'Drop 1',
-        ref: template.ref ?? last?.ref ?? '',
-        nombre: template.nombre ?? last?.nombre ?? '',
+        ref: resolvedRef,
+        nombre: resolvedNombre,
+        marca: resolvedMarca,
+        _marcaManual: template._marcaManual ?? last?._marcaManual ?? false,
         genero: template.genero ?? last?.genero ?? 'mujer',
         precio_coste: template.precio_coste ?? last?.precio_coste ?? '',
         margen: template.margen ?? last?.margen ?? 2,
@@ -815,8 +913,9 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
   }
 
   // ── JSON → Rows ──────────────────────────────────────────────────────────────
-  // Acepta el formato que exporta "Ver JSON":
-  // [{ref, nombre, precio, precio_coste, genero, imagen, disponible, variantes:[{color,hex,tallas:{XS:0,...}}]}]
+  // Acepta el formato que exporta "Backup" (wrapper con schema_version) y también
+  // el formato array plano: [{ref, nombre, precio, precio_coste, genero, imagen,
+  // marca, disponible, variantes:[{color,hex,tallas:{XS:0,...}}]}]
   function jsonToRows(jsonText) {
     let parsed
     try {
@@ -824,6 +923,12 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
     } catch (e) {
       throw new Error('JSON inválido: ' + e.message)
     }
+
+    // Si viene envuelto en {schema_version, productos:[...]}, extraer el array
+    if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.productos)) {
+      parsed = parsed.productos
+    }
+
     if (!Array.isArray(parsed)) throw new Error('El JSON debe ser un array de productos [ {...}, ... ]')
 
     const newRows = []
@@ -833,8 +938,11 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
       const precio_coste = prod.precio_coste ?? prod.coste ?? ''
       const precio_venta = prod.precio ?? prod.precio_venta ?? ''
       const genero = prod.genero || 'mujer'
-      const imagen = prod.imagen || ''
+      const imagen = prod.imagen || (Array.isArray(prod.imagenes) && prod.imagenes[0]) || ''
+      const imagen2 = (Array.isArray(prod.imagenes) && prod.imagenes[1]) || ''
       const disponible = prod.disponible !== false
+      const marcaManual = normalizeMarca(prod.marca)
+      const marca = marcaManual || autodetectMarca(ref, nombre) || ''
       const margen = precio_coste && precio_venta
         ? Math.round((parseFloat(precio_venta) / parseFloat(precio_coste)) * 10) / 10
         : 2
@@ -843,7 +951,7 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
 
       if (variantes.length === 0) {
         // Sin variantes — una fila base sin color
-        newRows.push(makeRow({ ref, nombre, precio_coste, precio_venta, margen, genero, imagen, disponible, color: '', hex: '#000000', stock: 0 }))
+        newRows.push(makeRow({ ref, nombre, precio_coste, precio_venta, margen, genero, imagen, imagen2, disponible, marca, _marcaManual: Boolean(marcaManual), color: '', hex: '#000000', stock: 0 }))
       } else {
         for (const v of variantes) {
           const color = String(v.color || '').trim()
@@ -851,10 +959,10 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
           const tallas = v.tallas || {}
           const tallasKeys = Object.keys(tallas)
           if (tallasKeys.length === 0) {
-            newRows.push(makeRow({ ref, nombre, precio_coste, precio_venta, margen, genero, imagen, disponible, color, hex, stock: 0 }))
+            newRows.push(makeRow({ ref, nombre, precio_coste, precio_venta, margen, genero, imagen, imagen2, disponible, marca, _marcaManual: Boolean(marcaManual), color, hex, stock: 0 }))
           } else {
             for (const [talla, stock] of Object.entries(tallas)) {
-              newRows.push(makeRow({ ref, nombre, precio_coste, precio_venta, margen, genero, imagen, disponible, color, hex, talla, stock: stock || 0 }))
+              newRows.push(makeRow({ ref, nombre, precio_coste, precio_venta, margen, genero, imagen, imagen2, disponible, marca, _marcaManual: Boolean(marcaManual), color, hex, talla, stock: stock || 0 }))
             }
           }
         }
@@ -890,6 +998,18 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
   try { pastePreviewCount = jsonToRows(pasteText).length } catch {}
 
   // ── Agrupar por REF para stats ──────────────────────────────────────────────
+
+  // ── Helpers de grupo (marca) ─────────────────────────────────────────────────
+  // Cambia la marca de TODAS las filas del mismo ref y drop
+  const updateGroupMarca = useCallback((ref, newMarca) => {
+    setIsImported(false)
+    setHasChanges(true)
+    setRows(prev => prev.map(r =>
+      r.ref === ref && r._drop === selectedDrop
+        ? { ...r, marca: newMarca, _marcaManual: Boolean(newMarca) }
+        : r
+    ))
+  }, [selectedDrop])
 
   // ── Convertir filas a estructura de productos para importar ─────────────────
   function rowsToProductos() {
@@ -931,6 +1051,7 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
           imagen2: r.imagen2 || '',
           disponible: r.disponible,
           drop: r._drop || 'Drop 1', // forzar valor válido siempre
+          marca: r.marca || '',
           _colorMap: {
             [colorKey]: { color: colorKey, hex: r.hex, tallas: {} }
           },
@@ -944,6 +1065,8 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
       if (r.imagen2) prod.imagen2 = r.imagen2
       // Si alguna fila dice disponible=true, el producto está disponible (true gana)
       if (r.disponible === true) prod.disponible = true
+      // Si alguna fila trae marca, usarla (la última no vacía gana)
+      if (r.marca) prod.marca = r.marca
 
 
       if (!prod._colorMap[colorKey]) {
@@ -1008,47 +1131,7 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
   }), [rows, searchTerm, selectedDrop])
   const visibleRefsUnicos = [...new Set(visibleRows.map(r => r.ref).filter(Boolean))]
   const visibleStock = visibleRows.reduce((acc, r) => acc + (parseInt(r.stock) || 0), 0)
-  const visibleImageSignature = useMemo(() => [
-    ...new Set(
-      visibleRows
-        .flatMap(row => [row._imgPreview || row.imagen, row._imgPreview2 || row.imagen2])
-        .filter(Boolean)
-    ),
-  ].join('\n'), [visibleRows])
-
   // ── Render ──────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!active || !selectedDrop || loadingInitial) {
-      setDropImagesReady(false)
-      return
-    }
-
-    const imageUrls = visibleImageSignature ? visibleImageSignature.split('\n') : []
-
-    if (imageUrls.length === 0) {
-      setDropImagesReady(true)
-      return
-    }
-
-    let cancelled = false
-    setDropImagesReady(false)
-
-    Promise.all(
-      imageUrls.map(src => new Promise(resolve => {
-        const img = new Image()
-        img.onload = resolve
-        img.onerror = resolve
-        img.src = src
-      }))
-    ).then(() => {
-      if (!cancelled) setDropImagesReady(true)
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [active, loadingInitial, selectedDrop, visibleImageSignature])
-
   if (!selectedDrop) {
     return (
       <div className="imp-drop-picker" style={{
@@ -1187,11 +1270,32 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
           <button className="imp-header__brand" onClick={() => setSelectedDrop(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
             ← Drops
           </button>
-          <span className="imp-header__title">Sincronización · {selectedDrop}</span>
+          <span className="imp-header__title">{selectedDrop}</span>
         </div>
         <div className="imp-header__right">
           <button className="imp-btn imp-btn--outline" onClick={() => setShowPaste(true)}>
             ↓ Pegar JSON
+          </button>
+          <button
+            className="imp-btn imp-btn--outline"
+            title="Descarga un backup completo del catálogo en formato JSON compatible con Pegar JSON"
+            onClick={async () => {
+              try {
+                const data = await adminExportFull()
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                const fecha = new Date().toISOString().slice(0, 10)
+                a.download = `anothershop-backup-${fecha}.json`
+                a.click()
+                URL.revokeObjectURL(url)
+              } catch (e) {
+                alert('Error al exportar: ' + e.message)
+              }
+            }}
+          >
+            ↓ Backup JSON
           </button>
           <button className="imp-btn imp-btn--outline" onClick={() => setShowJson(v => !v)}>
             {showJson ? 'Ocultar JSON' : 'Ver JSON (Todo)'}
@@ -1246,7 +1350,7 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
 
       {/* Table */}
       {/* Loader inicial */}
-      {loadingInitial || !dropImagesReady ? (
+      {loadingInitial ? (
         <div className="imp-table-wrap imp-table-wrap--ready">
           <CrmSkeleton rows={14} variant="import" />
         </div>
@@ -1256,24 +1360,25 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
           <thead>
             <tr>
               <th style={{ width: 44 }}>Foto</th>
-              <th style={{ minWidth: 180 }}>Nombre producto</th>
-              <th style={{ width: 110 }}>REF</th>
-              <th style={{ width: 120 }}>Color</th>
-              <th style={{ width: 70 }}>Talla</th>
-              <th style={{ width: 60 }}>Stock</th>
-              <th style={{ width: 90 }}>Coste €</th>
-              <th style={{ width: 70 }}>Margen ×</th>
-              <th style={{ width: 90 }}>Precio venta €</th>
-              <th style={{ width: 80 }}>Género</th>
-              <th style={{ width: 130 }}>Imagen (ruta)</th>
-              <th style={{ width: 52 }}>Activo</th>
+              <th style={{ minWidth: 160 }}>Nombre producto</th>
+              <th style={{ width: 80 }}>Marca</th>
+              <th style={{ width: 100 }}>REF</th>
+              <th style={{ width: 110 }}>Color</th>
+              <th style={{ width: 65 }}>Talla</th>
+              <th style={{ width: 55 }}>Stock</th>
+              <th style={{ width: 85 }}>Coste €</th>
+              <th style={{ width: 65 }}>Margen ×</th>
+              <th style={{ width: 85 }}>Precio €</th>
+              <th style={{ width: 70 }}>Género</th>
+              <th style={{ width: 100 }}>Imagen</th>
+              <th style={{ width: 48 }}>Activo</th>
               <th style={{ width: 36 }}></th>
             </tr>
           </thead>
           <tbody>
             {visibleRows.length === 0 && (
               <tr>
-                <td colSpan={13} style={{ textAlign: 'center', padding: '3rem', color: 'var(--grey-500)' }}>
+                <td colSpan={14} style={{ textAlign: 'center', padding: '3rem', color: 'var(--grey-500)' }}>
                   No hay productos en {selectedDrop}. Añade uno o pega un JSON.
                 </td>
               </tr>
@@ -1284,8 +1389,8 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
               return (
                 <Fragment key={`rowwrap-${row._id}`}>
                   {showGroupHeader && (
-                    <tr key={`grp-${row.ref}`} className="">
-                      <td colSpan={13} className="" style={{
+                    <tr key={`grp-${row.ref}`}>
+                      <td colSpan={14} style={{
                         background: 'var(--grey-100)',
                         padding: '0.3rem 0.75rem',
                         fontSize: '0.6rem',
@@ -1324,6 +1429,20 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
                       />
                     </td>
 
+                    {/* Marca — columna con autodetect pre-rellenado */}
+                    <td>
+                      <select
+                        className="imp-cell-select"
+                        value={row.marca}
+                        onChange={e => updateGroupMarca(row.ref, e.target.value)}
+                        style={{ color: row.marca ? 'var(--black)' : 'var(--grey-400)' }}
+                      >
+                        <option value="">— Sin marca —</option>
+                        {MARCAS.map(m => (
+                          <option key={m.code} value={m.code}>{m.code} · {m.label}</option>
+                        ))}
+                      </select>
+                    </td>
                     {/* REF */}
                     <td>
                       <input
@@ -1645,8 +1764,10 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
 
             <div className="imp-paste-body">
               <p className="imp-paste-hint">
-                Pega el JSON generado por tu agente de IA. Formato aceptado:<br />
-                <code>[{"{"}"ref":"REF-001","nombre":"...","precio":20,"precio_coste":10,"genero":"mujer","variantes":[{"{"}"color":"Negro","hex":"#000000","tallas":{"{"}"S":2,"M":1{"}"}{"}"}{"}"}]{"}"}]</code><br /><br />
+                Pega el JSON generado por tu agente de IA o un backup descargado desde el botón «↓ Backup JSON».<br />
+                Formato array plano aceptado:<br />
+                <code>{'[{"ref":"REF-001","nombre":"...","precio":20,"precio_coste":10,"genero":"mujer","marca":"MNG","variantes":[{"color":"Negro","hex":"#000000","tallas":{"S":2,"M":1}}]}]'}</code><br /><br />
+                También acepta el formato de backup envuelto en <code>{'{schema_version, productos:[...]}'}</code>.<br />
                 Las filas se <strong>añaden</strong> a la tabla — nunca se borran las existentes.
                 Si la tabla está vacía, se reemplaza la fila en blanco.
               </p>

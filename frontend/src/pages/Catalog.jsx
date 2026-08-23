@@ -12,6 +12,7 @@ import { useCatalog } from '../hooks/useCatalog'
 import ProductCard from '../components/ProductCard'
 import FilterChips from '../components/FilterChips'
 import Footer from '../components/Footer'
+import { getProductBrandLabel } from '../utils/brand'
 
 // Toast compartido (mismo que en Product.jsx)
 function FavToast({ msg, onDone }) {
@@ -117,7 +118,9 @@ export default function Catalog({ onReady }) {
     const term = searchTerm.toLowerCase()
     lista = lista.filter(p =>
       (p.id && p.id.toLowerCase().includes(term)) ||
-      (p.nombre && p.nombre.toLowerCase().includes(term))
+      (p.ref && p.ref.toLowerCase().includes(term)) ||
+      (p.nombre && p.nombre.toLowerCase().includes(term)) ||
+      getProductBrandLabel(p).toLowerCase().includes(term)
     )
   }
 
@@ -135,43 +138,28 @@ export default function Catalog({ onReady }) {
 
   return (
     <>
-      <div className={`catalog-page${noFade ? ' catalog-page--no-fade' : ''}`}>
-        {/* Layout 2 columnas: sidebar (FilterChips) + contenido */}
-        <div className="catalog-layout">
-          {/* FilterChips renderiza el sidebar en desktop y el drawer en mobile */}
-          <FilterChips
-            generos={filtros.generos}
-            tallas={filtros.tallas}
-            activeGenero={activeGenero}
-            activeTalla={activeTalla}
-            onGenero={setActiveGenero}
-            onTalla={setActiveTalla}
-            searchTerm={searchTerm}
-            onSearch={setSearchTerm}
-          />
+      <main className={`catalog-page${noFade ? ' catalog-page--no-fade' : ''}`} id="catalogo">
+        <section className="catalog-heading" aria-labelledby="catalog-title">
+          <h1 id="catalog-title">Catalogo</h1>
+          <p>Piezas seleccionadas. Esenciales para todos los dias.</p>
+        </section>
 
+        <div className="catalog-layout">
           {/* Columna principal */}
           <div className="catalog-main">
-            {/* Tags de filtros activos */}
-            {(activeGenero || activeTalla || searchTerm) && (
-              <div className="catalog-active-filters">
-                {activeGenero && (
-                  <button className="catalog-active-tag" onClick={() => setActiveGenero(null)}>
-                    {activeGenero} ✕
-                  </button>
-                )}
-                {activeTalla && (
-                  <button className="catalog-active-tag" onClick={() => setActiveTalla(null)}>
-                    Talla {activeTalla} ✕
-                  </button>
-                )}
-                {searchTerm && (
-                  <button className="catalog-active-tag" onClick={() => setSearchTerm('')}>
-                    "{searchTerm}" ✕
-                  </button>
-                )}
-              </div>
-            )}
+            <FilterChips
+              generos={filtros.generos}
+              tallas={filtros.tallas}
+              activeGenero={activeGenero}
+              activeTalla={activeTalla}
+              onGenero={setActiveGenero}
+              onTalla={setActiveTalla}
+              searchTerm={searchTerm}
+              onSearch={setSearchTerm}
+              productCount={lista.length}
+              showTopButton={showTopBtn}
+              onBackToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            />
 
             {lista.length > 0 ? (
               <div className="product-grid">
@@ -195,14 +183,7 @@ export default function Catalog({ onReady }) {
           </div>
         </div>
 
-        <button
-          className={`back-to-top ${showTopBtn ? 'visible' : ''}`}
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          aria-label="Volver arriba"
-        >
-          ↑
-        </button>
-      </div>
+      </main>
 
       {/* Toast de favorito */}
       {favToast && (

@@ -53,7 +53,7 @@ function AppLayout() {
   return (
     <div className={isRestoringCatalog ? 'catalog-route--restoring' : undefined}>
       {/* Nav en todas las páginas excepto admin, login */}
-      {!isFullscreen && <Nav marca={marca} user={user} isHome={isHome} />}
+      {!isFullscreen && <Nav marca={marca} user={user} isHome={isHome} isCatalog={isCatalog} />}
       {/* Cinta solo en el catálogo */}
       {isCatalog && <TopBanner />}
 

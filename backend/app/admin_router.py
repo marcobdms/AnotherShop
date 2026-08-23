@@ -101,6 +101,7 @@ class ProductoSyncItem(BaseModel):
     imagenes: list[str] = []
     disponible: bool = True
     drop: str = "Drop 1"
+    marca: str = ""
     variantes: list[VarianteSyncItem] = []
 
 

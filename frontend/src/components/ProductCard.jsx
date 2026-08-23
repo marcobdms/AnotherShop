@@ -7,6 +7,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { formatPrice } from '../api/catalog'
+import { getProductBrandLabel } from '../utils/brand'
 
 function HeartIcon({ filled }) {
   return (
@@ -24,6 +25,10 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
   const images = producto.imagenes?.length > 0 ? producto.imagenes : [producto.imagen]
   const hasMultiple = images.length > 1
   const carouselRef = useRef(null)
+  const brandLabel = getProductBrandLabel(producto)
+  const swatches = producto.variante_hex
+    ? [{ hex: producto.variante_hex, label: producto.variante_color || 'Color' }]
+    : []
 
   // displayIndex controla qué imagen se muestra
   // Desktop: hover → 1, blur → 0
@@ -127,6 +132,7 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
         </div>
 
         {!producto.disponible && <div className="sold-out-overlay">Agotado</div>}
+        {!producto.disponible && <span className="product-card__badge">Agotado</span>}
 
         {/* Dots — solo en mobile (si hay múltiples imágenes) */}
         {hasMultiple && (
@@ -154,10 +160,25 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
 
       <div className="product-card__info">
         <p className="product-card__name">{producto.nombre}</p>
+        {brandLabel && (
+          <p className="product-card__brand">{brandLabel}</p>
+        )}
         {producto.disponible
           ? <p className="product-card__price">{formatPrice(producto.precio)}</p>
           : <p className="product-card__unavailable">No disponible</p>
         }
+        {swatches.length > 0 && (
+          <div className="product-card__swatches" aria-label="Colores disponibles">
+            {swatches.map(swatch => (
+              <span
+                key={`${swatch.hex}-${swatch.label}`}
+                className="product-card__swatch"
+                style={{ '--swatch-color': swatch.hex }}
+                title={swatch.label}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </article>
   )

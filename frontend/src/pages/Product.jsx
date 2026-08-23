@@ -11,6 +11,7 @@ import { fetchProduct, fetchMeta, formatPrice, buildWhatsAppLink, buildPayPalLin
 import { useAuth } from '../hooks/useAuth'
 import { useFavorites } from '../hooks/useFavorites'
 import Footer from '../components/Footer'
+import { getProductBrandLabel } from '../utils/brand'
 
 function HeartIcon({ filled }) {
   return (
@@ -117,6 +118,7 @@ export default function Product() {
   }
 
   const favActive = isFavorite(producto.id)
+  const brandLabel = getProductBrandLabel(producto)
 
   const isSingleVariantWithoutColor = hasVariantes && producto.variantes.length === 1 && (!producto.variantes[0].color || producto.variantes[0].color === 'Único')
 
@@ -192,6 +194,11 @@ export default function Product() {
           <Link to="/catalogo" className="product-page__back">← Catálogo</Link>
 
           <h1 className="product-page__name">{producto.nombre}</h1>
+
+          {/* Marca */}
+          {brandLabel && (
+            <p className="product-page__brand">{brandLabel}</p>
+          )}
 
           {/* Precio + corazón */}
           <div className="product-page__price-row">

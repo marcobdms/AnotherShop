@@ -26,6 +26,26 @@ function HeartIcon() {
   )
 }
 
+function SearchIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m16 16 5 5" />
+    </svg>
+  )
+}
+
+function BagIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M6.5 8.5h11l.8 12h-12.6l.8-12Z" />
+      <path d="M9 8.5v-2a3 3 0 0 1 6 0v2" />
+    </svg>
+  )
+}
+
 function HamburgerIcon({ open }) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -46,7 +66,7 @@ function HamburgerIcon({ open }) {
   )
 }
 
-export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = false }) {
+export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = false, isCatalog = false }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
   const location = useLocation()
@@ -69,8 +89,8 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
   }, [menuOpen])
 
   return (
-    <div className={`nav-wrapper ${isHome ? 'nav-wrapper--glass' : ''}`} ref={menuRef}>
-      <nav className={`nav ${isHome ? 'nav--glass' : ''}`}>
+    <div className={`nav-wrapper ${isHome ? 'nav-wrapper--glass' : ''} ${isCatalog ? 'nav-wrapper--catalog' : ''}`} ref={menuRef}>
+      <nav className={`nav ${isHome ? 'nav--glass' : ''} ${isCatalog ? 'nav--catalog' : ''}`}>
         {/* Logo imagen */}
         <NavLink to="/" className="nav__brand nav__brand--img">
           <img
@@ -79,6 +99,27 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
             className="nav__logo"
           />
         </NavLink>
+
+        {isCatalog && (
+          <div className="nav__catalog-actions">
+            <a
+              className="nav__catalog-icon"
+              href="#catalog-search"
+              aria-label="Buscar en catalogo"
+              onClick={() => window.dispatchEvent(new Event('catalog-search-open'))}
+            >
+              <SearchIcon />
+            </a>
+            <Link
+              to={user ? '/cuenta' : '/login'}
+              className="nav__catalog-icon"
+              aria-label={user ? 'Abrir bolsa' : 'Iniciar sesion'}
+              title={user ? user.email : 'Iniciar sesion'}
+            >
+              <BagIcon />
+            </Link>
+          </div>
+        )}
 
         {/* Desktop links */}
         <ul className="nav__links">

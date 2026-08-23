@@ -93,6 +93,7 @@ class ProductoTarjeta(BaseModel):
     genero: str
     tallas: list[str]
     descripcion: str
+    marca: str = ""
     variante_color: Optional[str] = None
     variante_hex: Optional[str] = None
     variante_tallas: Optional[dict[str, int]] = None
@@ -109,6 +110,7 @@ class ProductoDetalle(BaseModel):
     tallas: list[str]
     genero: str
     disponible: bool
+    marca: str = ""
     variantes: list[VarianteColorPublic] = []
     skus: list[str] = []
 

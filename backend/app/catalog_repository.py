@@ -334,10 +334,51 @@ def get_inventory(product_id: str) -> dict[str, Any]:
 
 
 def export_full() -> dict[str, Any]:
+    """Exporta el catálogo en formato versionado compatible con 'Pegar JSON'.
+
+    El array ``productos`` tiene las variantes embebidas (igual al formato que
+    acepta sync-all / el modal de pegar JSON), por lo que el backup se puede
+    pegar directamente sin conversión extra.
+    """
     with get_engine().connect() as connection:
+        all_products = _read_products(connection)
+        inv = _inventory_map(connection)
+
+        productos_con_variantes = []
+        stock_total = 0
+        variantes_total = 0
+        for p in all_products:
+            pid = p["id"]
+            variantes = (inv.get(pid) or {}).get("variantes", [])
+            for v in variantes:
+                variantes_total += 1
+                stock_total += sum(v.get("tallas", {}).values())
+            # Imagen2 es la segunda URL del array imagenes si existe
+            imagenes = p.get("imagenes") or []
+            productos_con_variantes.append({
+                "id": pid,
+                "ref": p["ref"],
+                "nombre": p["nombre"],
+                "precio": p["precio"],
+                "precio_coste": p["precio_coste"],
+                "genero": p["genero"],
+                "imagen": p["imagen"],
+                "imagenes": imagenes,
+                "disponible": p["disponible"],
+                "marca": p["marca"],
+                "drop": p["drop"],
+                "variantes": variantes,
+            })
+
         return {
-            "productos": _read_products(connection),
-            "inventario": _inventory_map(connection),
+            "schema_version": 2,
+            "fecha": datetime.now().astimezone().isoformat(),
+            "totales": {
+                "productos": len(productos_con_variantes),
+                "variantes": variantes_total,
+                "stock_total": stock_total,
+            },
+            "productos": productos_con_variantes,
         }
 
 
@@ -763,7 +804,9 @@ def sync_all(
                     "meta_id": old.get("meta_id", ""),
                     "categoria": old.get("categoria", "sin_categoria"),
                     "descripcion": old.get("descripcion", ""),
-                    "marca": old.get("marca", ""),
+                    # Si el incoming trae marca no vacía, usarla.
+                    # Si viene vacía o ausente, conservar la del DB.
+                    "marca": incoming.get("marca") or old.get("marca", ""),
                 }
                 if not incoming.get("imagen") and not incoming.get("imagenes"):
                     merged["imagen"] = old.get("imagen", "")

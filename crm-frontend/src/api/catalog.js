@@ -118,10 +118,22 @@ export async function adminSaveInventory(productId, variantes, usuario = 'admin'
 
 
 export async function adminExportFull() {
-  const res = await fetch(`${ADMIN_BASE}/export-full`, {
-    headers: adminHeaders()
-  })
-  return handleResponse(res)
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 15000)
+  try {
+    const res = await fetch(`${ADMIN_BASE}/export-full`, {
+      headers: adminHeaders(),
+      signal: controller.signal,
+    })
+    return await handleResponse(res)
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('El catálogo tardó demasiado en responder. Recarga o comprueba el backend.')
+    }
+    throw error
+  } finally {
+    window.clearTimeout(timeout)
+  }
 }
 
 export async function adminSyncAll(productos, usuario = 'admin') {
