@@ -14,22 +14,6 @@ import FilterChips from '../components/FilterChips'
 import Footer from '../components/Footer'
 import { getProductBrandLabel } from '../utils/brand'
 
-// Toast compartido (mismo que en Product.jsx)
-function FavToast({ msg, onDone }) {
-  useEffect(() => {
-    const t = setTimeout(onDone, 2200)
-    return () => clearTimeout(t)
-  }, [onDone])
-  return (
-    <div className="fav-toast">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg>
-      {msg}
-    </div>
-  )
-}
-
 function hasSize(producto, tallaSeleccionada) {
   const talla = String(tallaSeleccionada).trim().toUpperCase()
   const tallas = producto.variante_tallas && typeof producto.variante_tallas === 'object'
@@ -62,6 +46,12 @@ export default function Catalog({ onReady }) {
   const showFavToast = useCallback((msg) => {
     setFavToast({ msg, key: Date.now() })
   }, [])
+
+  useEffect(() => {
+    if (!favToast) return
+    const t = setTimeout(() => setFavToast(null), 2200)
+    return () => clearTimeout(t)
+  }, [favToast])
 
   const setActiveGenero = (gen) => {
     const params = new URLSearchParams(searchParams)
@@ -152,6 +142,7 @@ export default function Catalog({ onReady }) {
             productCount={lista.length}
             showTopButton={showTopBtn}
             onBackToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            notchMessage={favToast?.msg || ''}
           />
 
           <div className="catalog-main">
@@ -178,15 +169,6 @@ export default function Catalog({ onReady }) {
         </div>
 
       </main>
-
-      {/* Toast de favorito */}
-      {favToast && (
-        <FavToast
-          key={favToast.key}
-          msg={favToast.msg}
-          onDone={() => setFavToast(null)}
-        />
-      )}
 
       <Footer marca={meta.marca} />
     </>

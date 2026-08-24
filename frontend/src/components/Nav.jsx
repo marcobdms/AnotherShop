@@ -96,7 +96,10 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
               className="nav__catalog-icon"
               href="#catalog-search"
               aria-label="Buscar en catalogo"
-              onClick={() => window.dispatchEvent(new Event('catalog-search-open'))}
+              onClick={(event) => {
+                event.preventDefault()
+                window.dispatchEvent(new Event('catalog-search-open'))
+              }}
             >
               <SearchIcon />
             </a>

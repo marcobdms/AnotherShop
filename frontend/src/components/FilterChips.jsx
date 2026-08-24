@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 function SearchIcon({ className = 'catalog-icon' }) {
   return (
@@ -42,10 +42,29 @@ function ArrowUpIcon() {
   )
 }
 
+function CloseIcon() {
+  return (
+    <svg className="catalog-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  )
+}
+
+function FavoriteStatusIcon() {
+  return (
+    <svg className="floating-filter__heart" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  )
+}
+
 function SearchPanel({ searchTerm, onSearch }) {
   const inputRef = useRef(null)
 
   useEffect(() => {
+    const isTouchViewport = window.matchMedia?.('(pointer: coarse)')?.matches
+    if (isTouchViewport) return
     inputRef.current?.focus()
   }, [])
 
@@ -163,35 +182,86 @@ export default function FilterChips({
   productCount = 0,
   showTopButton = false,
   onBackToTop,
+  notchMessage = '',
 }) {
   const [drawerMode, setDrawerMode] = useState(null)
+  const [renderedDrawerMode, setRenderedDrawerMode] = useState(null)
+  const openFrameRef = useRef(null)
   const drawerOpen = Boolean(drawerMode)
+  const drawerVisible = Boolean(drawerMode || renderedDrawerMode)
+  const visualDrawerMode = drawerMode || renderedDrawerMode || 'filters'
   const activeFilterCount = [activeGenero, activeTalla].filter(Boolean).length
   const productLabel = `${productCount} producto${productCount === 1 ? '' : 's'}`
   const searchLabel = searchTerm ? searchTerm : 'Buscar prendas'
 
+  const openDrawer = useCallback((mode) => {
+    if (openFrameRef.current) {
+      cancelAnimationFrame(openFrameRef.current)
+      openFrameRef.current = null
+    }
+    setRenderedDrawerMode(mode)
+    if (drawerOpen) {
+      setDrawerMode(mode)
+      return
+    }
+
+    setDrawerMode(null)
+    openFrameRef.current = requestAnimationFrame(() => {
+      openFrameRef.current = requestAnimationFrame(() => {
+        setDrawerMode(mode)
+        openFrameRef.current = null
+      })
+    })
+  }, [drawerOpen])
+
+  const closeDrawer = useCallback(() => {
+    if (openFrameRef.current) {
+      cancelAnimationFrame(openFrameRef.current)
+      openFrameRef.current = null
+    }
+    setDrawerMode(null)
+  }, [])
+
+  function handleDrawerTransitionEnd(event) {
+    if (event.target !== event.currentTarget) return
+    if (event.propertyName !== 'transform' || drawerOpen) return
+    setRenderedDrawerMode(null)
+  }
+
   useEffect(() => {
     if (!drawerOpen) return
     const handler = (event) => {
-      if (event.key === 'Escape') setDrawerMode(null)
+      if (event.key === 'Escape') closeDrawer()
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [drawerOpen])
+  }, [closeDrawer, drawerOpen])
 
   useEffect(() => {
-    document.body.style.overflow = drawerOpen ? 'hidden' : ''
+    if (drawerOpen || !renderedDrawerMode) return undefined
+    const timer = setTimeout(() => setRenderedDrawerMode(null), 420)
+    return () => clearTimeout(timer)
+  }, [drawerOpen, renderedDrawerMode])
+
+  useEffect(() => (
+    () => {
+      if (openFrameRef.current) cancelAnimationFrame(openFrameRef.current)
+    }
+  ), [])
+
+  useEffect(() => {
+    document.body.style.overflow = drawerVisible ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [drawerOpen])
+  }, [drawerVisible])
 
   useEffect(() => {
     function openSearchFromHeader() {
-      setDrawerMode('search')
+      openDrawer('search')
     }
 
     function handleSearchHash() {
       if (window.location.hash !== '#catalog-search') return
-      setDrawerMode('search')
+      openDrawer('search')
     }
 
     handleSearchHash()
@@ -201,7 +271,7 @@ export default function FilterChips({
       window.removeEventListener('catalog-search-open', openSearchFromHeader)
       window.removeEventListener('hashchange', handleSearchHash)
     }
-  }, [])
+  }, [openDrawer])
 
   function handleClearFilters() {
     onGenero(null)
@@ -212,7 +282,7 @@ export default function FilterChips({
     <section className="catalog-filter-panel" aria-label="Filtros de catalogo">
       <button
         className={`filter-summary filter-summary--search${searchTerm ? ' filter-summary--active' : ''}`}
-        onClick={() => setDrawerMode('search')}
+        onClick={() => openDrawer('search')}
         aria-haspopup="dialog"
         type="button"
       >
@@ -262,69 +332,78 @@ export default function FilterChips({
         />
       </aside>
 
-      <div className="floating-filter" aria-label="Acciones de catalogo">
-        <button className="floating-filter__main" onClick={() => setDrawerMode('filters')} type="button">
-          <FilterIcon />
-          <strong>Mostrar filtros</strong>
-          {activeFilterCount > 0 && (
-            <span className="floating-filter__badge">{activeFilterCount}</span>
-          )}
-          <span className="divider" aria-hidden="true" />
-          <span>{productCount}</span>
-        </button>
-        <button
-          className={`floating-filter__backtop${showTopButton ? ' floating-filter__backtop--visible' : ''}`}
-          onClick={() => onBackToTop?.()}
-          aria-label="Volver arriba"
-          type="button"
-        >
-          <ArrowUpIcon />
-        </button>
-      </div>
-
-      <div
-        className={`filter-drawer ${drawerOpen ? 'filter-drawer--open' : ''} ${drawerMode === 'search' ? 'filter-drawer--search' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label={drawerMode === 'search' ? 'Buscar productos' : 'Filtros'}
-      >
-        <div
-          className="filter-drawer__backdrop"
-          onClick={() => setDrawerMode(null)}
-        />
-        <div className="filter-drawer__panel">
-          <div className="filter-drawer__header">
-            <span className="filter-drawer__header-title">
-              {drawerMode === 'search' ? 'Buscar' : 'Filtros'}
-            </span>
-            <button
-              className="filter-drawer__close"
-              onClick={() => setDrawerMode(null)}
-              aria-label="Cerrar"
-              type="button"
-            >
-              x
-            </button>
-          </div>
-
-          {drawerMode === 'search' ? (
-            <SearchPanel
-              searchTerm={searchTerm}
-              onSearch={onSearch}
-            />
-          ) : (
-            <FiltersPanel
-              generos={generos}
-              tallas={tallas}
-              activeGenero={activeGenero}
-              activeTalla={activeTalla}
-              onGenero={onGenero}
-              onTalla={onTalla}
-              onClear={handleClearFilters}
-            />
-          )}
+      <div className={`floating-filter${notchMessage ? ' floating-filter--message' : ''}`} aria-label="Acciones de catalogo">
+        <div className="floating-filter__normal">
+          <button className="floating-filter__main" onClick={() => openDrawer('filters')} type="button">
+            <FilterIcon />
+            <strong>Mostrar filtros</strong>
+            {activeFilterCount > 0 && (
+              <span className="floating-filter__badge">{activeFilterCount}</span>
+            )}
+            <span className="divider" aria-hidden="true" />
+            <span>{productCount}</span>
+          </button>
+          <button
+            className={`floating-filter__backtop${showTopButton ? ' floating-filter__backtop--visible' : ''}`}
+            onClick={() => onBackToTop?.()}
+            aria-label="Volver arriba"
+            type="button"
+          >
+            <ArrowUpIcon />
+          </button>
         </div>
+        <span className="floating-filter__message" role="status">
+          <FavoriteStatusIcon />
+          {notchMessage}
+        </span>
       </div>
+
+      {drawerVisible && (
+        <div
+          className={`filter-drawer ${drawerOpen ? 'filter-drawer--open' : ''} ${visualDrawerMode === 'search' ? 'filter-drawer--search' : ''}`}
+          role="dialog"
+          aria-modal="true"
+          aria-hidden={!drawerOpen}
+          aria-label={visualDrawerMode === 'search' ? 'Buscar productos' : 'Filtros'}
+        >
+          <div
+            className="filter-drawer__backdrop"
+            onClick={closeDrawer}
+          />
+          <div className="filter-drawer__panel" onTransitionEnd={handleDrawerTransitionEnd}>
+            <div className="filter-drawer__header">
+              <span className="filter-drawer__header-title">
+                {visualDrawerMode === 'search' ? 'Buscar' : 'Filtros'}
+              </span>
+              <button
+                className="filter-drawer__close"
+                onClick={closeDrawer}
+                aria-label="Cerrar"
+                type="button"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            {visualDrawerMode === 'search' ? (
+              <SearchPanel
+                searchTerm={searchTerm}
+                onSearch={onSearch}
+              />
+            ) : (
+              <FiltersPanel
+                generos={generos}
+                tallas={tallas}
+                activeGenero={activeGenero}
+                activeTalla={activeTalla}
+                onGenero={onGenero}
+                onTalla={onTalla}
+                onClear={handleClearFilters}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </section>
   )
 }

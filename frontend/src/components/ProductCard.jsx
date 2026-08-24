@@ -159,7 +159,21 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
       </div>
 
       <div className="product-card__info">
-        <p className="product-card__name">{producto.nombre}</p>
+        <div className="product-card__title-row">
+          <p className="product-card__name">{producto.nombre}</p>
+          {swatches.length > 0 && (
+            <div className="product-card__swatches" aria-label="Colores disponibles">
+              {swatches.map(swatch => (
+                <span
+                  key={`${swatch.hex}-${swatch.label}`}
+                  className="product-card__swatch"
+                  style={{ '--swatch-color': swatch.hex }}
+                  title={swatch.label}
+                />
+              ))}
+            </div>
+          )}
+        </div>
         {brandLabel && (
           <p className="product-card__brand">{brandLabel}</p>
         )}
@@ -167,18 +181,6 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
           ? <p className="product-card__price">{formatPrice(producto.precio)}</p>
           : <p className="product-card__unavailable">No disponible</p>
         }
-        {swatches.length > 0 && (
-          <div className="product-card__swatches" aria-label="Colores disponibles">
-            {swatches.map(swatch => (
-              <span
-                key={`${swatch.hex}-${swatch.label}`}
-                className="product-card__swatch"
-                style={{ '--swatch-color': swatch.hex }}
-                title={swatch.label}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </article>
   )

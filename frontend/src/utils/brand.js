@@ -1,9 +1,9 @@
 const BRAND_LABELS = {
-  MNG: 'MANGO OUTLET',
-  'A&F': 'ABERCROMBIE & FITCH',
-  HCO: 'HOLLISTER',
-  LFTS: 'LEFTIES',
-  'P&B': 'PULL&BEAR',
+  MNG: 'MNG',
+  'A&F': 'A&F',
+  HCO: 'HCO',
+  LFTS: 'LFTS',
+  'P&B': 'P&B',
   ZARA: 'ZARA',
 }
 
