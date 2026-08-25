@@ -126,6 +126,13 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
               alt={`${producto.nombre} ${i + 1}`}
               loading="lazy"
               className={`product-card__carousel-img ${i === displayIndex ? 'product-card__carousel-img--active' : ''}`}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                opacity: i === displayIndex ? 1 : 0,
+                zIndex: i === displayIndex ? 1 : 0,
+              }}
+              aria-hidden={i !== displayIndex}
               onError={e => { e.target.style.visibility = 'hidden' }}
             />
           ))}
