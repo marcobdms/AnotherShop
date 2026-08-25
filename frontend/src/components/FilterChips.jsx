@@ -25,14 +25,6 @@ function FilterIcon({ className = 'catalog-icon' }) {
   )
 }
 
-function ChevronIcon() {
-  return (
-    <svg className="catalog-chevron" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m7 10 5 5 5-5" />
-    </svg>
-  )
-}
-
 function ArrowUpIcon() {
   return (
     <svg className="catalog-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -280,21 +272,29 @@ export default function FilterChips({
 
   return (
     <section className="catalog-filter-panel" aria-label="Filtros de catalogo">
-      <button
-        className={`filter-summary filter-summary--search${searchTerm ? ' filter-summary--active' : ''}`}
-        onClick={() => openDrawer('search')}
-        aria-haspopup="dialog"
-        type="button"
+      <div
+        className="catalog-search-row"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', width: '100%' }}
       >
-        <span className="filter-summary__label">
-          <SearchIcon />
-          <strong>{searchLabel}</strong>
-        </span>
-        <span className="filter-count">
+        <button
+          className={`filter-summary filter-summary--search${searchTerm ? ' filter-summary--active' : ''}`}
+          style={{ flex: '0 1 50%', width: '50%', minWidth: 0, justifyContent: 'flex-start' }}
+          onClick={() => openDrawer('search')}
+          aria-haspopup="dialog"
+          type="button"
+        >
+          <span className="filter-summary__label">
+            <SearchIcon />
+            <strong>{searchLabel}</strong>
+          </span>
+        </button>
+        <span
+          className="catalog-product-count"
+          style={{ flex: '0 0 auto', fontSize: '0.8125rem', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}
+        >
           {productLabel}
-          <ChevronIcon />
         </span>
-      </button>
+      </div>
 
       {(activeFilterCount > 0 || searchTerm) && (
         <div className="catalog-active-filters">
