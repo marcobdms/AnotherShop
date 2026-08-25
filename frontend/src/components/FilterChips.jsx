@@ -184,7 +184,7 @@ export default function FilterChips({
   const visualDrawerMode = drawerMode || renderedDrawerMode || 'filters'
   const activeFilterCount = [activeGenero, activeTalla].filter(Boolean).length
   const productLabel = `${productCount} producto${productCount === 1 ? '' : 's'}`
-  const searchLabel = searchTerm ? searchTerm : 'Buscar prendas'
+  const searchLabel = searchTerm ? searchTerm : 'Buscar'
 
   const openDrawer = useCallback((mode) => {
     if (openFrameRef.current) {
@@ -290,7 +290,7 @@ export default function FilterChips({
         </button>
         <span
           className="catalog-product-count"
-          style={{ flex: '0 0 auto', fontSize: '0.8125rem', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}
+          style={{ flex: '0 0 auto', color: 'var(--catalog-ink-muted)', fontSize: '1.0625rem', fontWeight: 400, letterSpacing: '0.055em', lineHeight: 1.4, whiteSpace: 'nowrap' }}
         >
           {productLabel}
         </span>
