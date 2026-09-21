@@ -6,6 +6,7 @@
 import { useState, useCallback, useEffect, Fragment, useMemo } from 'react'
 import { adminUploadImage, adminExportFull, adminSyncAll } from './api/catalog'
 import { CrmSkeleton } from './CrmChrome'
+import { detectPrimaryColor } from './lib/detectColor'
 
 const TALLAS = ['XS', 'S', 'M', 'L', 'XL']
 const GENEROS = ['mujer', 'hombre', 'unisex']
@@ -94,7 +95,15 @@ const COLORES_PRESET = [
   { nombre: 'Naranja', hex: '#E67E22' },
   { nombre: 'Crema',   hex: '#FFFDD0' },
   { nombre: 'Camel',   hex: '#C19A6B' },
+  { nombre: 'Celeste',  hex: '#87CEEB' },
+  { nombre: 'Amarillo', hex: '#F1C40F' },
+  { nombre: 'Lila',     hex: '#B39DDB' },
+  { nombre: 'Burdeos',  hex: '#7B1E3A' },
+  { nombre: 'Caqui',    hex: '#78784A' },
 ]
+
+// Opción del selector: deduce el color primario a partir de la foto de la fila.
+const AUTO_COLOR = '__auto__'
 
 function makeRow(overrides = {}) {
   return {
@@ -871,6 +880,25 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
     }))
   }, [])
 
+  // Modo "Auto" del selector de color: lee la foto de la fila y elige el preset más cercano.
+  const handleAutoColor = useCallback(async (row) => {
+    const src = row._imgPreview || row.imagen
+    if (!src) {
+      window.alert('Sube la imagen de esta fila para poder detectar su color.')
+      return
+    }
+    try {
+      const nombre = await detectPrimaryColor(src, COLORES_PRESET)
+      const preset = COLORES_PRESET.find(c => c.nombre === nombre)
+      if (!preset) return
+      updateRow(row._id, 'color', preset.nombre)
+      updateRow(row._id, 'hex', preset.hex)
+    } catch (error) {
+      console.warn('[import] No se pudo detectar el color:', error)
+      window.alert('No se pudo leer la imagen para detectar el color. Elígelo manualmente.')
+    }
+  }, [updateRow])
+
   const deleteRow = useCallback((id) => {
     if (!window.confirm('¿Seguro que quieres borrar esta fila? Se eliminará de la tienda al sincronizar.')) return
     setIsImported(false)
@@ -1461,12 +1489,17 @@ export default function AdminImport({ active = true, catalogRevision = 0, usuari
                         value={row.color}
                         onChange={e => {
                           const nombre = e.target.value
+                          if (nombre === AUTO_COLOR) {
+                            handleAutoColor(row)
+                            return
+                          }
                           const preset = COLORES_PRESET.find(c => c.nombre === nombre)
                           updateRow(row._id, 'color', nombre)
                           updateRow(row._id, 'hex', preset ? preset.hex : '#888888')
                         }}
                       >
                         <option value="">— Sin color —</option>
+                        <option value={AUTO_COLOR}>Auto (desde la imagen)</option>
                         {COLORES_PRESET.map(c => (
                           <option key={c.nombre} value={c.nombre}>{c.nombre}</option>
                         ))}

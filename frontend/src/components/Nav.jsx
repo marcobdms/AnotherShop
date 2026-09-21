@@ -6,6 +6,7 @@
  */
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
+import { useExitNavigate, isPlainClick } from '../hooks/useExitNavigate'
 
 function UserIcon() {
   return (
@@ -60,6 +61,14 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
   const location = useLocation()
+  const exitNavigate = useExitNavigate()
+
+  // Los links entre páginas reproducen la animación de salida (solo escritorio).
+  const withExit = (to) => (event) => {
+    if (!isPlainClick(event)) return
+    event.preventDefault()
+    exitNavigate(to)
+  }
 
   // Cerrar menú al cambiar de ruta
   useEffect(() => {
@@ -105,6 +114,7 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
             </a>
             <Link
               to="/cuenta"
+              onClick={withExit('/cuenta')}
               className="nav__catalog-icon"
               aria-label="Abrir favoritos"
               title="Favoritos"
@@ -117,18 +127,19 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
         {/* Desktop links */}
         <ul className="nav__links">
           <li>
-            <NavLink to="/catalogo" className={({ isActive }) => isActive ? 'active' : ''}>
+            <NavLink to="/catalogo" onClick={withExit('/catalogo')} className={({ isActive }) => isActive ? 'active' : ''}>
               Catálogo
             </NavLink>
           </li>
           <li>
-            <NavLink to="/nosotros" className={({ isActive }) => isActive ? 'active' : ''}>
+            <NavLink to="/nosotros" onClick={withExit('/nosotros')} className={({ isActive }) => isActive ? 'active' : ''}>
               Nosotros
             </NavLink>
           </li>
           <li>
             <Link
               to={user ? '/cuenta' : '/login'}
+              onClick={withExit(user ? '/cuenta' : '/login')}
               className="nav__user-icon"
               aria-label={user ? 'Mis favoritos' : 'Iniciar sesión'}
               title={user ? user.email : 'Iniciar sesión'}

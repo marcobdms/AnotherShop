@@ -13,14 +13,19 @@ export function useAuth() {
   useEffect(() => {
     // Sesión inicial (recarga de página)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+      const next = session?.user ?? null
+      setUser(prev => (prev && next && prev.id === next.id ? prev : next))
       setLoading(false)
     })
 
     // Escucha cambios de sesión (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setUser(session?.user ?? null)
+        // Al volver a la pestana Supabase re-emite la sesion con un objeto `user`
+        // nuevo aunque sea la misma persona. Se conserva la referencia anterior
+        // para no relanzar la carga de favoritos y el resumen no parpadee.
+        const next = session?.user ?? null
+        setUser(prev => (prev && next && prev.id === next.id ? prev : next))
       }
     )
 

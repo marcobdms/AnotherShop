@@ -8,6 +8,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
+from app import binance, checkout_repository as orders, conciliacion, emails
 from app import crm_repository as repository
 from app.storage import (
     StorageConfigurationError,
@@ -30,6 +31,18 @@ class ClienteIn(BaseModel):
     nombre: str = Field(min_length=1)
     telefono: str = ""
     notas: str = ""
+    email: str = ""
+
+
+class ConfirmarPedidoIn(BaseModel):
+    usuario: str = "admin"
+    registrar_pago: bool = True
+    cobro_efectivo: bool = False
+
+
+class EstadoPedidoIn(BaseModel):
+    estado: str
+    motivo: str = ""
 
 
 class VentaItemIn(BaseModel):
@@ -182,6 +195,74 @@ def crm_create_payment(client_id: str, body: AbonoIn):
         return repository.create_payment(client_id, body.model_dump())
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+# ── Pedidos de la tienda publica ──────────────────────────────────────────────
+
+def _sign_order_receipts(order: dict) -> dict:
+    """Los comprobantes viven en un bucket privado: el CRM necesita una URL
+    firmada para poder verlos."""
+    for pago in order.get("pagos") or []:
+        path = pago.get("comprobante_path")
+        if not path:
+            continue
+        try:
+            pago["comprobante_url"] = create_signed_receipt_url(path)
+        except StorageConfigurationError:
+            pago["comprobante_url"] = ""
+    return order
+
+
+@router.get("/pedidos")
+def crm_list_orders(estado: str = "", q: str = ""):
+    return [_sign_order_receipts(o) for o in orders.list_orders(estado.strip(), q.strip())]
+
+
+@router.post("/pedidos/{order_id}/confirmar")
+def crm_confirm_order(order_id: str, body: Optional[ConfirmarPedidoIn] = None):
+    payload = body or ConfirmarPedidoIn()
+    try:
+        order = orders.confirm_order(
+            order_id,
+            usuario=payload.usuario,
+            registrar_pago=payload.registrar_pago,
+            cobro_efectivo=payload.cobro_efectivo,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    emails.notify(order["numero"], "confirmado")
+    return _sign_order_receipts(order)
+
+
+@router.post("/pedidos/{order_id}/estado")
+def crm_set_order_status(order_id: str, body: EstadoPedidoIn):
+    try:
+        order = orders.set_order_status(order_id, body.estado, body.motivo)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    if not order:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+    if body.estado == "cancelado":
+        emails.notify(order["numero"], "cancelado")
+    return _sign_order_receipts(order)
+
+
+@router.get("/conciliacion/binance/estado")
+def crm_binance_status():
+    return {"configurado": binance.configured()}
+
+
+@router.post("/conciliacion/binance")
+def crm_binance_sync():
+    """Concilia ya, saltandose el freno automatico."""
+    return conciliacion.sync_binance(force=True)
+
+
+@router.post("/pedidos/pagos/{payment_id}/rechazar")
+def crm_reject_order_payment(payment_id: str, usuario: str = "admin"):
+    if not orders.reject_payment(payment_id, usuario):
+        raise HTTPException(status_code=404, detail="Pago no encontrado")
+    return {"ok": True}
 
 
 @router.get("/clientes/{client_id}/comprobantes")

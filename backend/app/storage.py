@@ -135,6 +135,31 @@ def upload_private_receipt(
     return storage_path, signed_url
 
 
+def upload_order_receipt(
+    *,
+    numero: str,
+    original_name: str,
+    contents: bytes,
+    content_type: str | None,
+) -> tuple[str, str]:
+    """Comprobante de un pedido de la tienda publica.
+
+    Va al mismo bucket privado que los del CRM, pero bajo `pedidos/` porque
+    todavia no hay cliente al que colgarlo.
+    """
+    filename = _safe_filename(original_name)
+    safe_numero = re.sub(r"[^A-Za-z0-9_-]+", "", numero) or "sin-numero"
+    storage_path = f"pedidos/{safe_numero}/{uuid.uuid4().hex}-{filename}"
+    options: dict[str, Any] = {"cache-control": "86400", "upsert": "false"}
+    if content_type:
+        options["content-type"] = content_type
+
+    bucket = get_storage_client().storage.from_(get_receipts_bucket_name())
+    bucket.upload(path=storage_path, file=contents, file_options=options)
+    signed = bucket.create_signed_url(storage_path, expires_in=60 * 60 * 24 * 7)
+    return storage_path, signed.get("signedURL") or signed.get("signedUrl") or ""
+
+
 def create_signed_receipt_url(storage_path: str, expires_in: int = 60 * 60 * 24 * 7) -> str:
     signed = (
         get_storage_client()

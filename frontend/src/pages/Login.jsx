@@ -4,7 +4,7 @@
  * Si ya hay sesión activa → redirige a /cuenta
  */
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 // Estilos inline específicos de esta página
@@ -145,6 +145,9 @@ const css = `
 export default function Login() {
   const { user, signIn, signUp } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  // Volver a donde se venia: el checkout manda aqui a mitad de compra.
+  const next = searchParams.get('next') || '/cuenta'
 
   const [mode, setMode]       = useState('login')   // 'login' | 'register'
   const [email, setEmail]     = useState('')
@@ -155,8 +158,8 @@ export default function Login() {
 
   // Si ya hay sesión, redirige
   useEffect(() => {
-    if (user) navigate('/cuenta', { replace: true })
-  }, [user, navigate])
+    if (user) navigate(next, { replace: true })
+  }, [user, navigate, next])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

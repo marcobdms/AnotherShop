@@ -296,6 +296,78 @@ export async function crmUploadComprobante(clienteId, file, usuario = 'admin') {
   return handleResponse(res)
 }
 
+// ── Pedidos de la tienda publica ───────────────────────────────────────────────
+
+export async function crmFetchPedidos({ estado = '', q = '' } = {}) {
+  const params = new URLSearchParams()
+  if (estado) params.set('estado', estado)
+  if (q) params.set('q', q)
+  const res = await fetch(`${CRM_BASE}/pedidos?${params}`, { headers: adminHeaders() })
+  return handleResponse(res)
+}
+
+export async function crmConfirmarPedido(
+  pedidoId,
+  { usuario = 'admin', registrarPago = true, cobroEfectivo = false } = {},
+) {
+  const res = await fetch(`${CRM_BASE}/pedidos/${pedidoId}/confirmar`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({
+      usuario,
+      registrar_pago: registrarPago,
+      cobro_efectivo: cobroEfectivo,
+    }),
+  })
+  return handleResponse(res)
+}
+
+export async function crmCambiarEstadoPedido(pedidoId, estado, motivo = '') {
+  const res = await fetch(`${CRM_BASE}/pedidos/${pedidoId}/estado`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify({ estado, motivo }),
+  })
+  return handleResponse(res)
+}
+
+export async function crmBinanceEstado() {
+  const res = await fetch(`${CRM_BASE}/conciliacion/binance/estado`, { headers: adminHeaders() })
+  return handleResponse(res)
+}
+
+export async function crmConciliarBinance() {
+  const res = await fetch(`${CRM_BASE}/conciliacion/binance`, {
+    method: 'POST',
+    headers: adminHeaders(),
+  })
+  return handleResponse(res)
+}
+
+export async function crmRechazarPagoPedido(pagoId, usuario = 'admin') {
+  const res = await fetch(
+    `${CRM_BASE}/pedidos/pagos/${pagoId}/rechazar?usuario=${encodeURIComponent(usuario)}`,
+    { method: 'POST', headers: adminHeaders() },
+  )
+  return handleResponse(res)
+}
+
+// ── Ajustes de la tienda (meta) ────────────────────────────────────────────────
+
+export async function adminFetchMeta() {
+  const res = await fetch(`${ADMIN_BASE}/meta`, { headers: adminHeaders() })
+  return handleResponse(res)
+}
+
+export async function adminUpdateMeta(meta) {
+  const res = await fetch(`${ADMIN_BASE}/meta`, {
+    method: 'PUT',
+    headers: adminHeaders(),
+    body: JSON.stringify(meta),
+  })
+  return handleResponse(res)
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 export async function crmFetchDashboard({ desde, hasta, timezone = 'Europe/Madrid' }) {

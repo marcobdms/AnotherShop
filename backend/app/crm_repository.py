@@ -32,7 +32,7 @@ from sqlalchemy import (
     delete,
     update,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, insert as pg_insert
 from sqlalchemy.engine import Connection
 
 from app.catalog_repository import inventario, productos, variantes
@@ -48,6 +48,8 @@ clientes = Table(
     Column("nombre", Text, nullable=False),
     Column("telefono", Text, nullable=False),
     Column("notas", Text, nullable=False),
+    Column("email", Text, nullable=False),
+    Column("user_id", UUID(as_uuid=False)),
     Column("creado_en", DateTime(timezone=True), nullable=False),
     Column("actualizado_en", DateTime(timezone=True), nullable=False),
 )
@@ -92,6 +94,8 @@ abonos = Table(
     Column("monto", Numeric(12, 2), nullable=False),
     Column("metodo", Text, nullable=False),
     Column("moneda", Text, nullable=False),
+    Column("tasa", Numeric(18, 6)),
+    Column("monto_usd", Numeric(12, 2)),
     Column("usuario", Text, nullable=False),
     Column("nota", Text, nullable=False),
     Column("creado_en", DateTime(timezone=True), nullable=False),
@@ -123,6 +127,20 @@ comprobantes_cliente = Table(
 )
 
 
+def _usd_payments():
+    """Abonos que cuentan como dinero.
+
+    Historicamente solo contaban los que venian en USD: un pago en Bs se
+    guardaba pero desaparecia de deudas y dashboard. Ahora tambien cuentan los
+    que traen conversion explicita (tasa + monto_usd).
+    """
+    return or_(abonos.c.moneda == "usd", abonos.c.monto_usd.isnot(None))
+
+
+def _usd_amount():
+    return func.coalesce(abonos.c.monto_usd, abonos.c.monto)
+
+
 def _money(value: Any) -> float:
     if isinstance(value, Decimal):
         return float(value)
@@ -152,8 +170,8 @@ def _client_balance_rows(connection: Connection) -> dict[str, dict[str, float]]:
     )
     payments = dict(
         connection.execute(
-            select(abonos.c.cliente_id, func.coalesce(func.sum(abonos.c.monto), 0))
-            .where(abonos.c.moneda == "usd")
+            select(abonos.c.cliente_id, func.coalesce(func.sum(_usd_amount()), 0))
+            .where(_usd_payments())
             .group_by(abonos.c.cliente_id)
         ).all()
     )
@@ -176,6 +194,7 @@ def _client_out(row: Any, balance: Optional[dict[str, float]] = None) -> dict[st
         "nombre": data["nombre"],
         "telefono": data["telefono"] or "",
         "notas": data["notas"] or "",
+        "email": data.get("email") or "",
         "total_comprado": _money(total["total_comprado"]),
         "total_abonado": _money(total["total_abonado"]),
         "deuda": _money(total["deuda"]),
@@ -210,6 +229,7 @@ def create_client(fields: dict[str, Any]) -> dict[str, Any]:
         "nombre": str(fields.get("nombre") or "").strip(),
         "telefono": str(fields.get("telefono") or "").strip(),
         "notas": str(fields.get("notas") or "").strip(),
+        "email": str(fields.get("email") or "").strip().lower(),
         "creado_en": now,
         "actualizado_en": now,
     }
@@ -227,6 +247,7 @@ def update_client(client_id: str, fields: dict[str, Any]) -> Optional[dict[str, 
                 nombre=str(fields.get("nombre") or "").strip(),
                 telefono=str(fields.get("telefono") or "").strip(),
                 notas=str(fields.get("notas") or "").strip(),
+                email=str(fields.get("email") or "").strip().lower(),
                 actualizado_en=_now(),
             )
             .returning(clientes)
@@ -309,7 +330,15 @@ def get_client(client_id: str) -> Optional[dict[str, Any]]:
         return _client_out(row, _client_balance_rows(connection).get(client_id))
 
 
-PAYMENT_METHODS = {"desconocido", "efectivo", "transferencia", "zelle", "binance", "paypal"}
+PAYMENT_METHODS = {
+    "desconocido",
+    "efectivo",
+    "transferencia",
+    "zelle",
+    "binance",
+    "paypal",
+    "pago_movil",
+}
 PAYMENT_CURRENCIES = {"usd", "bs", "eur", "usdt"}
 
 
@@ -359,6 +388,10 @@ def _payment_method(value: Any) -> str:
         "bank": "transferencia",
         "paypal": "paypal",
         "pay pal": "paypal",
+        "pago movil": "pago_movil",
+        "pago móvil": "pago_movil",
+        "pagomovil": "pago_movil",
+        "movil": "pago_movil",
     }
     method = aliases.get(method, method)
     if method not in PAYMENT_METHODS:
@@ -714,7 +747,7 @@ def _sale_payment_map(connection: Connection, sale_ids: Iterable[str]) -> dict[s
             )
             .where(
                 abono_asignaciones.c.venta_id.in_(ids),
-                abonos.c.moneda == "usd",
+                _usd_payments(),
             )
             .group_by(abono_asignaciones.c.venta_id)
         )
@@ -781,116 +814,157 @@ def list_client_sales(client_id: str) -> list[dict[str, Any]]:
 
 
 def create_sale(client_id: str, items: list[dict[str, Any]], usuario: str, nota: str = "") -> dict[str, Any]:
+    with get_engine().begin() as connection:
+        return create_sale_tx(connection, client_id, items, usuario, nota)
+
+
+def create_sale_tx(
+    connection: Connection,
+    client_id: str,
+    items: list[dict[str, Any]],
+    usuario: str,
+    nota: str = "",
+    strict_stock: bool = True,
+) -> dict[str, Any]:
+    """Crea la venta dentro de una transaccion ya abierta.
+
+    Con `strict_stock=False` (modo pruebas) una venta nunca falla por falta de
+    stock: el stock baja como maximo hasta 0 y no se toca el estado de la talla.
+    El "agotado" de un producto sigue siendo solo el interruptor manual.
+
+
+    Se extrajo de create_sale para que confirmar un pedido online pueda crear
+    venta y abono de forma atomica, sin abrir dos transacciones.
+    """
     if not items:
         raise ValueError("La venta necesita al menos una prenda")
 
-    with get_engine().begin() as connection:
-        _ensure_client(connection, client_id)
-        sale_id = _new_id()
-        now = _now()
-        prepared_items = []
-        total = Decimal("0")
+    _ensure_client(connection, client_id)
+    sale_id = _new_id()
+    now = _now()
+    prepared_items = []
+    total = Decimal("0")
 
-        for item in items:
-            quantity = int(item.get("cantidad") or 0)
-            price = Decimal(str(item.get("precio_unitario") or 0))
-            if quantity <= 0:
-                raise ValueError("La cantidad debe ser mayor a cero")
-            if price < 0:
-                raise ValueError("El precio no puede ser negativo")
+    for item in items:
+        quantity = int(item.get("cantidad") or 0)
+        price = Decimal(str(item.get("precio_unitario") or 0))
+        if quantity <= 0:
+            raise ValueError("La cantidad debe ser mayor a cero")
+        if price < 0:
+            raise ValueError("El precio no puede ser negativo")
 
-            row = connection.execute(
-                select(
-                    productos.c.id.label("producto_id"),
-                    productos.c.ref,
-                    productos.c.nombre,
-                    productos.c.precio,
-                    productos.c.imagen_principal,
-                    productos.c.disponible.label("producto_disponible"),
-                    variantes.c.id.label("variante_id"),
-                    variantes.c.color,
-                    variantes.c.color_hex,
-                    variantes.c.imagen.label("variante_imagen"),
-                    inventario.c.talla,
-                    inventario.c.stock,
-                )
-                .select_from(
-                    productos.join(variantes, variantes.c.producto_id == productos.c.id).join(
-                        inventario, inventario.c.variante_id == variantes.c.id
-                    )
-                )
-                .where(
-                    and_(
-                        productos.c.id == str(item.get("producto_id") or ""),
-                        variantes.c.id == str(item.get("variante_id") or ""),
-                        inventario.c.talla == str(item.get("talla") or ""),
-                    )
-                )
-                .with_for_update()
-            ).first()
-
-            if not row:
-                raise ValueError("Producto, color o talla no encontrado")
-            if not row.producto_disponible:
-                raise ValueError(f"{row.nombre} no esta disponible")
-            if int(row.stock or 0) < quantity:
-                raise ValueError(
-                    f"Stock insuficiente para {row.nombre} / {row.color} / {row.talla}"
-                )
-
-            remaining = int(row.stock or 0) - quantity
+        if not strict_stock:
+            # Modo pruebas: una talla sin fila de inventario se crea en 0 para poder
+            # vender igualmente. No cambia el "agotado" del producto.
             connection.execute(
-                update(inventario)
-                .where(
-                    and_(
-                        inventario.c.variante_id == row.variante_id,
-                        inventario.c.talla == row.talla,
-                    )
+                pg_insert(inventario)
+                .values(
+                    variante_id=str(item.get("variante_id") or ""),
+                    talla=str(item.get("talla") or ""),
+                    stock=0,
+                    disponible=True,
+                    actualizado_en=now,
                 )
-                .values(stock=remaining, disponible=remaining > 0, actualizado_en=now)
+                .on_conflict_do_nothing()
             )
 
-            subtotal = price * quantity
-            total += subtotal
-            prepared_items.append(
-                {
-                    "id": _new_id(),
-                    "venta_id": sale_id,
-                    "producto_id": row.producto_id,
-                    "variante_id": str(row.variante_id),
-                    "talla": row.talla,
-                    "cantidad": quantity,
-                    "precio_unitario": price,
-                    "subtotal": subtotal,
-                    "producto_nombre": row.nombre,
-                    "producto_ref": row.ref or row.producto_id,
-                    "color": row.color,
-                    "color_hex": row.color_hex or "#000000",
-                    "imagen": row.variante_imagen or row.imagen_principal or "",
-                }
+        row = connection.execute(
+            select(
+                productos.c.id.label("producto_id"),
+                productos.c.ref,
+                productos.c.nombre,
+                productos.c.precio,
+                productos.c.imagen_principal,
+                productos.c.disponible.label("producto_disponible"),
+                variantes.c.id.label("variante_id"),
+                variantes.c.color,
+                variantes.c.color_hex,
+                variantes.c.imagen.label("variante_imagen"),
+                inventario.c.talla,
+                inventario.c.stock,
             )
-
-        sale_row = connection.execute(
-            insert(ventas)
-            .values(
-                id=sale_id,
-                cliente_id=client_id,
-                estado="activa",
-                total=total,
-                usuario=usuario or "admin",
-                nota=nota or "",
-                creada_en=now,
-                motivo_anulacion="",
+            .select_from(
+                productos.join(variantes, variantes.c.producto_id == productos.c.id).join(
+                    inventario, inventario.c.variante_id == variantes.c.id
+                )
             )
-            .returning(ventas)
+            .where(
+                and_(
+                    productos.c.id == str(item.get("producto_id") or ""),
+                    variantes.c.id == str(item.get("variante_id") or ""),
+                    inventario.c.talla == str(item.get("talla") or ""),
+                )
+            )
+            .with_for_update()
         ).first()
-        connection.execute(insert(venta_items), prepared_items)
+
+        if not row:
+            raise ValueError("Producto, color o talla no encontrado")
+        if not row.producto_disponible:
+            raise ValueError(f"{row.nombre} no esta disponible")
+        if strict_stock and int(row.stock or 0) < quantity:
+            raise ValueError(
+                f"Stock insuficiente para {row.nombre} / {row.color} / {row.talla}"
+            )
+
+        remaining = int(row.stock or 0) - quantity
+        stock_values: dict[str, Any] = {"actualizado_en": now}
+        if strict_stock:
+            stock_values.update(stock=remaining, disponible=remaining > 0)
+        else:
+            stock_values["stock"] = max(0, remaining)
         connection.execute(
-            update(clientes)
-            .where(clientes.c.id == client_id)
-            .values(actualizado_en=now)
+            update(inventario)
+            .where(
+                and_(
+                    inventario.c.variante_id == row.variante_id,
+                    inventario.c.talla == row.talla,
+                )
+            )
+            .values(**stock_values)
         )
-        return _sale_out(sale_row, [_item_out(item) for item in prepared_items], 0)
+
+        subtotal = price * quantity
+        total += subtotal
+        prepared_items.append(
+            {
+                "id": _new_id(),
+                "venta_id": sale_id,
+                "producto_id": row.producto_id,
+                "variante_id": str(row.variante_id),
+                "talla": row.talla,
+                "cantidad": quantity,
+                "precio_unitario": price,
+                "subtotal": subtotal,
+                "producto_nombre": row.nombre,
+                "producto_ref": row.ref or row.producto_id,
+                "color": row.color,
+                "color_hex": row.color_hex or "#000000",
+                "imagen": row.variante_imagen or row.imagen_principal or "",
+            }
+        )
+
+    sale_row = connection.execute(
+        insert(ventas)
+        .values(
+            id=sale_id,
+            cliente_id=client_id,
+            estado="activa",
+            total=total,
+            usuario=usuario or "admin",
+            nota=nota or "",
+            creada_en=now,
+            motivo_anulacion="",
+        )
+        .returning(ventas)
+    ).first()
+    connection.execute(insert(venta_items), prepared_items)
+    connection.execute(
+        update(clientes)
+        .where(clientes.c.id == client_id)
+        .values(actualizado_en=now)
+    )
+    return _sale_out(sale_row, [_item_out(item) for item in prepared_items], 0)
 
 
 def cancel_sale(sale_id: str, motivo: str = "") -> Optional[dict[str, Any]]:
@@ -984,36 +1058,74 @@ def _allocate_payment(connection: Connection, client_id: str, payment_id: str, a
 
 
 def create_payment(client_id: str, fields: dict[str, Any]) -> dict[str, Any]:
+    with get_engine().begin() as connection:
+        return create_payment_tx(connection, client_id, fields)
+
+
+def create_payment_tx(
+    connection: Connection,
+    client_id: str,
+    fields: dict[str, Any],
+    venta_id: Optional[str] = None,
+) -> dict[str, Any]:
+    """Registra un abono dentro de una transaccion ya abierta.
+
+    Con `venta_id` el abono se asigna directamente a esa venta en lugar de
+    repartirse FIFO sobre las ventas mas antiguas: un pago de un pedido online
+    tiene que ir a SU pedido.
+    """
     amount = Decimal(str(fields.get("monto") or 0))
     if amount <= 0:
         raise ValueError("El abono debe ser mayor a cero")
     method, currency = _payment_method_and_currency(fields.get("metodo"), fields.get("moneda"))
 
-    with get_engine().begin() as connection:
-        _ensure_client(connection, client_id)
-        now = _now()
-        payment_id = _new_id()
-        row = connection.execute(
-            insert(abonos)
-            .values(
-                id=payment_id,
-                cliente_id=client_id,
-                monto=amount,
-                metodo=method,
-                moneda=currency,
-                usuario=str(fields.get("usuario") or "admin"),
-                nota=str(fields.get("nota") or ""),
+    rate = fields.get("tasa")
+    amount_usd = fields.get("monto_usd")
+    if amount_usd in (None, ""):
+        amount_usd = amount if currency == "usd" else None
+    if amount_usd is not None:
+        amount_usd = Decimal(str(amount_usd))
+
+    _ensure_client(connection, client_id)
+    now = _now()
+    payment_id = _new_id()
+    row = connection.execute(
+        insert(abonos)
+        .values(
+            id=payment_id,
+            cliente_id=client_id,
+            monto=amount,
+            metodo=method,
+            moneda=currency,
+            tasa=Decimal(str(rate)) if rate not in (None, "") else None,
+            monto_usd=amount_usd,
+            usuario=str(fields.get("usuario") or "admin"),
+            nota=str(fields.get("nota") or ""),
+            creado_en=now,
+        )
+        .returning(abonos)
+    ).first()
+    # Las asignaciones se guardan siempre en USD: mezclarlas con Bs inflaba
+    # el pendiente de las ventas.
+    allocatable = amount_usd if amount_usd is not None else Decimal("0")
+    if venta_id and allocatable > 0:
+        connection.execute(
+            insert(abono_asignaciones).values(
+                id=_new_id(),
+                abono_id=payment_id,
+                venta_id=venta_id,
+                monto=allocatable,
                 creado_en=now,
             )
-            .returning(abonos)
-        ).first()
-        _allocate_payment(connection, client_id, payment_id, amount, now)
-        connection.execute(
-            update(clientes)
-            .where(clientes.c.id == client_id)
-            .values(actualizado_en=now)
         )
-        return _payment_out(row)
+    elif allocatable > 0:
+        _allocate_payment(connection, client_id, payment_id, allocatable, now)
+    connection.execute(
+        update(clientes)
+        .where(clientes.c.id == client_id)
+        .values(actualizado_en=now)
+    )
+    return _payment_out(row)
 
 
 def _payment_out(row: Any) -> dict[str, Any]:
@@ -1024,6 +1136,8 @@ def _payment_out(row: Any) -> dict[str, Any]:
         "monto": _money(data["monto"]),
         "metodo": data["metodo"],
         "moneda": data["moneda"] or "usd",
+        "tasa": _money(data["tasa"]) if data.get("tasa") is not None else None,
+        "monto_usd": _money(data["monto_usd"]) if data.get("monto_usd") is not None else None,
         "usuario": data["usuario"] or "admin",
         "nota": data["nota"] or "",
         "creado_en": data["creado_en"].isoformat() if data.get("creado_en") else "",
@@ -1303,7 +1417,7 @@ def dashboard_summary(
                     abonos.c.id == abono_asignaciones.c.abono_id,
                 )
             )
-            .where(abonos.c.moneda == "usd")
+            .where(_usd_payments())
             .group_by(abono_asignaciones.c.venta_id)
             .subquery()
         )
@@ -1390,16 +1504,16 @@ def dashboard_summary(
         payment_rows = connection.execute(
             select(
                 abonos.c.metodo,
-                func.sum(abonos.c.monto).label("amount"),
+                func.sum(_usd_amount()).label("amount"),
                 func.count(abonos.c.id).label("payments"),
             )
             .where(
-                abonos.c.moneda == "usd",
+                _usd_payments(),
                 abonos.c.creado_en >= start,
                 abonos.c.creado_en < end,
             )
             .group_by(abonos.c.metodo)
-            .order_by(func.sum(abonos.c.monto).desc())
+            .order_by(func.sum(_usd_amount()).desc())
         ).all()
         collections_total = sum(_money(row.amount) for row in payment_rows)
 

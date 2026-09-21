@@ -6,8 +6,10 @@ import AdminImport from './AdminImport.jsx'
 import Clientes from './Clientes.jsx'
 import { CrmHeader, CrmLogin, CrmSkeleton, CrmSpinner, useCrmSession } from './CrmChrome'
 import Dashboard from './Dashboard.jsx'
+import Pedidos from './Pedidos.jsx'
+import Ajustes from './Ajustes.jsx'
 
-const VIEW_PATHS = new Set(['/clientes', '/dashboard', '/import', '/admin', '/admin/cambios'])
+const VIEW_PATHS = new Set(['/clientes', '/pedidos', '/dashboard', '/import', '/admin', '/admin/cambios', '/ajustes'])
 
 function normalizePath(pathname) {
   if (pathname === '/') return '/clientes'
@@ -21,6 +23,8 @@ function viewClass(path, activePath) {
 
 function skeletonVariant(path) {
   if (path === '/dashboard') return 'dashboard'
+  if (path === '/pedidos') return 'clients'
+  if (path === '/ajustes') return 'admin'
   if (path === '/import') return 'import'
   if (path.startsWith('/admin')) return 'admin'
   return 'clients'
@@ -89,6 +93,19 @@ export default function CrmApp() {
           usuario={usuario}
           onCatalogChanged={() => setCatalogRevision(version => version + 1)}
         />
+      </section>
+
+      <section className={viewClass('/pedidos', activePath)} hidden={!isViewActive('/pedidos')}>
+        <Pedidos
+          active={isViewActive('/pedidos')}
+          catalogRevision={catalogRevision}
+          usuario={usuario}
+          onCatalogChanged={() => setCatalogRevision(version => version + 1)}
+        />
+      </section>
+
+      <section className={viewClass('/ajustes', activePath)} hidden={!isViewActive('/ajustes')}>
+        <Ajustes active={isViewActive('/ajustes')} />
       </section>
 
       <section className={viewClass('/dashboard', activePath)} hidden={!isViewActive('/dashboard')}>

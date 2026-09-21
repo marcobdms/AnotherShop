@@ -1,10 +1,23 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+/**
+ * Account.jsx — panel de cuenta (/cuenta).
+ *
+ * Reune lo que el cliente necesita despues de comprar: pagar lo que tiene en
+ * favoritos, buscar un pedido por su numero, y ver el estado de sus pedidos con
+ * la misma vista de seguimiento que se ve al pagar. Con sesion se listan los
+ * pedidos de la cuenta; sin sesion, los de este navegador.
+ */
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFavorites } from '../hooks/useFavorites'
-import { fetchProducts } from '../api/catalog'
+import { fetchMyOrders, fetchProducts, formatPrice } from '../api/catalog'
+import { supabase } from '../lib/supabase'
+import { readOrders } from '../utils/orders'
 import ProductCard from '../components/ProductCard'
+import PedidoSeguimiento, { estadoCorto } from '../components/PedidoSeguimiento'
+import TransitionLink from '../components/TransitionLink'
 import Footer from '../components/Footer'
+import './Checkout.css'
 
 const css = `
   .account-page {
@@ -52,6 +65,18 @@ const css = `
     letter-spacing: 0.07em;
   }
 
+  /* Acciones principales */
+  .account-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0 0 3rem;
+  }
+
+  .account-actions .btn {
+    text-decoration: none;
+  }
+
   .account-section__label {
     font-size: var(--size-xs);
     letter-spacing: 0.2em;
@@ -61,6 +86,50 @@ const css = `
     display: block;
     border-bottom: 1px solid var(--grey-200);
     padding-bottom: 0.75rem;
+  }
+
+  /* Pedidos: lista a la izquierda, seguimiento a la derecha */
+  .account-orders {
+    display: grid;
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .account-orders__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+  }
+
+  .account-order {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.2rem 1rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--grey-200);
+    border-radius: 0.5rem;
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--font);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease;
+  }
+
+  .account-order:hover { border-color: var(--grey-400); }
+  .account-order.is-active { border-color: var(--black); background: var(--grey-100); }
+
+  .account-order__num { font-size: 0.8125rem; letter-spacing: 0.16em; }
+  .account-order__total { font-size: 0.8125rem; text-align: right; }
+  .account-order__meta { color: var(--grey-400); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .account-orders__detail {
+    min-width: 0;
+    padding: 0.5rem 0 0;
   }
 
   .account-empty {
@@ -74,6 +143,13 @@ const css = `
     font-size: var(--size-sm);
     letter-spacing: 0.1em;
     text-align: center;
+  }
+
+  .account-empty--compact {
+    min-height: 0;
+    padding: 1.5rem 0 0.5rem;
+    align-items: flex-start;
+    text-align: left;
   }
 
   .account-empty a {
@@ -108,8 +184,20 @@ const css = `
     .account-page .product-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+
+    .account-orders {
+      grid-template-columns: 20rem minmax(0, 1fr);
+      gap: 3rem;
+    }
+
+    .account-order { border-radius: 0; }
   }
 `
+
+function fechaCorta(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })
+}
 
 export default function Account() {
   const { user, loading: authLoading, signOut } = useAuth()
@@ -118,12 +206,39 @@ export default function Account() {
 
   const [products, setProducts] = useState([])
   const [prodsLoading, setProdsLoading] = useState(true)
+  const [pedidosApi, setPedidosApi] = useState([])
+  const [seleccionado, setSeleccionado] = useState('')
 
   useEffect(() => {
     fetchProducts()
       .then(setProducts)
       .finally(() => setProdsLoading(false))
   }, [])
+
+  // Pedidos de la cuenta (el servidor comprueba la sesion con el token)
+  useEffect(() => {
+    if (!user) {
+      setPedidosApi([])
+      return
+    }
+    let cancelado = false
+    supabase.auth.getSession()
+      .then(({ data }) => fetchMyOrders(data?.session?.access_token || ''))
+      .then(lista => { if (!cancelado) setPedidosApi(lista) })
+      .catch(() => { if (!cancelado) setPedidosApi([]) })
+    return () => { cancelado = true }
+  }, [user])
+
+  // Con sesion: los de la cuenta + los de este navegador que aun no esten en ella.
+  const pedidos = useMemo(() => {
+    const delServidor = new Set(pedidosApi.map(p => p.numero))
+    const locales = readOrders()
+      .filter(o => !delServidor.has(o.numero))
+      .map(o => ({ numero: o.numero, creado_en: new Date(o.at).toISOString(), local: true }))
+    return [...pedidosApi, ...locales]
+  }, [pedidosApi])
+
+  const activo = seleccionado || pedidos[0]?.numero || ''
 
   const handleSignOut = async () => {
     await signOut()
@@ -139,6 +254,8 @@ export default function Account() {
   }
 
   const favoriteProducts = products.filter(p => favorites.has(p.id))
+  // "Agotado" solo lo marca el interruptor manual del catalogo
+  const pagables = favoriteProducts.filter(p => p.disponible !== false).length
 
   return (
     <>
@@ -167,6 +284,57 @@ export default function Account() {
           </p>
         )}
 
+        <div className="account-actions">
+          {pagables > 0 && (
+            <TransitionLink className="btn btn--solid" to="/resumen">
+              Pagar ahora ({pagables})
+            </TransitionLink>
+          )}
+          <TransitionLink className="btn btn--ghost" to="/seguimiento">
+            Seguir mi pedido
+          </TransitionLink>
+        </div>
+
+        <span className="account-section__label">
+          Mis pedidos ({pedidos.length})
+        </span>
+
+        {pedidos.length === 0 ? (
+          <div className="account-empty account-empty--compact">
+            <p>Todavia no tienes pedidos.</p>
+          </div>
+        ) : (
+          <div className="account-orders">
+            <ul className="account-orders__list">
+              {pedidos.map(p => (
+                <li key={p.numero}>
+                  <button
+                    className={`account-order${activo === p.numero ? ' is-active' : ''}`}
+                    onClick={() => setSeleccionado(p.numero)}
+                    type="button"
+                  >
+                    <span className="account-order__num">{p.numero}</span>
+                    <span className="account-order__total">
+                      {p.total !== undefined ? formatPrice(p.total) : ''}
+                    </span>
+                    <span className="account-order__meta">
+                      {p.estado ? estadoCorto(p) : 'Ver estado'}
+                    </span>
+                    <span className="account-order__meta" style={{ textAlign: 'right' }}>
+                      {fechaCorta(p.creado_en)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            <div className="account-orders__detail">
+              {/* key => al cambiar de pedido se vuelve a montar (y a animar) */}
+              <PedidoSeguimiento key={activo} numero={activo} />
+            </div>
+          </div>
+        )}
+
         <span className="account-section__label">
           Prendas guardadas ({favoriteProducts.length})
         </span>
@@ -174,7 +342,7 @@ export default function Account() {
         {favoriteProducts.length === 0 ? (
           <div className="account-empty">
             <p>Todavia no has guardado ninguna prenda.</p>
-            <Link to="/catalogo">Explorar catalogo</Link>
+            <TransitionLink to="/catalogo">Explorar catalogo</TransitionLink>
           </div>
         ) : (
           <div className="product-grid">

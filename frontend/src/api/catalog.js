@@ -75,6 +75,62 @@ export async function fetchFilters() {
   return res.json()
 }
 
+// ── Checkout ───────────────────────────────────────────────────────────────────
+// Publico y sin token: el backend recalcula los precios y nada de esto mueve
+// stock ni dinero hasta que el pedido se confirma en el CRM.
+
+const CHECKOUT_BASE = `${BASE}/checkout`
+
+export async function fetchPaymentMethods() {
+  return handleResponse(await fetch(`${CHECKOUT_BASE}/metodos`))
+}
+
+export async function fetchRates() {
+  return handleResponse(await fetch(`${CHECKOUT_BASE}/tasas`))
+}
+
+function bearer(token) {
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+// El dueño del pedido lo decide el servidor a partir de la sesion (token), no de
+// un campo del cuerpo.
+export async function createOrder(payload, token = '') {
+  return handleResponse(await fetch(`${CHECKOUT_BASE}/pedidos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...bearer(token) },
+    body: JSON.stringify(payload),
+  }))
+}
+
+export async function fetchMyOrders(token) {
+  return handleResponse(await fetch(`${CHECKOUT_BASE}/mis-pedidos`, { headers: bearer(token) }))
+}
+
+export async function fetchOrder(numero) {
+  return handleResponse(await fetch(`${CHECKOUT_BASE}/pedidos/${encodeURIComponent(numero)}`))
+}
+
+export async function declareOrderPayment(numero, payload) {
+  return handleResponse(await fetch(`${CHECKOUT_BASE}/pedidos/${encodeURIComponent(numero)}/pago`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }))
+}
+
+export async function uploadOrderReceipt(numero, file, fields) {
+  const form = new FormData()
+  form.append('file', file)
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== '') form.append(key, value)
+  })
+  return handleResponse(await fetch(
+    `${CHECKOUT_BASE}/pedidos/${encodeURIComponent(numero)}/comprobante`,
+    { method: 'POST', body: form },
+  ))
+}
+
 // ── Endpoints admin ────────────────────────────────────────────────────────────
 
 export async function adminFetchProducts() {

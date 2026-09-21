@@ -110,6 +110,12 @@ export function CrmHeader({ onLogout, extra }) {
           Clientes
         </NavLink>
         <NavLink
+          to="/pedidos"
+          className={({ isActive }) => `crm-nav-link${isActive ? ' active' : ''}`}
+        >
+          Pedidos
+        </NavLink>
+        <NavLink
           to="/import"
           className={({ isActive }) => `crm-nav-link${isActive ? ' active' : ''}`}
         >
@@ -120,6 +126,12 @@ export function CrmHeader({ onLogout, extra }) {
           className={({ isActive }) => `crm-nav-link${isActive ? ' active' : ''}`}
         >
           Admin
+        </NavLink>
+        <NavLink
+          to="/ajustes"
+          className={({ isActive }) => `crm-nav-link${isActive ? ' active' : ''}`}
+        >
+          Ajustes
         </NavLink>
         {extra && extra}
         <button className="crm-btn" onClick={onLogout}>Salir</button>

@@ -4,7 +4,7 @@
  * Mobile:  swipe táctil cambia entre imágenes.
  * Sin flechas visibles — interacción implícita.
  */
-import { useNavigate } from 'react-router-dom'
+import { useExitNavigate } from '../hooks/useExitNavigate'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { formatPrice } from '../api/catalog'
 import { getProductBrandLabel } from '../utils/brand'
@@ -21,7 +21,7 @@ function HeartIcon({ filled }) {
 }
 
 export default function ProductCard({ producto, isFavorite = false, onFavoriteClick }) {
-  const navigate = useNavigate()
+  const navigate = useExitNavigate()
   const images = producto.imagenes?.length > 0 ? producto.imagenes : [producto.imagen]
   const hasMultiple = images.length > 1
   const carouselRef = useRef(null)
@@ -34,6 +34,8 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
   // Desktop: hover → 1, blur → 0
   // Mobile:  swipe → incrementa / decrementa
   const [displayIndex, setDisplayIndex] = useState(0)
+  // 'add' | 'remove' mientras dura la animación del corazón (solo escritorio)
+  const [heartPop, setHeartPop] = useState(null)
   const touchStartX = useRef(null)
   const isDragging = useRef(false)
 
@@ -47,6 +49,7 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
 
   function handleFavorite(e) {
     e.stopPropagation()
+    setHeartPop(isFavorite ? 'remove' : 'add')
     if (onFavoriteClick) onFavoriteClick(producto)
   }
 
@@ -149,8 +152,9 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
         {/* Favorito */}
         {producto.disponible && (
           <button
-            className={`product-card__fav ${isFavorite ? 'product-card__fav--active' : ''}`}
+            className={`product-card__fav ${isFavorite ? 'product-card__fav--active' : ''}${heartPop ? ` product-card__fav--pop-${heartPop}` : ''}`}
             onClick={handleFavorite}
+            onAnimationEnd={() => setHeartPop(null)}
             aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
           >
             <HeartIcon filled={isFavorite} />

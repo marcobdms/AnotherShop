@@ -21,6 +21,11 @@ const COLORES_RAPIDOS = [
   { nombre: 'Gris', hex: '#808080' },
   { nombre: 'Beige', hex: '#D4B896' },
   { nombre: 'Naranja', hex: '#E67E22' },
+  { nombre: 'Celeste', hex: '#87CEEB' },
+  { nombre: 'Amarillo', hex: '#F1C40F' },
+  { nombre: 'Lila', hex: '#B39DDB' },
+  { nombre: 'Burdeos', hex: '#7B1E3A' },
+  { nombre: 'Caqui', hex: '#78784A' },
 ]
 
 function normalizeSku(text) {

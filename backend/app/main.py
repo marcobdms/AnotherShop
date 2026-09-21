@@ -11,6 +11,7 @@ import re
 
 from app.admin_router import router as admin_router
 from app.catalog_repository import load_catalog, load_inventory
+from app.checkout_router import router as checkout_router
 from app.crm_router import router as crm_router
 
 app = FastAPI(
@@ -32,6 +33,7 @@ app.add_middleware(
 # ── Routers ────────────────────────────────────────────────────────────────────
 app.include_router(admin_router)
 app.include_router(crm_router)
+app.include_router(checkout_router)
 
 def _normalize_sku(text: str) -> str:
     """Normaliza texto para SKU: quita acentos, mayúsculas, reemplaza espacios."""
@@ -116,8 +118,13 @@ class ProductoDetalle(BaseModel):
 
 
 class MetaTienda(BaseModel):
-    """Solo los datos de contacto que el frontend necesita."""
+    """Solo los datos de contacto que el frontend necesita.
+
+    Los datos bancarios NO van aqui: se sirven desde /api/checkout/metodos para
+    no dejarlos en el catalogo publico que cualquiera descarga.
+    """
     marca: str
+    moneda: str = "USD"
     whatsapp: str
     whatsapp_mensaje: str
     paypal: str

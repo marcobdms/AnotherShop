@@ -4,7 +4,7 @@
  * Consume el catálogo compartido por useCatalog:
  *   GET /api/catalog → { productos, filtros, meta }
  */
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFavorites } from '../hooks/useFavorites'
@@ -23,6 +23,30 @@ function hasSize(producto, tallaSeleccionada) {
   return tallas.some((valor) => String(valor).trim().toUpperCase() === talla)
 }
 
+const BRAND_ORDER = ['MNG', 'A&F', 'HCO', 'LFTS', 'P&B', 'ZARA']
+
+const SORT_OPTIONS = [
+  { value: 'relevancia', label: 'Mejor coincidencia' },
+  { value: 'nuevo', label: 'Lo más nuevo' },
+]
+const DEFAULT_SORT = SORT_OPTIONS[0].value
+
+function dropNumber(producto) {
+  const match = String(producto.drop || '').match(/\d+/)
+  return match ? Number(match[0]) : 0
+}
+
+// Puntaje de coincidencia con la búsqueda; sin búsqueda todos valen 0.
+function matchScore(producto, term) {
+  if (!term) return 0
+  const t = term.toLowerCase()
+  if (String(producto.ref || '').toLowerCase() === t || String(producto.id || '').toLowerCase() === t) return 3
+  const nombre = String(producto.nombre || '').toLowerCase()
+  if (nombre.startsWith(t)) return 2
+  if (nombre.includes(t)) return 1
+  return 0
+}
+
 export default function Catalog({ onReady }) {
   const { catalog, loading, error } = useCatalog()
   const productos = catalog?.productos ?? []
@@ -37,6 +61,9 @@ export default function Catalog({ onReady }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeGenero = searchParams.get('genero')
   const activeTalla  = searchParams.get('talla')
+  const activeMarca  = searchParams.get('marca')
+  const sortParam    = searchParams.get('orden')
+  const activeSort   = SORT_OPTIONS.some(o => o.value === sortParam) ? sortParam : DEFAULT_SORT
   const [searchTerm, setSearchTerm] = useState('')
   const [showTopBtn, setShowTopBtn] = useState(false)
 
@@ -53,17 +80,24 @@ export default function Catalog({ onReady }) {
     return () => clearTimeout(t)
   }, [favToast])
 
-  const setActiveGenero = (gen) => {
+  const setParam = (key, value) => {
     const params = new URLSearchParams(searchParams)
-    gen ? params.set('genero', gen) : params.delete('genero')
+    value ? params.set(key, value) : params.delete(key)
     setSearchParams(params, { replace: true })
   }
 
-  const setActiveTalla = (talla) => {
-    const params = new URLSearchParams(searchParams)
-    talla ? params.set('talla', talla) : params.delete('talla')
-    setSearchParams(params, { replace: true })
-  }
+  const setActiveGenero = (gen) => setParam('genero', gen)
+  const setActiveTalla  = (talla) => setParam('talla', talla)
+  const setActiveMarca  = (marca) => setParam('marca', marca)
+  const setActiveSort   = (orden) => setParam('orden', orden === DEFAULT_SORT ? null : orden)
+
+  // Marcas presentes en el catálogo, en el orden de las abreviaciones del CRM.
+  const marcas = useMemo(() => {
+    const present = new Set(productos.map(getProductBrandLabel).filter(Boolean))
+    const known = BRAND_ORDER.filter(m => present.has(m))
+    const extra = [...present].filter(m => !BRAND_ORDER.includes(m)).sort()
+    return [...known, ...extra]
+  }, [productos])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,11 +149,25 @@ export default function Catalog({ onReady }) {
   if (activeTalla) {
     lista = lista.filter((producto) => hasSize(producto, activeTalla))
   }
+  if (activeMarca) {
+    lista = lista.filter((producto) => getProductBrandLabel(producto) === activeMarca)
+  }
 
+  // El catálogo llega en orden de inserción: lo último añadido va al final.
+  const position = new Map(productos.map((p, i) => [p, i]))
   lista.sort((a, b) => {
-    if (a.disponible === b.disponible) return 0
-    return a.disponible ? -1 : 1
+    if (a.disponible !== b.disponible) return a.disponible ? -1 : 1
+
+    if (activeSort === 'nuevo') {
+      // Drop más reciente primero y, dentro del drop, lo último que se añadió.
+      return (dropNumber(b) - dropNumber(a)) || (position.get(b) - position.get(a))
+    }
+
+    // Mejor coincidencia: por ahora relevancia de búsqueda y orden del catálogo.
+    return (matchScore(b, searchTerm) - matchScore(a, searchTerm)) || (position.get(a) - position.get(b))
   })
+
+  const gridKey = [activeGenero, activeTalla, activeMarca, activeSort, searchTerm].join('|')
 
   return (
     <>
@@ -133,10 +181,16 @@ export default function Catalog({ onReady }) {
           <FilterChips
             generos={filtros.generos}
             tallas={filtros.tallas}
+            marcas={marcas}
             activeGenero={activeGenero}
             activeTalla={activeTalla}
+            activeMarca={activeMarca}
             onGenero={setActiveGenero}
             onTalla={setActiveTalla}
+            onMarca={setActiveMarca}
+            sortOptions={SORT_OPTIONS}
+            sortValue={activeSort}
+            onSort={setActiveSort}
             searchTerm={searchTerm}
             onSearch={setSearchTerm}
             productCount={lista.length}
@@ -147,7 +201,7 @@ export default function Catalog({ onReady }) {
 
           <div className="catalog-main">
             {lista.length > 0 ? (
-              <div className="product-grid">
+              <div className="product-grid" key={gridKey}>
                 {lista.map(p => (
                   <ProductCard
                     key={p.variante_color ? `${p.id}-${p.variante_color}` : p.id}
@@ -160,7 +214,12 @@ export default function Catalog({ onReady }) {
             ) : (
               <div className="no-results">
                 <p>Sin resultados.</p>
-                <button onClick={() => { setActiveGenero(null); setActiveTalla(null); setSearchTerm('') }}>
+                <button onClick={() => {
+                  const params = new URLSearchParams(searchParams)
+                  ;['genero', 'talla', 'marca'].forEach(k => params.delete(k))
+                  setSearchParams(params, { replace: true })
+                  setSearchTerm('')
+                }}>
                   Limpiar filtros
                 </button>
               </div>
@@ -169,6 +228,16 @@ export default function Catalog({ onReady }) {
         </div>
 
       </main>
+
+      {/* Feedback de favoritos en escritorio (en móvil lo muestra el notch) */}
+      {favToast && (
+        <div key={favToast.key} className="fav-toast catalog-fav-toast" role="status">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          {favToast.msg}
+        </div>
+      )}
 
       <Footer marca={meta.marca} />
     </>

@@ -6,10 +6,13 @@
  *   GET /api/meta           → { marca, whatsapp, paypal, recargo_paypal, ... }
  */
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { fetchProduct, fetchMeta, formatPrice, buildWhatsAppLink, buildPayPalLink } from '../api/catalog'
+import { useParams } from 'react-router-dom'
+import TransitionLink from '../components/TransitionLink'
+import { fetchProduct, fetchMeta, formatPrice, buildWhatsAppLink } from '../api/catalog'
 import { useAuth } from '../hooks/useAuth'
 import { useFavorites } from '../hooks/useFavorites'
+import { setCartLine } from '../hooks/useCart'
+import { useExitNavigate } from '../hooks/useExitNavigate'
 import Footer from '../components/Footer'
 import { getProductBrandLabel } from '../utils/brand'
 
@@ -56,6 +59,21 @@ export default function Product() {
 
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
+  const navigate = useExitNavigate()
+
+  // "Comprar ahora" mete la prenda en la cesta (que son los favoritos) con la
+  // talla ya elegida y lleva al resumen. Si no eligio talla, la elige alli.
+  async function handleBuyNow() {
+    setCartLine(producto.id, {
+      talla: selectedSize || '',
+      cantidad: 1,
+      seleccionado: true,
+    })
+    if (!isFavorite(producto.id)) {
+      await toggleFavorite(producto.id)
+    }
+    navigate('/resumen')
+  }
 
   useEffect(() => {
     Promise.all([fetchProduct(id), fetchMeta()])
@@ -103,9 +121,9 @@ export default function Product() {
           <p style={{ color: 'var(--grey-400)', letterSpacing: '.1em', fontSize: '.8rem' }}>
             Producto no encontrado.
           </p>
-          <Link to="/catalogo" className="product-page__back" style={{ marginTop: '2rem', display: 'inline-block' }}>
+          <TransitionLink to="/catalogo" className="product-page__back" style={{ marginTop: '2rem', display: 'inline-block' }}>
             ← Volver al catálogo
-          </Link>
+          </TransitionLink>
         </main>
       </>
     )
@@ -185,7 +203,7 @@ export default function Product() {
 
         {/* Info */}
         <div className="product-page__info">
-          <Link to="/catalogo" className="product-page__back">← Catálogo</Link>
+          <TransitionLink to="/catalogo" className="product-page__back">← Catálogo</TransitionLink>
 
           <h1 className="product-page__name">{producto.nombre}</h1>
 
@@ -293,14 +311,13 @@ export default function Product() {
                 >
                   Preguntar por WhatsApp
                 </a>
-                <a
-                  href={buildPayPalLink(meta, producto)}
-                  target="_blank" rel="noopener noreferrer"
+                <button
                   className="btn-paypal"
+                  onClick={handleBuyNow}
+                  type="button"
                 >
-                  Pagar con PayPal
-                </a>
-                <p className="paypal-notice">{meta.recargo_paypal}</p>
+                  Comprar ahora
+                </button>
               </div>
             ) : (
               <p className="product-page__unavailable">No disponible</p>

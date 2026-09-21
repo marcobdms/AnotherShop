@@ -56,12 +56,18 @@ Evitar hacer crecer tipografia por viewport de forma agresiva. El texto debe cab
 | `/catalogo` | Nav global, TopBanner negro, sidebar/drawer de filtros, grid de producto y footer |
 | `/producto/:id` | Nav global, layout producto 2 columnas en desktop, carrusel 3:4, CTAs y footer |
 | `/nosotros` | Pagina editorial sencilla con `fadeIn` y footer |
+| `/resumen` | Cesta (los favoritos) con seleccion por linea, talla y cantidad; resumen lateral pegajoso y recomendaciones |
+| `/pago/:numero` | Metodos de pago en lista vertical; al abrir uno muestra los datos y el numero de pedido como concepto |
+| `/pedido/:numero` (`/gracias/:numero`) | Seguimiento: check verde que se dibuja y pasa a reloj mientras se verifica el pago, numero de seguimiento, linea de tiempo; se refresca sola |
+| `/seguimiento` | Buscador de pedido por numero + pedidos recientes de este navegador. Se llega desde el boton de `/cuenta` (no hay enlace en el footer) |
 | `/login` | Pantalla fullscreen sin nav global |
-| `/cuenta` | Redirige a `/login` si no hay sesion; con sesion muestra favoritos en estilo de catalogo |
+| `/cuenta` | Panel de cuenta: `Pagar ahora`, `Seguir mi pedido`, Mis pedidos con la vista de seguimiento integrada, y favoritos. Sin sesion muestra los pedidos y favoritos de este navegador |
 | `/admin` | Pantalla operativa fullscreen sin nav global |
 | `/admin/cambios` | Historial fullscreen utilitario |
 | `/admin/import` | Tabla densa para sincronizacion de drops |
 | `/dashboard` | Analitica CRM fullscreen, densa, monocromatica y orientada a decisiones |
+| `/pedidos` (CRM) | Pedidos de la tienda publica: lista densa, detalle desplegable y acciones de confirmar/cancelar |
+| `/ajustes` (CRM) | Datos de la tienda y metodos de pago que ve el comprador |
 
 ## 6. Navegacion
 
@@ -126,10 +132,46 @@ La animacion normal del catalogo usa `slowFadeIn`; cuando se vuelve desde produc
 - Back link a catalogo
 - Tallas como chips
 - Colores como swatches cuando hay variantes reales
-- CTAs: WhatsApp negro, PayPal outline
+- CTAs: WhatsApp negro, `Comprar ahora` outline (lleva a `/resumen` con la talla elegida)
 - Footer al final
 
 Si el producto no existe, muestra estado centrado y link de vuelta.
+
+## 10b. Checkout
+
+`Resumen.jsx`, `Pago.jsx` y `Gracias.jsx` comparten `pages/Checkout.css` (mismo
+patron que `TopBanner.css`: CSS propio del bloque, fuera de `index.css`).
+
+Reglas visibles:
+
+- Los favoritos hacen de carrito. Un favorito no guarda talla ni cantidad: eso
+  se elige en `/resumen` y la talla es obligatoria para poder pagar.
+- Checkbox por linea; el total recalcula solo con lo marcado.
+- Antes del resumen aparece una puerta modal: invitado o cuenta.
+- En movil se mantienen las esquinas redondeadas; en escritorio (>=64rem) todo
+  pasa a recto, como el catalogo.
+- Los datos bancarios nunca viajan en `/api/meta`: se sirven desde
+  `/api/checkout/metodos` y solo aparecen dentro del pedido.
+- El numero de pedido (`ANPC-XXXXXX`) es la referencia de todo y el concepto que
+  se le pide al comprador.
+
+- Cada metodo de pago lleva su icono junto al titulo (`public/pay-icons/`). Efectivo
+  usa un billete generico propio, no una marca. `Binance Pay` va primero con la
+  etiqueta `Recomendado` (campo `etiqueta` en Ajustes).
+- La API publica del pedido no devuelve telefono, email ni ids: solo lo necesario
+  para el seguimiento.
+
+- Los resumenes de pedido (seguimiento y pago) llevan miniatura de cada prenda.
+- Los avisos por correo salen al recibir el pago, verificarlo, confirmar y cancelar.
+  Transporte SMTP (Gmail con clave de aplicacion: `SMTP_USER`, `SMTP_PASSWORD`, `SITE_URL`);
+  Resend queda como alternativa si no hay SMTP. Sin configurar no hacen nada y nunca
+  bloquean la peticion.
+- El resumen tiene papelera por prenda (quita tambien el favorito: es la misma lista).
+- La conciliacion de Binance usa el ID/nota solo como filtro y compara importe,
+  moneda y receptor contra el CRM: solo un pago exacto se verifica solo.
+
+Ningun pedido online toca inventario ni `crm.ventas`. Eso ocurre solo cuando el
+admin pulsa Confirmar en `/pedidos` del CRM.
 
 ## 11. Admin e importacion
 
@@ -228,3 +270,8 @@ Puntos a vigilar:
 9. No editar `catalog.json`/`inventory.json`: son backups de solo lectura; los
    cambios operativos pasan por `/admin`.
 10. Actualizar este documento si cambia una ruta, layout o regla visual importante.
+11. `CHECKOUT_STOCK_ESTRICTO=0` (solo backend) desactiva las comprobaciones de stock
+    mientras se prueba. "Agotado" es siempre el interruptor manual del catalogo:
+    ninguna venta ni pedido lo cambia. Quitar la variable antes de salir a produccion.
+12. El checkout nunca confia en precios que venga del navegador: los recalcula el
+    backend contra el catalogo.

@@ -2227,61 +2227,364 @@ button.size-tag--selected, button.size-tag--selected:hover {
   display: none;
 }
 
+/* Feedback de favoritos: en móvil lo muestra el notch, el toast es solo de escritorio */
+.catalog-fav-toast {
+  display: none;
+}
+
+@keyframes fav-out {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(8px); }
+}
+
+@keyframes grid-swap-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes heart-pop-add {
+  0%   { transform: scale(0.6); }
+  55%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+@keyframes heart-pop-remove {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(0.7); }
+  100% { transform: scale(1); }
+}
+
+/* Salida de ruta: el inverso exacto de `fadeIn` (entrada de la página). */
+@keyframes route-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes route-out-fade {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 @media (min-width: 64rem) {
-  .catalog-heading,
-  .catalog-layout {
-    width: min(100%, 88rem);
+  /* ── Escritorio: ancho completo, sin título de sección ── */
+  .catalog-heading {
+    display: none;
   }
 
   .catalog-layout {
-    display: block;
-  }
-
-  .catalog-filter-panel {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2.4rem;
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    gap: 3.5rem;
+    align-items: start;
+    width: 100%;
   }
 
-  .filter-summary {
-    min-height: 3.65rem;
-    padding-inline: 1.15rem;
+  .catalog-page button,
+  .catalog-page input,
+  .catalog-page select {
+    font-family: inherit;
   }
 
-  .filter-summary strong {
-    font-size: 0.8125rem;
+  /* ── Columna izquierda: buscador, orden y filtros ── */
+  .catalog-filter-panel {
+    display: block;
+    position: sticky;
+    top: 8rem;
+    z-index: 5; /* el botón "subir" vive aquí dentro y debe quedar sobre las cards */
+    margin-bottom: 0;
   }
 
-  .filter-count {
-    display: inline-flex;
+  .filter-summary,
+  .catalog-active-filters,
+  .floating-filter,
+  .filter-drawer {
+    display: none;
   }
 
   .desktop-filter-card {
+    display: block;
+  }
+
+  .desktop-search,
+  .desktop-select__control {
+    height: 3rem;
+    border: 1px solid var(--catalog-border-strong);
+    border-radius: 0;
+    background: var(--catalog-inverse);
+    color: var(--catalog-ink);
+    transition: border-color 160ms ease;
+  }
+
+  .desktop-search {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding-inline: 0.55rem 0.4rem;
+  }
+
+  .desktop-search:focus-within,
+  .desktop-select__control:focus-visible {
+    border-color: var(--catalog-ink);
+    outline: 0;
+  }
+
+  .desktop-search__submit,
+  .desktop-search__clear {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+    color: var(--catalog-ink);
+  }
+
+  .desktop-search__icon {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .desktop-search__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--catalog-ink);
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .desktop-search__input::placeholder {
+    color: var(--catalog-ink-muted);
+    font-weight: 400;
+    opacity: 1;
+  }
+
+  .desktop-search__input::-webkit-search-cancel-button {
     display: none;
   }
 
-  .catalog-active-filters {
-    grid-column: 1 / -1;
+  .desktop-search__clear {
+    color: var(--catalog-ink-muted);
+    font-size: 0.875rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease, color 160ms ease;
   }
 
+  .desktop-search__clear--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .desktop-search__clear:hover {
+    color: var(--catalog-ink);
+  }
+
+  .desktop-select {
+    margin-top: 1.5rem;
+  }
+
+  .desktop-select__label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--catalog-ink-muted);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .desktop-select__field {
+    position: relative;
+  }
+
+  .desktop-select__control {
+    display: block;
+    width: 100%;
+    padding: 0 2.5rem 0 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+
+  .desktop-select__field .catalog-chevron {
+    position: absolute;
+    top: 50%;
+    right: 0.8rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: -0.55rem;
+    pointer-events: none;
+  }
+
+  .desktop-filter-card__header {
+    margin: 2rem 0 1.5rem;
+    font-weight: 500;
+  }
+
+  .desktop-filter-card__header strong {
+    font-weight: 400;
+  }
+
+  .desktop-filter-card .catalog-drawer-fields {
+    gap: 1.75rem;
+  }
+
+  .desktop-filter-card .catalog-section__title {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .desktop-filter-card .filter-radio-list,
+  .desktop-filter-card .filter-chips-row {
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .desktop-filter-card .filter-radio-list {
+    flex-direction: column;
+  }
+
+  .desktop-filter-card .filter-radio,
+  .desktop-filter-card .filter-chip {
+    min-height: 2.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .desktop-filter-card .filter-chip {
+    min-width: 2.75rem;
+  }
+
+  .desktop-filter-card .sidebar-clear {
+    border-radius: 0;
+    font-weight: 400;
+  }
+
+  /* ── Grid y cards: líneas rectas, sin cajas ni sombras ── */
   .catalog-page .product-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 2.85rem 1.35rem;
+    gap: 2.5rem 1.1rem;
+    animation: grid-swap-in 400ms ease;
   }
 
-  .floating-filter {
-    position: relative;
-    inset: auto;
-    z-index: 1;
-    max-width: none;
-    margin: 0;
-    box-shadow: var(--catalog-shadow-md), var(--catalog-shadow-inner-dark);
+  .catalog-page .no-results {
+    animation: grid-swap-in 400ms ease;
   }
 
-  .floating-filter__backtop {
-    display: none;
+  .catalog-page .product-card__img-wrap,
+  .catalog-page .product-card__img-wrap img {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Presionar el corazón no hunde la card entera */
+  .catalog-page .product-card:active:has(.product-card__fav:active) {
+    transform: none;
+  }
+
+  .catalog-page .product-card__fav {
+    right: 0.6rem;
+    bottom: 0.6rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .catalog-page .product-card__fav--active {
+    box-shadow: none;
+  }
+
+  .catalog-page .product-card__fav--pop-add svg {
+    animation: heart-pop-add 420ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
+  }
+
+  .catalog-page .product-card__fav--pop-remove svg {
+    animation: heart-pop-remove 260ms ease;
+  }
+
+  .catalog-page .product-card__badge {
+    top: 0.6rem;
+    left: 0.6rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .catalog-page .product-card__info {
+    padding-top: 0.95rem;
+  }
+
+  .catalog-page .product-card__name {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+  }
+
+  .catalog-page .product-card__price,
+  .catalog-page .product-card__unavailable {
+    margin-top: 0.35rem;
+    font-size: 0.8125rem;
+  }
+
+  .catalog-page .product-card__swatch {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  /* ── Toast de favoritos (entrada + salida) ── */
+  .catalog-fav-toast {
+    display: flex;
+    border-radius: 0;
+    font-weight: 400;
+    animation: fav-pop 250ms ease, fav-out 250ms ease 1900ms forwards;
+  }
+
+  /* ── Transiciones de ruta ── */
+  /* Al volver al catálogo con el scroll restaurado, se revela con un fade. */
+  :where(.catalog-route--revealed) > .catalog-page,
+  :where(.catalog-route--revealed) > .footer,
+  :where(.catalog-route--revealed) > .top-banner {
+    animation: slowFadeIn 400ms ease;
+  }
+
+  /* Salida: mismo movimiento que la entrada, pero en reversa. */
+  .route--leaving > main,
+  .route--leaving > footer,
+  .route--leaving > .home-page {
+    animation: route-out 400ms ease forwards;
+    pointer-events: none;
+  }
+
+  .route--leaving > .top-banner {
+    animation: route-out-fade 400ms ease forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-page .product-grid,
+  .catalog-page .no-results,
+  .catalog-page .product-card__fav svg,
+  .catalog-fav-toast,
+  .catalog-route--revealed > .catalog-page,
+  .catalog-route--revealed > .footer,
+  .catalog-route--revealed > .top-banner {
+    animation: none;
   }
 }
 
@@ -2438,5 +2741,144 @@ button.size-tag--selected, button.size-tag--selected:hover {
   .floating-filter .divider,
   .floating-filter .divider + span {
     display: none;
+  }
+}
+
+/* ── Botón "volver arriba": solo escritorio, cuadrado ── */
+.desktop-backtop {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .desktop-backtop {
+    position: fixed;
+    right: 2rem;
+    bottom: 2rem;
+    z-index: 120;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0;
+    background: var(--catalog-ink, #0b0b0b);
+    color: #fff;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.5rem);
+    transition: opacity 220ms ease, transform 220ms ease, visibility 220ms ease, background 160ms ease;
+  }
+
+  .desktop-backtop--visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .desktop-backtop:hover {
+    background: #2a2a2a;
+  }
+
+  .desktop-backtop .catalog-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  /* `overflow-x: hidden` en html + body convertía al body en contenedor de scroll
+     y rompía todo `position: sticky` (nav y barra de filtros). `clip` recorta
+     igual pero no crea contenedor de scroll. */
+  body {
+    overflow-x: clip;
+  }
+
+  /* La pista de scroll siempre presente (salvo en Home, que es a pantalla completa):
+     al pasar del catálogo (largo) a un producto (corto) el ancho útil ya no salta
+     15px y no parece un resize. */
+  html:not(:has(.home-page)) {
+    overflow-y: scroll;
+  }
+}
+
+@media (min-width: 64rem) and (prefers-reduced-motion: reduce) {
+  .desktop-backtop {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* ── Catálogo móvil / tablet (todo lo que no es escritorio) ── */
+@media (max-width: 63.999rem) {
+  /* Sin título ni subtítulo de sección */
+  .catalog-heading {
+    display: none;
+  }
+
+  /* Pastilla de búsqueda: solo icono + texto, centrados */
+  .filter-summary {
+    justify-content: center;
+  }
+
+  .filter-summary__label {
+    flex: 0 1 auto;
+  }
+
+  /* Escala tipográfica única para los controles: pastilla, barra flotante y drawer */
+  .filter-summary strong,
+  .floating-filter__main strong,
+  .floating-filter__main > span:last-child,
+  .filter-drawer__header-title {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .filter-summary .catalog-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .catalog-section__title {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+  }
+
+  .filter-drawer .filter-radio__label,
+  .filter-drawer .filter-chip,
+  .filter-drawer .sidebar-clear {
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+  }
+
+  /* El título del drawer ya dice "Buscar": no se repite dentro */
+  .filter-drawer--search .catalog-section__title {
+    display: none;
+  }
+
+  .filter-drawer--search .sidebar-search {
+    margin-top: 0;
+  }
+
+  /* El placeholder se cortaba ("referenci…"): sin tracking cabe completo */
+  .filter-drawer .sidebar-search__input::placeholder {
+    letter-spacing: 0;
+  }
+
+  /* Cards: mismo peso y espaciado de letra que el resto de textos */
+  .catalog-page .product-card__name {
+    font-weight: 400;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ── Ficha de producto (movil / tablet): mismo lenguaje redondeado que el catalogo ── */
+@media (max-width: 63.999rem) {
+  .product-carousel {
+    border-radius: 1rem;
+  }
+
+  .btn-whatsapp,
+  .btn-paypal {
+    border-radius: 999px;
   }
 }

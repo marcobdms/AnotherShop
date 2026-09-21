@@ -108,13 +108,16 @@ function SearchPanel({ searchTerm, onSearch }) {
 function FiltersPanel({
   generos,
   tallas,
+  marcas = [],
   activeGenero,
   activeTalla,
+  activeMarca = null,
   onGenero,
   onTalla,
+  onMarca,
   onClear,
 }) {
-  const hasActiveFilters = activeGenero || activeTalla
+  const hasActiveFilters = activeGenero || activeTalla || (marcas.length > 0 && activeMarca)
 
   function toggle(actual, valor, setter) {
     setter(actual === valor ? null : valor)
@@ -136,6 +139,25 @@ function FiltersPanel({
               >
                 <span className="filter-radio__dot" aria-hidden="true" />
                 <span className="filter-radio__label">{g}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {marcas.length > 0 && (
+        <div className="catalog-section">
+          <p className="catalog-section__title">Marca</p>
+          <div className="filter-chips-row">
+            {marcas.map(m => (
+              <button
+                key={m}
+                className={`filter-chip ${activeMarca === m ? 'active' : ''}`}
+                onClick={() => toggle(activeMarca, m, onMarca)}
+                aria-pressed={activeMarca === m}
+                type="button"
+              >
+                {m}
               </button>
             ))}
           </div>
@@ -173,10 +195,16 @@ function FiltersPanel({
 export default function FilterChips({
   generos,
   tallas,
+  marcas = [],
   activeGenero,
   activeTalla,
+  activeMarca = null,
   onGenero,
   onTalla,
+  onMarca,
+  sortOptions = [],
+  sortValue = '',
+  onSort,
   searchTerm,
   onSearch,
   productCount = 0,
@@ -187,11 +215,13 @@ export default function FilterChips({
   const [drawerMode, setDrawerMode] = useState(null)
   const [renderedDrawerMode, setRenderedDrawerMode] = useState(null)
   const openFrameRef = useRef(null)
+  const desktopSearchRef = useRef(null)
+  // En escritorio la búsqueda se aplica al enviar (Enter / lupa), no en vivo.
+  const [searchDraft, setSearchDraft] = useState(searchTerm)
   const drawerOpen = Boolean(drawerMode)
   const drawerVisible = Boolean(drawerMode || renderedDrawerMode)
   const visualDrawerMode = drawerMode || renderedDrawerMode || 'filters'
   const activeFilterCount = [activeGenero, activeTalla].filter(Boolean).length
-  const productLabel = `${productCount} producto${productCount === 1 ? '' : 's'}`
   const searchLabel = searchTerm ? searchTerm : 'Buscar prendas'
 
   const openDrawer = useCallback((mode) => {
@@ -255,13 +285,22 @@ export default function FilterChips({
   }, [drawerVisible])
 
   useEffect(() => {
-    function openSearchFromHeader() {
+    // En escritorio el buscador ya está visible en la columna izquierda.
+    function openSearch() {
+      if (window.matchMedia?.('(min-width: 64rem)')?.matches) {
+        desktopSearchRef.current?.focus()
+        return
+      }
       openDrawer('search')
+    }
+
+    function openSearchFromHeader() {
+      openSearch()
     }
 
     function handleSearchHash() {
       if (window.location.hash !== '#catalog-search') return
-      openDrawer('search')
+      openSearch()
     }
 
     handleSearchHash()
@@ -276,6 +315,29 @@ export default function FilterChips({
   function handleClearFilters() {
     onGenero(null)
     onTalla(null)
+    onMarca?.(null)
+  }
+
+  useEffect(() => {
+    setSearchDraft(searchTerm)
+  }, [searchTerm])
+
+  function submitDesktopSearch(event) {
+    event.preventDefault()
+    onSearch(searchDraft.trim())
+  }
+
+  function changeDesktopSearch(event) {
+    const value = event.target.value
+    setSearchDraft(value)
+    // Al vaciar el campo se quita la búsqueda sin exigir otro Enter.
+    if (!value && searchTerm) onSearch('')
+  }
+
+  function clearDesktopSearch() {
+    setSearchDraft('')
+    onSearch('')
+    desktopSearchRef.current?.focus()
   }
 
   return (
@@ -289,10 +351,6 @@ export default function FilterChips({
         <span className="filter-summary__label">
           <SearchIcon />
           <strong>{searchLabel}</strong>
-        </span>
-        <span className="filter-count">
-          {productLabel}
-          <ChevronIcon />
         </span>
       </button>
 
@@ -317,17 +375,64 @@ export default function FilterChips({
       )}
 
       <aside className="desktop-filter-card" aria-label="Filtros de catalogo">
+        <form className="desktop-search" role="search" onSubmit={submitDesktopSearch}>
+          <button className="desktop-search__submit" type="submit" aria-label="Buscar">
+            <SearchIcon className="catalog-icon desktop-search__icon" />
+          </button>
+          <input
+            id="catalog-search-desktop"
+            ref={desktopSearchRef}
+            type="search"
+            className="desktop-search__input"
+            placeholder="Buscar"
+            aria-label="Buscar prendas"
+            value={searchDraft}
+            onChange={changeDesktopSearch}
+          />
+          <button
+            className={`desktop-search__clear${searchDraft ? ' desktop-search__clear--visible' : ''}`}
+            onClick={clearDesktopSearch}
+            aria-label="Limpiar busqueda"
+            tabIndex={searchDraft ? 0 : -1}
+            type="button"
+          >
+            x
+          </button>
+        </form>
+
+        {sortOptions.length > 0 && (
+          <div className="desktop-select">
+            <label className="desktop-select__label" htmlFor="catalog-sort">Ordenar por</label>
+            <div className="desktop-select__field">
+              <select
+                id="catalog-sort"
+                className="desktop-select__control"
+                value={sortValue}
+                onChange={e => onSort?.(e.target.value)}
+              >
+                {sortOptions.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <ChevronIcon />
+            </div>
+          </div>
+        )}
+
         <div className="desktop-filter-card__header">
           <span>Filtros</span>
-          <strong>{productCount}</strong>
+          <strong>{productCount} productos</strong>
         </div>
         <FiltersPanel
           generos={generos}
           tallas={tallas}
+          marcas={marcas}
           activeGenero={activeGenero}
           activeTalla={activeTalla}
+          activeMarca={activeMarca}
           onGenero={onGenero}
           onTalla={onTalla}
+          onMarca={onMarca}
           onClear={handleClearFilters}
         />
       </aside>
@@ -357,6 +462,16 @@ export default function FilterChips({
           {notchMessage}
         </span>
       </div>
+
+      <button
+        className={`desktop-backtop${showTopButton ? ' desktop-backtop--visible' : ''}`}
+        onClick={() => onBackToTop?.()}
+        aria-label="Volver arriba"
+        tabIndex={showTopButton ? 0 : -1}
+        type="button"
+      >
+        <ArrowUpIcon />
+      </button>
 
       {drawerVisible && (
         <div

@@ -27,6 +27,31 @@ function writeLocalFavorites(favorites) {
   window.dispatchEvent(new Event(FAVORITES_UPDATED_EVENT))
 }
 
+/**
+ * Sube a la cuenta los favoritos guardados como invitado y vacia los locales.
+ * Sin esto, registrarse vaciaba el carrito: los favoritos del navegador se
+ * quedaban huerfanos en localStorage.
+ */
+async function migrateLocalFavorites(userId, remoteIds) {
+  const locals = readLocalFavorites()
+  const pending = [...locals].filter(id => !remoteIds.has(id))
+
+  if (pending.length > 0) {
+    const { error } = await supabase
+      .from('favorites')
+      .insert(pending.map(product_id => ({ user_id: userId, product_id })))
+    if (error) {
+      console.error('[useFavorites] No se pudieron migrar los favoritos:', error.message)
+      return remoteIds
+    }
+  }
+
+  if (locals.size > 0) {
+    window.localStorage.removeItem(LOCAL_FAVORITES_KEY)
+  }
+  return new Set([...remoteIds, ...pending])
+}
+
 export function useFavorites(user) {
   const [favorites, setFavorites] = useState(new Set())
   const [loading, setLoading] = useState(false)
@@ -43,12 +68,13 @@ export function useFavorites(user) {
       .from('favorites')
       .select('product_id')
       .eq('user_id', user.id)
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (error) {
           console.error('[useFavorites] Error cargando favoritos:', error.message, error.details)
-        } else if (data) {
-          setFavorites(new Set(data.map(r => r.product_id)))
+          return
         }
+        const remote = new Set((data ?? []).map(r => r.product_id))
+        setFavorites(await migrateLocalFavorites(user.id, remote))
       })
       .finally(() => setLoading(false))
   }, [user])

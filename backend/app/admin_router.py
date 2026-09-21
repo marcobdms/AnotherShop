@@ -41,6 +41,30 @@ class ProductoAdminOut(ProductoAdmin):
     meta_id: Optional[str] = ""
 
 
+class DatoPago(BaseModel):
+    """Una linea de la tarjeta que ve el comprador: 'Banco: Mercantil'."""
+    label: str = ""
+    valor: str = ""
+
+
+class MetodoPagoAdmin(BaseModel):
+    id: str
+    activo: bool = False
+    titulo: str = ""
+    instrucciones: str = ""
+    datos: list[DatoPago] = []
+    # Imagen de QR estatica (ruta bajo /pay-qr/) y enlace de pago con {monto}.
+    qr: str = ""
+    enlace: str = ""
+    # Insignia opcional junto al titulo (p. ej. "Recomendado").
+    etiqueta: str = ""
+
+
+class PagosAdmin(BaseModel):
+    tasa_bs: float = 0
+    metodos: list[MetodoPagoAdmin] = []
+
+
 class MetaAdmin(BaseModel):
     marca: str
     moneda: str = "USD"
@@ -48,6 +72,7 @@ class MetaAdmin(BaseModel):
     whatsapp_mensaje: str
     paypal: str
     recargo_paypal: str
+    pagos: PagosAdmin = PagosAdmin()
 
 
 class DisponibleToggle(BaseModel):
