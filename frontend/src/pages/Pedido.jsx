@@ -2,6 +2,7 @@
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import PedidoSeguimiento from '../components/PedidoSeguimiento'
+import TransitionLink from '../components/TransitionLink'
 import Footer from '../components/Footer'
 import './Checkout.css'
 
@@ -20,6 +21,9 @@ export default function Pedido() {
   return (
     <>
       <main className="checkout-page checkout-page--narrow">
+        <TransitionLink to="/cuenta" className="product-page__back" style={{ marginBottom: '1.5rem', display: 'inline-flex' }}>
+          ← Mi cuenta
+        </TransitionLink>
         <PedidoSeguimiento numero={numero} />
       </main>
       <Footer />

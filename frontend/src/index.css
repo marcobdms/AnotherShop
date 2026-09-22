@@ -163,7 +163,10 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 
 /* Menú móvil desplegable */
 .nav__mobile-menu {
-  display: none;
+  /* Siempre montado (es position:absolute, no ocupa espacio en el flujo):
+     se anima con opacidad + desplazamiento, no con display, para tener
+     entrada Y salida. */
+  display: flex;
   position: absolute;
   top: 100%;
   right: 0;
@@ -174,10 +177,22 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   padding: 0.5rem 0 1rem;
   z-index: 199;
   box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
 }
 
 .nav__mobile-menu--open {
-  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__mobile-menu {
+    transition: none;
+  }
 }
 
 .nav__mobile-link {

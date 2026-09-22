@@ -1,23 +1,23 @@
 /**
  * Account.jsx — panel de cuenta (/cuenta).
  *
- * Reune lo que el cliente necesita despues de comprar: pagar lo que tiene en
- * favoritos, buscar un pedido por su numero, y ver el estado de sus pedidos con
- * la misma vista de seguimiento que se ve al pagar. Con sesion se listan los
- * pedidos de la cuenta; sin sesion, los de este navegador.
+ * Reune lo que el cliente necesita despues de comprar: ir a pagar lo que tiene
+ * guardado, buscar un pedido por su numero, y ver el estado de cada pedido en
+ * una card emergente. Con sesion se listan los pedidos de la cuenta; sin
+ * sesion, los de este navegador.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { useFavorites } from '../hooks/useFavorites'
-import { fetchMyOrders, fetchProducts, formatPrice } from '../api/catalog'
+import { fetchMeta, fetchMyOrders, fetchOrder, formatPrice } from '../api/catalog'
 import { supabase } from '../lib/supabase'
 import { readOrders } from '../utils/orders'
-import ProductCard from '../components/ProductCard'
 import PedidoSeguimiento, { estadoCorto } from '../components/PedidoSeguimiento'
 import TransitionLink from '../components/TransitionLink'
 import Footer from '../components/Footer'
 import './Checkout.css'
+
+const CIERRE_MS = 260
 
 const css = `
   .account-page {
@@ -69,12 +69,20 @@ const css = `
   .account-actions {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.75rem;
     margin: 0 0 3rem;
   }
 
   .account-actions .btn {
     text-decoration: none;
+  }
+
+  /* Favoritos: mismo alto que "Seguir mi pedido", solo icono, a su derecha */
+  .account-fav-btn {
+    flex: 0 0 auto;
+    width: 3rem;
+    padding: 0;
   }
 
   .account-section__label {
@@ -88,20 +96,14 @@ const css = `
     padding-bottom: 0.75rem;
   }
 
-  /* Pedidos: lista a la izquierda, seguimiento a la derecha */
-  .account-orders {
-    display: grid;
-    gap: 2rem;
-    margin-bottom: 4rem;
-  }
-
+  /* Pedidos */
   .account-orders__list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     gap: 0.5rem;
-    align-content: start;
+    max-width: 32rem;
   }
 
   .account-order {
@@ -126,11 +128,6 @@ const css = `
   .account-order__num { font-size: 0.8125rem; letter-spacing: 0.16em; }
   .account-order__total { font-size: 0.8125rem; text-align: right; }
   .account-order__meta { color: var(--grey-400); font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; }
-
-  .account-orders__detail {
-    min-width: 0;
-    padding: 0.5rem 0 0;
-  }
 
   .account-empty {
     min-height: 30vh;
@@ -163,7 +160,25 @@ const css = `
   }
   .account-empty a:hover { color: var(--black); border-color: var(--black); }
 
+  .account-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2.4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--grey-200);
+    max-width: 32rem;
+  }
+
+  .account-contact .btn {
+    text-decoration: none;
+  }
+
+  /* Cerrar sesion: texto en escritorio, icono a juego con el titulo en movil */
   .account-signout {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: var(--size-xs);
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -175,24 +190,151 @@ const css = `
     font-family: var(--font);
   }
   .account-signout:hover { color: var(--black); border-color: var(--black); }
+  .account-signout__icon { display: none; }
 
-  .account-page .product-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* ── Card de seguimiento (modal) ── */
+  .order-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
   }
 
+  .order-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.42);
+    animation: fadeIn 240ms ease forwards;
+  }
+
+  .order-modal__panel {
+    position: relative;
+    width: min(30rem, 100%);
+    max-height: min(88vh, 46rem);
+    overflow-y: auto;
+    padding: 2.25rem 1.75rem 1.75rem;
+    border-radius: 1rem;
+    background: var(--white);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+    animation: orderModalIn 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .order-modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 999px;
+    background: var(--black);
+    color: var(--white);
+    cursor: pointer;
+    transition: opacity 160ms ease;
+  }
+  .order-modal__close:hover { opacity: 0.8; }
+
+  /* Pastillas de copiar dentro de la card: mismo estilo, mas compactas */
+  .track__id-actions .copy {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.625rem;
+  }
+
+  .order-modal--closing .order-modal__backdrop {
+    animation: fadeOut 220ms ease forwards;
+  }
+  .order-modal--closing .order-modal__panel {
+    animation: orderModalOut 220ms ease forwards;
+  }
+
+  /* ── Confirmar cierre de sesion: mismo "gate" del resumen, con salida ── */
+  .gate--closing .gate__backdrop {
+    animation: fadeOut 200ms ease forwards;
+  }
+  .gate--closing .gate__panel {
+    animation: orderModalOut 200ms ease forwards;
+  }
+
+  @keyframes orderModalIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes orderModalOut {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(10px) scale(0.97); }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .order-modal__backdrop,
+    .order-modal__panel {
+      animation: none !important;
+    }
+  }
+
+  /* Recto en escritorio, como el resto del checkout */
   @media (min-width: 64rem) {
-    .account-page .product-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+    .account-order,
+    .order-modal__panel,
+    .order-modal__close {
+      border-radius: 0;
     }
+  }
 
-    .account-orders {
-      grid-template-columns: 20rem minmax(0, 1fr);
-      gap: 3rem;
+  @media (max-width: 640px) {
+    .account-signout__text { display: none; }
+    .account-signout {
+      border-bottom: none;
+      padding: 0;
     }
-
-    .account-order { border-radius: 0; }
+    .account-signout__icon {
+      display: block;
+      width: 2rem;
+      height: 2rem;
+      color: var(--black);
+    }
   }
 `
+
+function IconoSalir() {
+  return (
+    <svg className="account-signout__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+      <path d="M10 17l5-5-5-5" />
+      <path d="M15 12H3" />
+    </svg>
+  )
+}
+
+// Mismo trazo que el corazon de ProductCard: se "recicla" el mismo icono.
+function IconoCorazon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  )
+}
+
+function IconoCerrar() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+      <path d="M5 5l14 14M19 5L5 19" />
+    </svg>
+  )
+}
 
 function fechaCorta(iso) {
   if (!iso) return ''
@@ -201,18 +343,19 @@ function fechaCorta(iso) {
 
 export default function Account() {
   const { user, loading: authLoading, signOut } = useAuth()
-  const { favorites, loading: favLoading, isFavorite, toggleFavorite } = useFavorites(user)
   const navigate = useNavigate()
 
-  const [products, setProducts] = useState([])
-  const [prodsLoading, setProdsLoading] = useState(true)
   const [pedidosApi, setPedidosApi] = useState([])
-  const [seleccionado, setSeleccionado] = useState('')
+  const [modalNumero, setModalNumero] = useState(null)
+  const [pedidoPreview, setPedidoPreview] = useState(null)
+  const [cargandoFila, setCargandoFila] = useState('')
+  const [cerrando, setCerrando] = useState(false)
+  const [confirmarSalida, setConfirmarSalida] = useState(false)
+  const [cerrandoConfirm, setCerrandoConfirm] = useState(false)
+  const [meta, setMeta] = useState(null)
 
   useEffect(() => {
-    fetchProducts()
-      .then(setProducts)
-      .finally(() => setProdsLoading(false))
+    fetchMeta().then(setMeta).catch(() => {})
   }, [])
 
   // Pedidos de la cuenta (el servidor comprueba la sesion con el token)
@@ -238,24 +381,62 @@ export default function Account() {
     return [...pedidosApi, ...locales]
   }, [pedidosApi])
 
-  const activo = seleccionado || pedidos[0]?.numero || ''
-
   const handleSignOut = async () => {
     await signOut()
     navigate('/', { replace: true })
   }
 
-  const handleFavoriteClick = async (producto) => {
-    await toggleFavorite(producto.id)
-  }
+  const cerrarConfirmSalida = useCallback(() => {
+    setCerrandoConfirm(true)
+    setTimeout(() => {
+      setConfirmarSalida(false)
+      setCerrandoConfirm(false)
+    }, CIERRE_MS)
+  }, [])
 
-  if (authLoading || prodsLoading || favLoading) {
+  // Prefetch antes de abrir: la card nace ya con su tamano final, sin el
+  // salto de "carga chica -> contenido grande" cuando aparece el check/reloj.
+  const abrirPedido = useCallback(async (numero) => {
+    setCargandoFila(numero)
+    try {
+      const data = await fetchOrder(numero)
+      setPedidoPreview(data)
+    } catch {
+      setPedidoPreview(null)
+    } finally {
+      setCargandoFila('')
+      setModalNumero(numero)
+    }
+  }, [])
+
+  const cerrarModal = useCallback(() => {
+    setCerrando(true)
+    setTimeout(() => {
+      setModalNumero(null)
+      setPedidoPreview(null)
+      setCerrando(false)
+    }, CIERRE_MS)
+  }, [])
+
+  // Escape cierra la card (o la confirmacion de salida) que este abierta
+  useEffect(() => {
+    if (!modalNumero && !confirmarSalida) return undefined
+    const onKey = e => {
+      if (e.key !== 'Escape') return
+      if (confirmarSalida) cerrarConfirmSalida()
+      else if (modalNumero) cerrarModal()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [modalNumero, confirmarSalida, cerrarModal, cerrarConfirmSalida])
+
+  if (authLoading) {
     return <div className="page-state" />
   }
 
-  const favoriteProducts = products.filter(p => favorites.has(p.id))
-  // "Agotado" solo lo marca el interruptor manual del catalogo
-  const pagables = favoriteProducts.filter(p => p.disponible !== false).length
+  const whatsapp = meta?.whatsapp
+    ? `https://wa.me/${meta.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Hola, tengo una consulta sobre mi pedido')}`
+    : null
 
   return (
     <>
@@ -271,8 +452,9 @@ export default function Account() {
             </p>
           </div>
           {user && (
-            <button className="account-signout" onClick={handleSignOut}>
-              Cerrar sesion
+            <button className="account-signout" onClick={() => setConfirmarSalida(true)} aria-label="Cerrar sesion">
+              <IconoSalir />
+              <span className="account-signout__text">Cerrar sesion</span>
             </button>
           )}
         </div>
@@ -285,13 +467,16 @@ export default function Account() {
         )}
 
         <div className="account-actions">
-          {pagables > 0 && (
-            <TransitionLink className="btn btn--solid" to="/resumen">
-              Pagar ahora ({pagables})
-            </TransitionLink>
-          )}
           <TransitionLink className="btn btn--ghost" to="/seguimiento">
             Seguir mi pedido
+          </TransitionLink>
+          <TransitionLink
+            className="btn btn--solid account-fav-btn"
+            to="/resumen"
+            aria-label="Ver mis prendas guardadas"
+            title="Prendas guardadas"
+          >
+            <IconoCorazon />
           </TransitionLink>
         </div>
 
@@ -304,59 +489,80 @@ export default function Account() {
             <p>Todavia no tienes pedidos.</p>
           </div>
         ) : (
-          <div className="account-orders">
-            <ul className="account-orders__list">
-              {pedidos.map(p => (
-                <li key={p.numero}>
-                  <button
-                    className={`account-order${activo === p.numero ? ' is-active' : ''}`}
-                    onClick={() => setSeleccionado(p.numero)}
-                    type="button"
-                  >
-                    <span className="account-order__num">{p.numero}</span>
-                    <span className="account-order__total">
-                      {p.total !== undefined ? formatPrice(p.total) : ''}
-                    </span>
-                    <span className="account-order__meta">
-                      {p.estado ? estadoCorto(p) : 'Ver estado'}
-                    </span>
-                    <span className="account-order__meta" style={{ textAlign: 'right' }}>
-                      {fechaCorta(p.creado_en)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <ul className="account-orders__list">
+            {pedidos.map(p => (
+              <li key={p.numero}>
+                <button
+                  className={`account-order${modalNumero === p.numero ? ' is-active' : ''}`}
+                  onClick={() => abrirPedido(p.numero)}
+                  disabled={cargandoFila === p.numero}
+                  type="button"
+                >
+                  <span className="account-order__num">{p.numero}</span>
+                  <span className="account-order__total">
+                    {p.total !== undefined ? formatPrice(p.total) : ''}
+                  </span>
+                  <span className="account-order__meta">
+                    {cargandoFila === p.numero ? 'Cargando...' : (p.estado ? estadoCorto(p) : 'Ver estado')}
+                  </span>
+                  <span className="account-order__meta" style={{ textAlign: 'right' }}>
+                    {fechaCorta(p.creado_en)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
 
-            <div className="account-orders__detail">
-              {/* key => al cambiar de pedido se vuelve a montar (y a animar) */}
-              <PedidoSeguimiento key={activo} numero={activo} />
+        <div className="account-contact">
+          {whatsapp && (
+            <a className="btn btn--ghost" href={whatsapp} target="_blank" rel="noopener noreferrer">
+              Escribirnos por WhatsApp
+            </a>
+          )}
+          <TransitionLink className="btn btn--ghost" to="/catalogo">
+            Seguir viendo
+          </TransitionLink>
+        </div>
+      </main>
+
+      {modalNumero && (
+        <div className={`order-modal${cerrando ? ' order-modal--closing' : ''}`} role="dialog" aria-modal="true">
+          <div className="order-modal__backdrop" onClick={cerrarModal} />
+          <div className="order-modal__panel">
+            <button className="order-modal__close" onClick={cerrarModal} aria-label="Cerrar">
+              <IconoCerrar />
+            </button>
+            {/* key => al cambiar de pedido el seguimiento se remonta (y se anima).
+                pedidoInicial ya viene prefetcheado: nace con su tamano final.
+                Whatsapp/seguir viendo van fijos en la pagina, no aqui (pero "elegir
+                forma de pago" si se mantiene si el pedido aun no tiene pago). */}
+            <PedidoSeguimiento key={modalNumero} numero={modalNumero} pedidoInicial={pedidoPreview} mostrarContacto={false} />
+          </div>
+        </div>
+      )}
+
+      {confirmarSalida && (
+        <div className={`gate${cerrandoConfirm ? ' gate--closing' : ''}`} role="dialog" aria-modal="true">
+          <div className="gate__backdrop" onClick={cerrarConfirmSalida} />
+          <div className="gate__panel">
+            <h2 className="gate__title">Cerrar sesion</h2>
+            <p className="gate__text">
+              ¿Seguro que quieres cerrar sesion? Tus prendas guardadas y pedidos siguen
+              en tu cuenta para la proxima vez que entres.
+            </p>
+            <div className="gate__actions">
+              <button className="btn btn--solid" onClick={handleSignOut} type="button">
+                Cerrar sesion
+              </button>
+              <button className="btn btn--ghost" onClick={cerrarConfirmSalida} type="button">
+                Cancelar
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        <span className="account-section__label">
-          Prendas guardadas ({favoriteProducts.length})
-        </span>
-
-        {favoriteProducts.length === 0 ? (
-          <div className="account-empty">
-            <p>Todavia no has guardado ninguna prenda.</p>
-            <TransitionLink to="/catalogo">Explorar catalogo</TransitionLink>
-          </div>
-        ) : (
-          <div className="product-grid">
-            {favoriteProducts.map(p => (
-              <ProductCard
-                key={p.variante_color ? `${p.id}-${p.variante_color}` : p.id}
-                producto={p}
-                isFavorite={isFavorite(p.id)}
-                onFavoriteClick={handleFavoriteClick}
-              />
-            ))}
-          </div>
-        )}
-      </main>
       <Footer />
     </>
   )

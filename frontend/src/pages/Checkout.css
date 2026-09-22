@@ -98,17 +98,6 @@
   padding-bottom: 2px;
 }
 
-.checkout-bulk {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
-  color: var(--co-ink-soft);
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .linklike {
   border: 0;
   background: none;
@@ -136,7 +125,7 @@
 
 .cart-line {
   display: grid;
-  grid-template-columns: auto 5.5rem minmax(0, 1fr) auto;
+  grid-template-columns: auto 6.5rem minmax(0, 1fr) auto;
   gap: 1rem;
   align-items: start;
   padding: 1.25rem 0;
@@ -177,6 +166,9 @@
 
 .cart-line__info {
   min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
 }
 
 .cart-line__name {
@@ -186,6 +178,12 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.45;
+  /* Maximo 2 lineas: un nombre largo no debe empujar los selectores mas
+     abajo de donde termina la imagen del producto. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .cart-line__meta {
@@ -204,10 +202,38 @@
 
 .cart-line__controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.85rem;
+  align-items: flex-end;
+  gap: 0.5rem;
+  /* Empuja los selectores al fondo del bloque, que ahora mide lo mismo que la
+     imagen: quedan siempre a su altura, sin importar cuantas lineas ocupe el
+     nombre de la prenda. */
+  margin-top: auto;
+  padding-top: 0.85rem;
 }
+
+/* Talla y cantidad: compactas y siempre una al lado de la otra.
+   flex-shrink: 0 es lo importante: sin esto, en viewports angostos (p. ej.
+   iPhone normal frente al Pro, con unos px menos de ancho) el campo se
+   encogia por debajo del ancho fijo del select y los dos terminaban
+   superpuestos en vez de separados. */
+.cart-line__controls .field {
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.cart-line__controls .field > span {
+  font-size: 0.625rem;
+}
+
+.cart-line__controls .field select {
+  height: 2.15rem;
+  padding: 0 0.3rem;
+  font-size: 0.7rem;
+}
+
+/* Talla necesita sitio para "Elegir"; cantidad solo son 1-2 digitos */
+.cart-line__controls .field:first-child select { width: 4rem; }
+.cart-line__controls .field:last-child select { width: 2.75rem; }
 
 .cart-line__end {
   display: flex;
@@ -287,6 +313,31 @@
   padding: 0.6rem;
   height: auto;
   font-size: 0.75rem;
+}
+
+/* El boton nativo del selector de archivo no hereda la fuente del sitio por
+   su cuenta: se re-viste igual que las pastillas de "Copiar" para que no
+   desentone (letra del sistema, gris solido) junto al resto de la card. */
+.field input[type="file"]::file-selector-button,
+.field input[type="file"]::-webkit-file-upload-button {
+  margin-right: 0.6rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--co-line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--co-ink-soft);
+  font-family: var(--font);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.field input[type="file"]::file-selector-button:hover,
+.field input[type="file"]::-webkit-file-upload-button:hover {
+  border-color: var(--black);
+  color: var(--black);
 }
 
 .field select:focus,
@@ -535,6 +586,7 @@
 .pay-data__value {
   flex: 1 1 auto;
   min-width: 0;
+  font-size: 0.875rem;
   overflow-wrap: anywhere;
   letter-spacing: 0.04em;
 }
@@ -687,7 +739,7 @@
   }
 
   .cart-line {
-    grid-template-columns: auto 6.5rem minmax(0, 1fr) auto;
+    grid-template-columns: auto 7.5rem minmax(0, 1fr) auto;
     gap: 1.5rem;
   }
 
@@ -730,7 +782,10 @@
 .pay-amount__value {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 1.05rem;
+  /* Mismo tamano que el resto de valores (pay-data__value, campos): lo que
+     lo distingue como "importe" es el peso y el fondo de la fila, no un
+     cuerpo de letra distinto. */
+  font-size: 0.875rem;
   font-weight: 500;
   letter-spacing: 0.04em;
 }
@@ -840,6 +895,12 @@
 .pay-icon--wide {
   height: 1.05rem;
   max-width: 4.6rem;
+}
+
+/* Logos con fondo de color propio (bandera, marca): un poco de radio para
+   que no se vean como un rectangulo pegado junto al texto. */
+.pay-icon--insignia {
+  border-radius: 0.25rem;
 }
 
 .pay-badge {
@@ -1225,7 +1286,7 @@
 
   .pay-amount__value {
     grid-area: value;
-    font-size: 1rem;
+    font-size: 0.8125rem;
   }
 
   .pay-amount .copy {

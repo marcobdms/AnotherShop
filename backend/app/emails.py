@@ -58,7 +58,9 @@ LEMA = "Solo ropa. Solo existir."
 # ── Configuracion ─────────────────────────────────────────────────────────────
 
 def _env(name: str, default: str = "") -> str:
-    return os.getenv(name, default).strip()
+    # Una variable definida pero vacia (p. ej. "SMTP_HOST=" en el .env) cae al
+    # valor por defecto igual que si no existiera; os.getenv por si solo no lo hace.
+    return os.getenv(name, "").strip() or default
 
 
 def smtp_configured() -> bool:
@@ -130,6 +132,25 @@ _METODOS = {
 def _tracking_url(numero: str) -> str:
     site = _env("SITE_URL").rstrip("/")
     return f"{site}/pedido/{numero}" if site else ""
+
+
+_ICONOS = {"cancelado": "cross", "recibido": "clock", "verificado": "check", "confirmado": "check"}
+
+
+def _icono(tipo: str) -> str:
+    """El mismo icono de estado del seguimiento web (check verde / reloj gris /
+    aspa roja), en su posicion final y sin animar. Va como imagen (PNG servido
+    desde la tienda) y no como SVG ni emoji: Gmail no siempre pinta SVG inline,
+    y un emoji de reloj sale a todo color en Apple/Android, fuera del sitio en
+    un correo monocromo."""
+    site = os.getenv("SITE_URL", "").strip().rstrip("/")
+    if not site:
+        return ""  # sin SITE_URL no hay donde servir la imagen; se omite el icono
+    nombre = _ICONOS[tipo]
+    return (
+        f'<img src="{html.escape(site, quote=True)}/mail-icons/{nombre}.png" width="40" height="40" '
+        'alt="" style="display:block;width:40px;height:40px;margin:0 0 18px">'
+    )
 
 
 def _progreso(tipo: str) -> str:
@@ -243,6 +264,7 @@ def render(order: dict[str, Any], tipo: str) -> tuple[str, str, str]:
   font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:#0a0a0a">{MARCA}</td></tr>
 
 <tr><td style="padding:34px 34px 0;font-family:Inter,Helvetica,Arial,sans-serif">
+  {_icono(tipo)}
   <div style="font-size:25px;line-height:1.25;letter-spacing:.04em;color:#0a0a0a">{html.escape(titulo)}</div>
   <div style="font-size:14px;line-height:1.7;color:#55534f;padding:14px 0 26px">
     {saludo}<br>{html.escape(mensaje)}

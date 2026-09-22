@@ -21,14 +21,13 @@ import TransitionLink from '../components/TransitionLink'
 import { rememberOrder } from '../utils/orders'
 import './Checkout.css'
 
-// Icono junto al titulo de cada metodo. Efectivo usa un billete generico
-// (propio) en lugar de una marca: asi no se sugiere que se acepta otra app.
+// Icono junto al titulo de cada metodo.
 const ICONOS = {
   binance: { src: '/pay-icons/binance.webp' },
   // El logo de PayPal ya lleva el nombre: el texto queda solo para lectores de pantalla
   paypal: { src: '/pay-icons/paypal.webp', ancho: true, soloLogo: true },
-  pago_movil: { src: '/pay-icons/venezuela.webp', ancho: true },
-  efectivo: { src: '/pay-icons/cash.svg', ancho: true },
+  pago_movil: { src: '/pay-icons/venezuela.webp', ancho: true, insignia: true },
+  efectivo: { src: '/pay-icons/dollar.svg' },
 }
 
 const formatBs = (value) =>
@@ -80,6 +79,9 @@ export default function Pago() {
   const [referencia, setReferencia] = useState('')
   const [comprobante, setComprobante] = useState(null)
   const [enviando, setEnviando] = useState(false)
+  // Zelle todavia no tiene datos reales configurados: es un renglon fijo que
+  // solo avisa, no un metodo mas de config.metodos.
+  const [zelleAbierto, setZelleAbierto] = useState(false)
 
   useEffect(() => {
     Promise.all([fetchOrder(numero), fetchPaymentMethods()])
@@ -161,16 +163,15 @@ export default function Pago() {
               Pedido <strong>{pedido.numero}</strong> · {formatPrice(pedido.total)}
             </p>
 
-            {config.metodos.length === 0 ? (
-              <div className="pay-empty">
-                <p>Todavia no hay metodos de pago configurados.</p>
-                <p className="checkout-note">
-                  Guarda el numero <strong>{pedido.numero}</strong> y escribenos para completarlo.
-                </p>
-              </div>
-            ) : (
-              <ul className="pay-list">
-                {config.metodos.map(m => {
+            {config.metodos.length === 0 && (
+              <p className="pay-empty">
+                Todavia no hay metodos de pago configurados. Guarda el numero{' '}
+                <strong>{pedido.numero}</strong> y escribenos para completarlo.
+              </p>
+            )}
+
+            <ul className="pay-list">
+              {config.metodos.map(m => {
                   const activo = metodo?.id === m.id
                   return (
                     <li key={m.id} className={`pay-option${activo ? ' pay-option--active' : ''}`}>
@@ -184,7 +185,7 @@ export default function Pago() {
                         <span className="pay-option__title">
                           {ICONOS[m.id] && (
                             <img
-                              className={`pay-icon${ICONOS[m.id].ancho ? ' pay-icon--wide' : ''}`}
+                              className={`pay-icon${ICONOS[m.id].ancho ? ' pay-icon--wide' : ''}${ICONOS[m.id].insignia ? ' pay-icon--insignia' : ''}`}
                               src={ICONOS[m.id].src}
                               alt=""
                               loading="lazy"
@@ -286,8 +287,29 @@ export default function Pago() {
                     </li>
                   )
                 })}
+
+                {/* Zelle: renglon fijo mientras no haya datos reales configurados. */}
+                <li className={`pay-option${zelleAbierto ? ' pay-option--active' : ''}`}>
+                  <button
+                    className="pay-option__head"
+                    onClick={() => setZelleAbierto(o => !o)}
+                    aria-expanded={zelleAbierto}
+                    type="button"
+                  >
+                    <span className="pay-option__radio" aria-hidden="true" />
+                    <span className="pay-option__title">
+                      <img className="pay-icon pay-icon--wide pay-icon--insignia" src="/pay-icons/zelle.svg" alt="" loading="lazy" />
+                      <span>Zelle</span>
+                    </span>
+                  </button>
+
+                  {zelleAbierto && (
+                    <div className="pay-option__body">
+                      <p className="pay-instructions">Este metodo de pago todavia no esta disponible.</p>
+                    </div>
+                  )}
+                </li>
               </ul>
-            )}
           </section>
 
           <aside className="checkout-aside">

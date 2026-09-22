@@ -11,6 +11,7 @@ import Catalog from './pages/Catalog'
 import Product from './pages/Product'
 import About from './pages/About'
 import Resumen from './pages/Resumen'
+import Contacto from './pages/Contacto'
 import Pago from './pages/Pago'
 import Pedido from './pages/Pedido'
 import Seguimiento from './pages/Seguimiento'
@@ -119,6 +120,7 @@ function AppLayout() {
         <Route path="/producto/:id" element={<Product />} />
         <Route path="/nosotros" element={<About />} />
         <Route path="/resumen" element={<Resumen />} />
+        <Route path="/contacto" element={<Contacto />} />
         <Route path="/pago/:numero" element={<Pago />} />
         <Route path="/gracias/:numero" element={<Pedido />} />
         <Route path="/pedido/:numero" element={<Pedido />} />

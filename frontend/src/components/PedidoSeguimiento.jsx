@@ -128,10 +128,12 @@ function Copiar({ texto, etiqueta = 'Copiar' }) {
   )
 }
 
-export default function PedidoSeguimiento({ numero }) {
-  const [pedido, setPedido] = useState(null)
+export default function PedidoSeguimiento({ numero, mostrarAcciones = true, mostrarContacto = true, pedidoInicial = null }) {
+  // Con pedidoInicial (ya prefetcheado, p. ej. antes de abrir una card) se
+  // salta el parpadeo de carga: el contenido nace con su tamano final.
+  const [pedido, setPedido] = useState(pedidoInicial)
   const [meta, setMeta] = useState(null)
-  const [cargando, setCargando] = useState(true)
+  const [cargando, setCargando] = useState(!pedidoInicial)
   const [noEncontrado, setNoEncontrado] = useState(false)
   const [mostrarReloj, setMostrarReloj] = useState(false)
   const primeraCarga = useRef(true)
@@ -153,7 +155,7 @@ export default function PedidoSeguimiento({ numero }) {
 
   useEffect(() => {
     primeraCarga.current = true
-    setCargando(true)
+    if (!pedidoInicial) setCargando(true)
     setMostrarReloj(false)
     cargar()
     fetchMeta().then(setMeta).catch(() => {})
@@ -255,21 +257,25 @@ export default function PedidoSeguimiento({ numero }) {
             </div>
           </div>
 
-          <div className="track__actions">
-            {faseActual === 'sin_pago' && (
-              <TransitionLink className="btn btn--solid" to={`/pago/${pedido.numero}`}>
-                Elegir forma de pago
-              </TransitionLink>
-            )}
-            {whatsapp && (
-              <a className="btn btn--ghost" href={whatsapp} target="_blank" rel="noopener noreferrer">
-                Escribirnos por WhatsApp
-              </a>
-            )}
-            <TransitionLink className="btn btn--ghost" to="/catalogo">
-              Seguir viendo
-            </TransitionLink>
-          </div>
+          {mostrarAcciones && (faseActual === 'sin_pago' || mostrarContacto) && (
+            <div className="track__actions">
+              {faseActual === 'sin_pago' && (
+                <TransitionLink className="btn btn--solid" to={`/pago/${pedido.numero}`}>
+                  Elegir forma de pago
+                </TransitionLink>
+              )}
+              {mostrarContacto && whatsapp && (
+                <a className="btn btn--ghost" href={whatsapp} target="_blank" rel="noopener noreferrer">
+                  Escribirnos por WhatsApp
+                </a>
+              )}
+              {mostrarContacto && (
+                <TransitionLink className="btn btn--ghost" to="/catalogo">
+                  Seguir viendo
+                </TransitionLink>
+              )}
+            </div>
+          )}
         </div>
   )
 }

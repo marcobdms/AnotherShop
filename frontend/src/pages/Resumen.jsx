@@ -3,22 +3,22 @@
  *
  * Los favoritos hacen de carrito. Como un favorito no guarda talla ni cantidad,
  * esas dos cosas se eligen aqui (ver useCart) y la talla es obligatoria.
+ *
+ * Aqui solo se revisa la cesta y los totales. Los datos de contacto (invitado
+ * o cuenta, nombre, telefono...) se piden aparte, en /contacto, al pulsar
+ * "Comenzar pedido".
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { supabase } from '../lib/supabase'
 import { useFavorites } from '../hooks/useFavorites'
 import { useCatalog } from '../hooks/useCatalog'
 import { useCart } from '../hooks/useCart'
-import { createOrder, fetchRates, formatPrice } from '../api/catalog'
+import { fetchRates, formatPrice } from '../api/catalog'
 import ProductCard from '../components/ProductCard'
 import Footer from '../components/Footer'
 import TransitionLink from '../components/TransitionLink'
-import { rememberOrder } from '../utils/orders'
 import './Checkout.css'
-
-const MODO_KEY = 'anothernpcshop:checkout-modo'
 
 const formatBs = (value) =>
   `${Number(value).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs`
@@ -50,29 +50,6 @@ function IconoPapelera() {
   )
 }
 
-function AuthGate({ onInvitado, onCuenta }) {
-  return (
-    <div className="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
-      <div className="gate__backdrop" />
-      <div className="gate__panel">
-        <h2 className="gate__title" id="gate-title">Antes de seguir</h2>
-        <p className="gate__text">
-          Con tu cuenta guardamos el pedido y tus prendas guardadas en cualquier dispositivo.
-          Como invitado solo te pedimos como avisarte.
-        </p>
-        <div className="gate__actions">
-          <button className="btn btn--solid" onClick={onCuenta} type="button">
-            Entrar con mi cuenta
-          </button>
-          <button className="btn btn--ghost" onClick={onInvitado} type="button">
-            Seguir como invitado
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function Resumen() {
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
@@ -80,24 +57,12 @@ export default function Resumen() {
   const { catalog, loading: catalogLoading } = useCatalog()
   const cart = useCart(favorites)
 
-  const [modo, setModo] = useState(() => sessionStorage.getItem(MODO_KEY) || '')
-  const [contacto, setContacto] = useState({ nombre: '', telefono: '', email: '', entrega: '' })
-  const [enviando, setEnviando] = useState(false)
-  const [error, setError] = useState('')
   const [tasas, setTasas] = useState(null)
 
   // Tasa oficial BCV del dia. Si el servicio falla simplemente no se muestra.
   useEffect(() => {
     fetchRates().then(setTasas).catch(() => setTasas(null))
   }, [])
-
-  useEffect(() => {
-    if (user) {
-      setModo('cuenta')
-      sessionStorage.setItem(MODO_KEY, 'cuenta')
-      setContacto(c => ({ ...c, email: c.email || user.email || '' }))
-    }
-  }, [user])
 
   // Semilla nueva en cada visita; estable mientras la pagina siga abierta, para que
   // las recomendaciones no cambien cada vez que se marca o desmarca una prenda.
@@ -119,47 +84,8 @@ export default function Resumen() {
 
   if (authLoading || favLoading || catalogLoading) return <div className="page-state" />
 
-  const elegirCuenta = () => {
-    sessionStorage.setItem(MODO_KEY, 'cuenta')
-    navigate('/login?next=/resumen')
-  }
-
-  const elegirInvitado = () => {
-    sessionStorage.setItem(MODO_KEY, 'invitado')
-    setModo('invitado')
-  }
-
-  const contactoListo = contacto.nombre.trim() && (contacto.telefono.trim() || contacto.email.trim())
-
-  async function handleSubmit() {
-    setError('')
-    setEnviando(true)
-    try {
-      const { data: sesion } = await supabase.auth.getSession()
-      const pedido = await createOrder({
-        items: cart.selected.map(l => ({
-          producto_id: l.id,
-          talla: l.talla,
-          cantidad: l.cantidad,
-          color: l.producto.variante_color || '',
-        })),
-        nombre: contacto.nombre.trim(),
-        telefono: contacto.telefono.trim(),
-        email: contacto.email.trim(),
-        entrega: contacto.entrega.trim(),
-      }, sesion?.session?.access_token || '')
-      rememberOrder(pedido.numero)
-      navigate(`/pago/${pedido.numero}`)
-    } catch (err) {
-      setError(err.message || 'No se pudo crear el pedido')
-      setEnviando(false)
-    }
-  }
-
   return (
     <>
-      {!modo && <AuthGate onInvitado={elegirInvitado} onCuenta={elegirCuenta} />}
-
       <main className="checkout-page">
         <div className="checkout-layout">
           <section className="checkout-main">
@@ -174,16 +100,6 @@ export default function Resumen() {
               </div>
             ) : (
               <>
-                <div className="checkout-bulk">
-                  <button className="linklike" onClick={() => cart.setTodos(true)} type="button">
-                    Seleccionar todo
-                  </button>
-                  <span aria-hidden="true">·</span>
-                  <button className="linklike" onClick={() => cart.setTodos(false)} type="button">
-                    Quitar seleccion
-                  </button>
-                </div>
-
                 <ul className="cart-list">
                   {cart.lines.map(line => (
                     <li key={line.id} className={`cart-line${line.agotado ? ' cart-line--out' : ''}`}>
@@ -218,7 +134,14 @@ export default function Resumen() {
                                 onChange={e => cart.setTalla(line.id, e.target.value)}
                               >
                                 <option value="">Elegir</option>
-                                {line.sizes.map(t => <option key={t} value={t}>{t}</option>)}
+                                {line.sizes.map(t => {
+                                  const stock = Number(line.producto.variante_tallas?.[t] ?? 0)
+                                  return (
+                                    <option key={t} value={t} disabled={stock <= 0}>
+                                      {t}{stock <= 0 ? ' (sin stock)' : ''}
+                                    </option>
+                                  )
+                                })}
                               </select>
                             </label>
 
@@ -280,85 +203,18 @@ export default function Resumen() {
                   <span>{formatPrice(cart.total)}</span>
                 </div>
 
-                {modo === 'invitado' && (
-                  <div className="summary__form">
-                    <label className="field field--block">
-                      <span>Nombre</span>
-                      <input
-                        value={contacto.nombre}
-                        onChange={e => setContacto({ ...contacto, nombre: e.target.value })}
-                        placeholder="Como te llamamos"
-                      />
-                    </label>
-                    <label className="field field--block">
-                      <span>Telefono</span>
-                      <input
-                        value={contacto.telefono}
-                        onChange={e => setContacto({ ...contacto, telefono: e.target.value })}
-                        placeholder="Para avisarte por WhatsApp"
-                      />
-                    </label>
-                    <label className="field field--block">
-                      <span>Email</span>
-                      <input
-                        type="email"
-                        value={contacto.email}
-                        onChange={e => setContacto({ ...contacto, email: e.target.value })}
-                        placeholder="Opcional"
-                      />
-                    </label>
-                  </div>
-                )}
-
-                {modo === 'cuenta' && user && (
-                  <div className="summary__form">
-                    <label className="field field--block">
-                      <span>Nombre</span>
-                      <input
-                        value={contacto.nombre}
-                        onChange={e => setContacto({ ...contacto, nombre: e.target.value })}
-                        placeholder="Como te llamamos"
-                      />
-                    </label>
-                    <label className="field field--block">
-                      <span>Telefono</span>
-                      <input
-                        value={contacto.telefono}
-                        onChange={e => setContacto({ ...contacto, telefono: e.target.value })}
-                        placeholder="Para avisarte por WhatsApp"
-                      />
-                    </label>
-                    <p className="summary__hint">Pedido asociado a {user.email}</p>
-                  </div>
-                )}
-
-                <label className="field field--block">
-                  <span>Entrega</span>
-                  <input
-                    value={contacto.entrega}
-                    onChange={e => setContacto({ ...contacto, entrega: e.target.value })}
-                    placeholder="Donde o como la recibes"
-                  />
-                </label>
-
                 {cart.faltanTallas && (
                   <p className="summary__error">Elige la talla de cada prenda seleccionada.</p>
                 )}
-                {error && <p className="summary__error">{error}</p>}
 
                 <button
                   className="btn btn--solid btn--block"
-                  disabled={!cart.listo || !contactoListo || !modo || enviando}
-                  onClick={handleSubmit}
+                  disabled={!cart.listo}
+                  onClick={() => navigate('/contacto')}
                   type="button"
                 >
-                  {enviando ? 'Creando pedido...' : 'Comenzar pedido'}
+                  Comenzar pedido
                 </button>
-
-                {!modo && <p className="summary__hint">Elige como quieres continuar.</p>}
-                {modo && !contactoListo && (
-                  <p className="summary__hint">Necesitamos tu nombre y un telefono o email.</p>
-                )}
               </div>
 
               {tasas && (

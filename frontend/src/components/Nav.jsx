@@ -177,7 +177,7 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
           {user ? 'Mi cuenta' : 'Iniciar sesión'}
         </Link>
         {user && (
-          <Link to="/cuenta" className="nav__mobile-link" aria-label="Mis favoritos">
+          <Link to="/resumen" className="nav__mobile-link" aria-label="Mis favoritos">
             <span className="nav__mobile-icon"><HeartIcon /></span>
             Favoritos
           </Link>

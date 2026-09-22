@@ -75,10 +75,15 @@ export function useCart(favoriteIds) {
           changed = true
         }
       }
-      for (const key of Object.keys(next)) {
-        if (!ids.includes(key)) {
-          delete next[key]
-          changed = true
+      // Limpia entradas huerfanas (favoritos quitados), pero solo si "ids" ya
+      // es una lista real: si esta vacia porque los favoritos todavia no han
+      // terminado de cargar, borrar aqui vaciaria el carrito guardado entero.
+      if (ids.length > 0) {
+        for (const key of Object.keys(next)) {
+          if (!ids.includes(key)) {
+            delete next[key]
+            changed = true
+          }
         }
       }
       if (changed) writeCart(next)
@@ -109,10 +114,10 @@ export function useCart(favoriteIds) {
       .map(id => {
         const producto = productos.find(p => p.id === id)
         if (!producto) return null
-        // Con stock cargado se ofrecen sus tallas; si no hay datos de stock se cae a
-        // las tallas del producto. "Agotado" lo decide solo el interruptor manual.
-        const stockSizes = availableSizes(producto)
-        const sizes = stockSizes.length ? stockSizes : (producto.tallas || [])
+        // Se listan SIEMPRE todas las tallas del producto (para que el selector no
+        // "esconda" una talla sin mas); la que no tenga stock real se deshabilita
+        // en gris ahi mismo. "Agotado" (la prenda entera) lo decide el interruptor manual.
+        const sizes = producto.tallas || []
         const info = meta[id] ?? { talla: '', cantidad: 1, seleccionado: true }
         const maxStock = info.talla ? Number(producto.variante_tallas?.[info.talla] ?? 0) : 0
         return {
