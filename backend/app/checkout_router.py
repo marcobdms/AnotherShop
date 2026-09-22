@@ -261,6 +261,19 @@ def checkout_declare_payment(numero: str, body: PagoIn, request: Request):
     return _public_order(_refresh_if_binance(order))
 
 
+@router.post("/pedidos/{numero}/cancelar", summary="El cliente cancela su propio pedido")
+def checkout_cancel_order(numero: str, request: Request):
+    _rate_limit(request, limit=12, window=300, bucket="cancelar")
+    try:
+        order = repository.cancel_order(numero)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    if not order:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+    emails.notify(order["numero"], "cancelado")
+    return _public_order(order)
+
+
 @router.post("/pedidos/{numero}/comprobante", summary="Adjuntar comprobante de pago")
 async def checkout_upload_receipt(
     numero: str,

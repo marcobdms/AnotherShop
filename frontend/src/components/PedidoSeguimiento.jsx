@@ -8,13 +8,19 @@
  * pagina se refresca sola hasta que el pedido se confirma o se cancela.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { fetchMeta, fetchOrder, formatPrice } from '../api/catalog'
+import { cancelOrder, fetchMeta, fetchOrder, formatPrice } from '../api/catalog'
 import { rememberOrder } from '../utils/orders'
 import TransitionLink from './TransitionLink'
 import '../pages/Checkout.css'
 
 const POLL_MS = 12000
 const CHECK_TO_CLOCK_MS = 1900
+const CIERRE_MS = 200
+// El cliente puede cancelar mientras el pedido no este ya confirmado (o
+// cancelado). Igual que en el backend: aqui no hay stock ni dinero de por
+// medio, asi que cancelar es reversible en la practica (basta con volver a
+// declarar el pago).
+const FASES_CANCELABLES = new Set(['sin_pago', 'verificando', 'efectivo'])
 
 const PASOS = [
   { id: 'recibido', label: 'Pedido recibido' },
@@ -136,6 +142,10 @@ export default function PedidoSeguimiento({ numero, mostrarAcciones = true, most
   const [cargando, setCargando] = useState(!pedidoInicial)
   const [noEncontrado, setNoEncontrado] = useState(false)
   const [mostrarReloj, setMostrarReloj] = useState(false)
+  const [confirmarCancelar, setConfirmarCancelar] = useState(false)
+  const [cerrandoConfirm, setCerrandoConfirm] = useState(false)
+  const [cancelando, setCancelando] = useState(false)
+  const [cancelError, setCancelError] = useState('')
   const primeraCarga = useRef(true)
 
   const cargar = useCallback(async () => {
@@ -180,6 +190,37 @@ export default function PedidoSeguimiento({ numero, mostrarAcciones = true, most
     return () => clearTimeout(timer)
   }, [faseActual])
 
+  const cerrarConfirmCancelar = useCallback(() => {
+    setCerrandoConfirm(true)
+    setTimeout(() => {
+      setConfirmarCancelar(false)
+      setCerrandoConfirm(false)
+      setCancelError('')
+    }, CIERRE_MS)
+  }, [])
+
+  async function ejecutarCancelacion() {
+    setCancelando(true)
+    setCancelError('')
+    try {
+      const data = await cancelOrder(numero)
+      setPedido(data)
+      cerrarConfirmCancelar()
+    } catch (err) {
+      setCancelError(err.message || 'No se pudo cancelar el pedido')
+    } finally {
+      setCancelando(false)
+    }
+  }
+
+  // Escape cierra el dialogo de confirmacion si esta abierto
+  useEffect(() => {
+    if (!confirmarCancelar) return undefined
+    const onKey = e => { if (e.key === 'Escape') cerrarConfirmCancelar() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [confirmarCancelar, cerrarConfirmCancelar])
+
   if (cargando) return <div className="page-state" />
 
   if (noEncontrado || !pedido) {
@@ -204,8 +245,10 @@ export default function PedidoSeguimiento({ numero, mostrarAcciones = true, most
   const alcanzados = PASOS.filter(p => eventos[p.id])
   const actual = alcanzados.length ? alcanzados[alcanzados.length - 1].id : 'recibido'
   const terminado = faseActual === 'confirmado'
+  const puedeCancelar = FASES_CANCELABLES.has(faseActual)
 
   return (
+    <>
     <div className="track">
           <div className="track__hero" role="status" aria-live="polite">
             <Estado fase={faseActual} mostrarReloj={mostrarReloj} />
@@ -257,12 +300,17 @@ export default function PedidoSeguimiento({ numero, mostrarAcciones = true, most
             </div>
           </div>
 
-          {mostrarAcciones && (faseActual === 'sin_pago' || mostrarContacto) && (
+          {mostrarAcciones && (puedeCancelar || mostrarContacto) && (
             <div className="track__actions">
               {faseActual === 'sin_pago' && (
                 <TransitionLink className="btn btn--solid" to={`/pago/${pedido.numero}`}>
                   Elegir forma de pago
                 </TransitionLink>
+              )}
+              {puedeCancelar && (
+                <button className="btn btn--ghost" onClick={() => setConfirmarCancelar(true)} type="button">
+                  Cancelar pedido
+                </button>
               )}
               {mostrarContacto && whatsapp && (
                 <a className="btn btn--ghost" href={whatsapp} target="_blank" rel="noopener noreferrer">
@@ -277,6 +325,29 @@ export default function PedidoSeguimiento({ numero, mostrarAcciones = true, most
             </div>
           )}
         </div>
+
+        {confirmarCancelar && (
+          <div className={`gate${cerrandoConfirm ? ' gate--closing' : ''}`} role="dialog" aria-modal="true">
+            <div className="gate__backdrop" onClick={cerrarConfirmCancelar} />
+            <div className="gate__panel">
+              <h2 className="gate__title">Cancelar pedido</h2>
+              <p className="gate__text">
+                ¿Seguro que quieres cancelar el pedido <strong>{pedido.numero}</strong>? Si cambias
+                de idea, puedes volver a declarar el pago con el mismo numero.
+              </p>
+              {cancelError && <p className="summary__error">{cancelError}</p>}
+              <div className="gate__actions">
+                <button className="btn btn--solid" onClick={ejecutarCancelacion} disabled={cancelando} type="button">
+                  {cancelando ? 'Cancelando...' : 'Si, cancelar pedido'}
+                </button>
+                <button className="btn btn--ghost" onClick={cerrarConfirmCancelar} disabled={cancelando} type="button">
+                  Volver
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+    </>
   )
 }
 

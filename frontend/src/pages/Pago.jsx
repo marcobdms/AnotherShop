@@ -21,13 +21,12 @@ import TransitionLink from '../components/TransitionLink'
 import { rememberOrder } from '../utils/orders'
 import './Checkout.css'
 
-// Icono junto al titulo de cada metodo.
+// Icono junto al titulo de cada metodo. Efectivo va solo con texto, sin icono.
 const ICONOS = {
   binance: { src: '/pay-icons/binance.webp' },
   // El logo de PayPal ya lleva el nombre: el texto queda solo para lectores de pantalla
   paypal: { src: '/pay-icons/paypal.webp', ancho: true, soloLogo: true },
   pago_movil: { src: '/pay-icons/venezuela.webp', ancho: true, insignia: true },
-  efectivo: { src: '/pay-icons/dollar.svg' },
 }
 
 const formatBs = (value) =>
@@ -120,7 +119,13 @@ export default function Pago() {
 
   function elegir(m) {
     setError('')
+    setZelleAbierto(false)
     setMetodo(metodo?.id === m.id ? null : m)
+  }
+
+  function alternarZelle() {
+    setMetodo(null)
+    setZelleAbierto(o => !o)
   }
 
   async function confirmar() {
@@ -292,7 +297,7 @@ export default function Pago() {
                 <li className={`pay-option${zelleAbierto ? ' pay-option--active' : ''}`}>
                   <button
                     className="pay-option__head"
-                    onClick={() => setZelleAbierto(o => !o)}
+                    onClick={alternarZelle}
                     aria-expanded={zelleAbierto}
                     type="button"
                   >

@@ -427,6 +427,35 @@ def get_order(numero: str) -> Optional[dict[str, Any]]:
         return _order_detail(connection, row) if row else None
 
 
+def cancel_order(numero: str) -> Optional[dict[str, Any]]:
+    """El propio cliente cancela su pedido, mientras no este ya confirmado.
+
+    No toca stock ni dinero: un pedido nunca reserva inventario ni es venta
+    real hasta que se confirma en el CRM, asi que cancelarlo aqui es solo
+    marcar el estado.
+    """
+    with get_engine().begin() as connection:
+        row = _load_order(connection, numero=numero, lock=True)
+        if not row:
+            return None
+        if row.estado == "confirmado":
+            raise ValueError("Este pedido ya esta confirmado: escribenos para cancelarlo")
+        if row.estado == "cancelado":
+            return _order_detail(connection, row)
+
+        updated = connection.execute(
+            update(pedidos)
+            .where(pedidos.c.id == row.id)
+            .values(
+                estado="cancelado",
+                motivo_cancelacion="Cancelado por el cliente",
+                actualizado_en=_now(),
+            )
+            .returning(pedidos)
+        ).first()
+        return _order_detail(connection, updated)
+
+
 def declare_payment(numero: str, fields: dict[str, Any]) -> Optional[dict[str, Any]]:
     """El cliente dice como y cuanto pago. Todavia no es dinero contable.
 

@@ -171,9 +171,17 @@
   flex-direction: column;
 }
 
+.cart-line__title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
 .cart-line__name {
   margin: 0;
-  font-size: 0.875rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.75rem;
   font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -186,11 +194,16 @@
   overflow: hidden;
 }
 
-.cart-line__meta {
-  margin: 0.35rem 0 0;
-  color: var(--co-ink-soft);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+/* Mismo circulo de color que ya se usa en las tarjetas del catalogo, en vez
+   del texto "Color: X". */
+.cart-line__swatch {
+  flex: 0 0 auto;
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-top: 0.15rem;
+  border: 1px solid rgba(0, 0, 0, 0.17);
+  border-radius: 999px;
+  background: var(--swatch-color, #f2f4f4);
 }
 
 .cart-line__warn {
@@ -502,6 +515,33 @@
 .gate__actions {
   display: grid;
   gap: 0.7rem;
+}
+
+/* Animacion de salida del dialogo (reutilizable: cerrar sesion, cancelar
+   pedido...). Requiere que quien lo use añada la clase "gate--closing" un
+   momento antes de desmontarlo. */
+.gate--closing .gate__backdrop {
+  animation: fadeOut 200ms ease forwards;
+}
+.gate--closing .gate__panel {
+  animation: dialogOut 200ms ease forwards;
+}
+
+@keyframes dialogOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(10px) scale(0.97); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate--closing .gate__backdrop,
+  .gate--closing .gate__panel {
+    animation: none !important;
+  }
 }
 
 /* ── Metodos de pago ── */
@@ -1275,7 +1315,11 @@
     align-items: center;
     column-gap: 0.75rem;
     row-gap: 0.15rem;
-    padding: 0.8rem 0.9rem;
+    /* Sangra hasta el borde de la card (como en escritorio) y su padding
+       queda igual al de .pay-option__body: asi el boton "Copiar" de aqui
+       queda alineado con los de PAY ID / EMAIL / NOTA de mas abajo. */
+    margin: 0 -1rem 0.25rem;
+    padding: 0.8rem 1rem;
   }
 
   .pay-amount__label {

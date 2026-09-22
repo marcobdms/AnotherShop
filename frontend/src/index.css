@@ -744,7 +744,11 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   height: 100%;
 }
 
-/* Todas las imágenes apiladas, la no-activa con opacity 0 */
+/* Todas las imágenes apiladas, la no-activa con opacity 0.
+   backface-visibility/translateZ: mismo fix que el carrusel de la ficha de
+   producto para el bug de WebKit/iOS donde, tras un swipe rapido, la capa
+   compuesta se queda pintada con la imagen anterior aunque el dot activo
+   (y la opacity real) ya cambiaron. */
 .product-card__carousel-img {
   position: absolute;
   inset: 0;
@@ -753,6 +757,10 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   object-fit: cover;
   opacity: 0;
   transition: opacity 450ms ease, transform 500ms ease;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* La activa siempre visible y ocupa el flujo para que img-wrap tenga altura */
@@ -983,12 +991,25 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   height: 100%;
   transition: transform 350ms ease;
   will-change: transform;
+  /* Fuerza un contexto 3D real (no solo will-change): en iOS/WebKit, un
+     translateX 2D puede dejar la capa compuesta con el fotograma anterior
+     tras un swipe rapido de ida y vuelta — el dot cambia pero la imagen
+     pintada se queda atrasada. translate3d + backface-visibility evitan que
+     WebKit reutilice esa capa vieja. */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .product-carousel__slide {
   flex-shrink: 0;
   width: 100%;
   height: 100%;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .product-carousel__slide img {

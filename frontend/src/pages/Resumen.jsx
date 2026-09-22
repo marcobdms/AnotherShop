@@ -118,10 +118,16 @@ export default function Resumen() {
                       </TransitionLink>
 
                       <div className="cart-line__info">
-                        <p className="cart-line__name">{line.producto.nombre}</p>
-                        {line.producto.variante_color && (
-                          <p className="cart-line__meta">Color: {line.producto.variante_color}</p>
-                        )}
+                        <div className="cart-line__title-row">
+                          <p className="cart-line__name">{line.producto.nombre}</p>
+                          {line.producto.variante_hex && (
+                            <span
+                              className="cart-line__swatch"
+                              style={{ '--swatch-color': line.producto.variante_hex }}
+                              title={line.producto.variante_color || 'Color'}
+                            />
+                          )}
+                        </div>
 
                         {line.agotado ? (
                           <p className="cart-line__warn">Sin stock ahora mismo</p>
@@ -146,7 +152,7 @@ export default function Resumen() {
                             </label>
 
                             <label className="field">
-                              <span>Cantidad</span>
+                              <span>Cant.</span>
                               <select
                                 value={line.cantidad}
                                 disabled={!line.talla}

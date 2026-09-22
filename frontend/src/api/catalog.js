@@ -119,6 +119,12 @@ export async function declareOrderPayment(numero, payload) {
   }))
 }
 
+export async function cancelOrder(numero) {
+  return handleResponse(await fetch(`${CHECKOUT_BASE}/pedidos/${encodeURIComponent(numero)}/cancelar`, {
+    method: 'POST',
+  }))
+}
+
 export async function uploadOrderReceipt(numero, file, fields) {
   const form = new FormData()
   form.append('file', file)

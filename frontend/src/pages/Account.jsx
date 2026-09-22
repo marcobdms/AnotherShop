@@ -245,34 +245,18 @@ const css = `
     font-size: 0.625rem;
   }
 
+  /* fadeOut y dialogOut son globales (Checkout.css): las usan tambien
+     PedidoSeguimiento (confirmar cancelacion) y cualquier otro "gate". */
   .order-modal--closing .order-modal__backdrop {
     animation: fadeOut 220ms ease forwards;
   }
   .order-modal--closing .order-modal__panel {
-    animation: orderModalOut 220ms ease forwards;
-  }
-
-  /* ── Confirmar cierre de sesion: mismo "gate" del resumen, con salida ── */
-  .gate--closing .gate__backdrop {
-    animation: fadeOut 200ms ease forwards;
-  }
-  .gate--closing .gate__panel {
-    animation: orderModalOut 200ms ease forwards;
+    animation: dialogOut 220ms ease forwards;
   }
 
   @keyframes orderModalIn {
     from { opacity: 0; transform: translateY(10px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  @keyframes orderModalOut {
-    from { opacity: 1; transform: translateY(0) scale(1); }
-    to   { opacity: 0; transform: translateY(10px) scale(0.97); }
-  }
-
-  @keyframes fadeOut {
-    from { opacity: 1; }
-    to   { opacity: 0; }
   }
 
   @media (prefers-reduced-motion: reduce) {

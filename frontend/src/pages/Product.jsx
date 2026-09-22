@@ -56,6 +56,7 @@ export default function Product() {
   const [favToast, setFavToast]   = useState(null) // { msg, key }
   const [activeIndex, setActiveIndex] = useState(0)
   const touchStartX = useRef(null)
+  const trackRef = useRef(null)
 
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
@@ -89,6 +90,16 @@ export default function Product() {
     setSelectedSize(null)
     setActiveIndex(0)
   }, [producto])
+
+  // Red de seguridad para el bug de WebKit/iOS del carrusel: tras un swipe
+  // rapido de ida y vuelta, a veces la capa compuesta se queda con el
+  // fotograma anterior aunque el transform (y el dot) ya cambiaron. Forzar
+  // un reflow leyendo offsetHeight justo despues del cambio de indice
+  // obliga a WebKit a repintar la capa con el frame correcto.
+  useEffect(() => {
+    const el = trackRef.current
+    if (el) void el.offsetHeight
+  }, [activeIndex])
 
   const showFavToast = useCallback((msg) => {
     setFavToast({ msg, key: Date.now() })
@@ -162,8 +173,9 @@ export default function Product() {
               }}
             >
               <div
+                ref={trackRef}
                 className="product-carousel__track"
-                style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+                style={{ transform: `translate3d(-${activeIndex * 100}%, 0, 0)` }}
               >
                 {fotos.map((src, i) => (
                   <div key={i} className="product-carousel__slide">

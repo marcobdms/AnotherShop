@@ -27,6 +27,17 @@ function HeartIcon() {
   )
 }
 
+function PackageIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3.27 6.96 12 12.01l8.73-5.05" />
+      <path d="M12 22.08V12" />
+      <path d="M20.73 6.96 12 2 3.27 6.96v10.08L12 22l8.73-4.96V6.96z" />
+    </svg>
+  )
+}
+
 function SearchIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
@@ -176,6 +187,10 @@ export default function Nav({ marca = 'ANOTHER NPC SHOP', user = null, isHome = 
           <span className="nav__mobile-icon"><UserIcon /></span>
           {user ? 'Mi cuenta' : 'Iniciar sesión'}
         </Link>
+        <NavLink to="/seguimiento" className={({ isActive }) => `nav__mobile-link ${isActive ? 'active' : ''}`}>
+          <span className="nav__mobile-icon"><PackageIcon /></span>
+          Seguir mi pedido
+        </NavLink>
         {user && (
           <Link to="/resumen" className="nav__mobile-link" aria-label="Mis favoritos">
             <span className="nav__mobile-icon"><HeartIcon /></span>
