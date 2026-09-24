@@ -116,6 +116,9 @@ function FiltersPanel({
   onTalla,
   onMarca,
   onClear,
+  sortOptions = [],
+  sortValue = '',
+  onSort,
 }) {
   const hasActiveFilters = activeGenero || activeTalla || (marcas.length > 0 && activeMarca)
 
@@ -125,6 +128,26 @@ function FiltersPanel({
 
   return (
     <div className="catalog-drawer-fields">
+      {sortOptions.length > 0 && (
+        <div className="catalog-section">
+          <p className="catalog-section__title">Ordenar por</p>
+          <div className="filter-radio-list">
+            {sortOptions.map(o => (
+              <button
+                key={o.value}
+                className={`filter-radio ${sortValue === o.value ? 'filter-radio--active' : ''}`}
+                onClick={() => onSort?.(o.value)}
+                aria-pressed={sortValue === o.value}
+                type="button"
+              >
+                <span className="filter-radio__dot" aria-hidden="true" />
+                <span className="filter-radio__label">{o.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {generos.length > 0 && (
         <div className="catalog-section">
           <p className="catalog-section__title">Genero</p>
@@ -509,11 +532,17 @@ export default function FilterChips({
               <FiltersPanel
                 generos={generos}
                 tallas={tallas}
+                marcas={marcas}
                 activeGenero={activeGenero}
                 activeTalla={activeTalla}
+                activeMarca={activeMarca}
                 onGenero={onGenero}
                 onTalla={onTalla}
+                onMarca={onMarca}
                 onClear={handleClearFilters}
+                sortOptions={sortOptions}
+                sortValue={sortValue}
+                onSort={onSort}
               />
             )}
           </div>

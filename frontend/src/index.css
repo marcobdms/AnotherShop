@@ -944,7 +944,13 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
 }
 
 @media (max-width: 700px) {
-  .product-page { grid-template-columns: 1fr; }
+  .product-page {
+    grid-template-columns: 1fr;
+    /* Antes usaba el mismo padding vertical grande que escritorio (--gap-lg,
+       4rem arriba y abajo): en movil se veia como un margen enorme alrededor
+       de la foto. Se reduce solo aqui, sin tocar el gutter horizontal. */
+    padding: 1.25rem var(--gap) 1.5rem;
+  }
 }
 
 @keyframes fadeIn {
@@ -1255,6 +1261,22 @@ button.size-tag--selected, button.size-tag--selected:hover {
   color: var(--grey-600);
   font-weight: 700;
   pointer-events: none;
+}
+
+/* Color y talla como pastillas redondeadas en movil (igual que el resto de
+   la UI movil del sitio); en escritorio siguen cuadradas. Va despues de las
+   reglas base de arriba: una regla con media query pero igual especificidad
+   colocada antes en el archivo pierde contra una plana que venga despues. */
+@media (max-width: 700px) {
+  button.size-tag {
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+  }
+
+  .color-dot,
+  .color-dot__inner {
+    border-radius: 999px;
+  }
 }
 
 

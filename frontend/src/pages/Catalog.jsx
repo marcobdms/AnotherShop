@@ -13,6 +13,7 @@ import ProductCard from '../components/ProductCard'
 import FilterChips from '../components/FilterChips'
 import Footer from '../components/Footer'
 import { getProductBrandLabel } from '../utils/brand'
+import { mezclar } from '../utils/shuffle'
 
 function hasSize(producto, tallaSeleccionada) {
   const talla = String(tallaSeleccionada).trim().toUpperCase()
@@ -66,6 +67,10 @@ export default function Catalog({ onReady }) {
   const activeSort   = SORT_OPTIONS.some(o => o.value === sortParam) ? sortParam : DEFAULT_SORT
   const [searchTerm, setSearchTerm] = useState('')
   const [showTopBtn, setShowTopBtn] = useState(false)
+  // Semilla nueva en cada visita; estable mientras la pagina siga abierta, para
+  // que el orden "mejor coincidencia" no sea siempre el mismo (insercion del
+  // catalogo) pero tampoco se reordene solo con cada filtro o favorito.
+  const [semilla] = useState(() => Math.floor(Math.random() * 2 ** 31))
 
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
@@ -155,6 +160,9 @@ export default function Catalog({ onReady }) {
 
   // El catálogo llega en orden de inserción: lo último añadido va al final.
   const position = new Map(productos.map((p, i) => [p, i]))
+  // Orden aleatorio (estable durante la visita) para "mejor coincidencia":
+  // sin esto siempre se veian en el mismo orden de insercion del catalogo.
+  const posicionAleatoria = new Map(mezclar(productos, semilla).map((p, i) => [p, i]))
   lista.sort((a, b) => {
     if (a.disponible !== b.disponible) return a.disponible ? -1 : 1
 
@@ -163,8 +171,8 @@ export default function Catalog({ onReady }) {
       return (dropNumber(b) - dropNumber(a)) || (position.get(b) - position.get(a))
     }
 
-    // Mejor coincidencia: por ahora relevancia de búsqueda y orden del catálogo.
-    return (matchScore(b, searchTerm) - matchScore(a, searchTerm)) || (position.get(a) - position.get(b))
+    // Mejor coincidencia: relevancia de búsqueda y, si empatan, orden aleatorio.
+    return (matchScore(b, searchTerm) - matchScore(a, searchTerm)) || (posicionAleatoria.get(a) - posicionAleatoria.get(b))
   })
 
   const gridKey = [activeGenero, activeTalla, activeMarca, activeSort, searchTerm].join('|')
