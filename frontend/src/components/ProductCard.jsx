@@ -120,18 +120,27 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
         ref={carouselRef}
         className={`product-card__img-wrap ${!producto.disponible ? 'sold-out' : ''}`}
       >
-        {/* Carrusel */}
+        {/* Carrusel: una sola imagen montada (key=displayIndex fuerza un
+            remount real). Antes eran todas las fotos apiladas con opacity,
+            y en iOS/WebKit un swipe rapido de ida y vuelta podia dejar
+            pintada la capa vieja aunque el dot activo ya hubiera cambiado.
+            Con un solo <img> no hay capa vieja que arrastrar. */}
         <div className="product-card__carousel">
-          {images.map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt={`${producto.nombre} ${i + 1}`}
-              loading="lazy"
-              className={`product-card__carousel-img ${i === displayIndex ? 'product-card__carousel-img--active' : ''}`}
-              onError={e => { e.target.style.visibility = 'hidden' }}
-            />
-          ))}
+          <img
+            key={displayIndex}
+            src={images[displayIndex]}
+            alt={`${producto.nombre} ${displayIndex + 1}`}
+            loading="lazy"
+            className="product-card__carousel-img"
+            onError={e => { e.target.style.visibility = 'hidden' }}
+          />
+          {/* Precarga silenciosa del resto: nunca se muestran, solo calientan
+              la cache para que el swipe/hover siguiente sea instantaneo. */}
+          {hasMultiple && (
+            <div className="product-card__carousel-preload" aria-hidden="true">
+              {images.map((src, i) => i !== displayIndex && <img key={i} src={src} alt="" loading="lazy" />)}
+            </div>
+          )}
         </div>
 
         {!producto.disponible && <div className="sold-out-overlay">Agotado</div>}

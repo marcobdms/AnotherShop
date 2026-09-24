@@ -56,7 +56,6 @@ export default function Product() {
   const [favToast, setFavToast]   = useState(null) // { msg, key }
   const [activeIndex, setActiveIndex] = useState(0)
   const touchStartX = useRef(null)
-  const trackRef = useRef(null)
 
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
@@ -90,16 +89,6 @@ export default function Product() {
     setSelectedSize(null)
     setActiveIndex(0)
   }, [producto])
-
-  // Red de seguridad para el bug de WebKit/iOS del carrusel: tras un swipe
-  // rapido de ida y vuelta, a veces la capa compuesta se queda con el
-  // fotograma anterior aunque el transform (y el dot) ya cambiaron. Forzar
-  // un reflow leyendo offsetHeight justo despues del cambio de indice
-  // obliga a WebKit a repintar la capa con el frame correcto.
-  useEffect(() => {
-    const el = trackRef.current
-    if (el) void el.offsetHeight
-  }, [activeIndex])
 
   const showFavToast = useCallback((msg) => {
     setFavToast({ msg, key: Date.now() })
@@ -172,21 +161,26 @@ export default function Product() {
                 touchStartX.current = null
               }}
             >
-              <div
-                ref={trackRef}
-                className="product-carousel__track"
-                style={{ transform: `translate3d(-${activeIndex * 100}%, 0, 0)` }}
-              >
-                {fotos.map((src, i) => (
-                  <div key={i} className="product-carousel__slide">
-                    <img
-                      src={src}
-                      alt={`${producto.nombre} ${i + 1}`}
-                      onError={e => { e.target.style.visibility = 'hidden' }}
-                    />
-                  </div>
-                ))}
-              </div>
+              {/* Una sola imagen montada, cuyo src cambia con el indice — nada de
+                  franja con transform ni capas compuestas que WebKit pueda dejar
+                  pintadas con el fotograma anterior. La key fuerza un remount real
+                  (no una actualizacion de atributo) en cada cambio, asi que no hay
+                  elemento "reciclado" que arrastre un bitmap viejo. */}
+              <img
+                key={activeIndex}
+                className="product-carousel__img"
+                src={fotos[activeIndex]}
+                alt={`${producto.nombre} ${activeIndex + 1}`}
+                onError={e => { e.target.style.visibility = 'hidden' }}
+              />
+              {/* Precarga silenciosa del resto de fotos: nunca se muestran ni se
+                  animan, solo calientan la cache del navegador para que el swipe
+                  no tenga que esperar una descarga. */}
+              {total > 1 && (
+                <div className="product-carousel__preload" aria-hidden="true">
+                  {fotos.map((src, i) => i !== activeIndex && <img key={i} src={src} alt="" loading="eager" />)}
+                </div>
+              )}
               {/* Flechas — solo visibles en hover gracias a CSS */}
               {total > 1 && (
                 <>

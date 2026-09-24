@@ -744,34 +744,34 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   height: 100%;
 }
 
-/* Todas las imágenes apiladas, la no-activa con opacity 0.
-   backface-visibility/translateZ: mismo fix que el carrusel de la ficha de
-   producto para el bug de WebKit/iOS donde, tras un swipe rapido, la capa
-   compuesta se queda pintada con la imagen anterior aunque el dot activo
-   (y la opacity real) ya cambiaron. */
+/* Una sola imagen montada (key=displayIndex: cada cambio es un remount
+   real). Antes era el set completo de fotos apiladas con opacity, y en
+   iOS/WebKit un swipe rapido de ida y vuelta podia dejar pintada la capa
+   vieja aunque el dot activo (la opacity real) ya hubiera cambiado. Con un
+   solo <img> no hay capa vieja que arrastrar. */
 .product-card__carousel-img {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 450ms ease, transform 500ms ease;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-/* La activa siempre visible y ocupa el flujo para que img-wrap tenga altura */
-.product-card__carousel-img--active {
-  opacity: 1;
-  position: relative;
+  display: block;
+  transition: transform 500ms ease;
+  animation: carouselFadeIn 200ms ease;
 }
 
 /* Hover en desktop: escala suave de la imagen visible */
-.product-card:hover .product-card__carousel-img--active {
+.product-card:hover .product-card__carousel-img {
   transform: scale(1.04);
+}
+
+/* Precarga en frio del resto de fotos de la tarjeta: nunca se muestran,
+   solo calientan la cache para que el siguiente swipe/hover sea instantaneo. */
+.product-card__carousel-preload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Dots — solo en mobile  */
@@ -986,37 +986,40 @@ button { cursor: pointer; border: none; background: none; font-family: var(--fon
   filter: grayscale(100%) opacity(70%);
 }
 
-.product-carousel__track {
-  display: flex;
-  height: 100%;
-  transition: transform 350ms ease;
-  will-change: transform;
-  /* Fuerza un contexto 3D real (no solo will-change): en iOS/WebKit, un
-     translateX 2D puede dejar la capa compuesta con el fotograma anterior
-     tras un swipe rapido de ida y vuelta — el dot cambia pero la imagen
-     pintada se queda atrasada. translate3d + backface-visibility evitan que
-     WebKit reutilice esa capa vieja. */
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-.product-carousel__slide {
-  flex-shrink: 0;
-  width: 100%;
-  height: 100%;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-.product-carousel__slide img {
+/* Una sola imagen montada (con key=activeIndex: cada cambio es un remount
+   real, no una actualizacion de atributo). Nada de franja con transform ni
+   varias capas compuestas: en iOS/WebKit un carrusel de "franja que se
+   desliza" puede dejar pintada la capa vieja tras un swipe rapido de ida y
+   vuelta (el dot cambia pero la foto no). Con un solo <img> no hay capa
+   vieja que arrastrar — el navegador tiene que decodificar y pintar el src
+   nuevo si o si. */
+.product-carousel__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  animation: carouselFadeIn 180ms ease;
+}
+
+@keyframes carouselFadeIn {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-carousel__img { animation: none; }
+}
+
+/* Precarga en frio de las demas fotos: nunca se muestran ni se animan, solo
+   calientan la cache del navegador para que el swipe siguiente sea
+   instantaneo en vez de esperar una descarga. */
+.product-carousel__preload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Flechas — invisibles por defecto, aparecen en hover del carrusel */
