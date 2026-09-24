@@ -677,6 +677,51 @@
   color: var(--co-ink-soft);
 }
 
+/* ── Esqueleto de carga de /pago ──
+   Espera tanto la respuesta del pedido/metodos como los iconos de cada
+   metodo (binance.webp, paypal.webp...), que llegan cada uno a su ritmo:
+   antes la pantalla aparecia a trozos segun cual terminara primero. Mismo
+   tamano/espaciado que las cards reales para que no haya salto al cambiar. */
+.pay-skeleton__back,
+.pay-skeleton__title,
+.pay-skeleton__sub,
+.pay-skeleton__label,
+.pay-skeleton__icon,
+.pay-skeleton__radio,
+.pay-skeleton__line,
+.pay-skeleton__button {
+  background: linear-gradient(90deg, var(--grey-100, #f2f2f2), var(--grey-200, #e4e4e4), var(--grey-100, #f2f2f2));
+  background-size: 220% 100%;
+  animation: paySkeletonShimmer 1.15s ease-in-out infinite;
+  border-radius: 0.4rem;
+}
+
+.pay-skeleton__back { width: 8rem; height: 0.75rem; margin-bottom: 1.1rem; }
+.pay-skeleton__title { width: 12rem; height: 1.8rem; margin-bottom: 0.6rem; }
+.pay-skeleton__sub { width: 16rem; height: 0.9rem; margin-bottom: 1.5rem; }
+
+.pay-skeleton__option { display: flex; align-items: center; cursor: default; }
+.pay-skeleton__row { display: flex; align-items: center; gap: 0.85rem; width: 100%; padding: 1.1rem 1.25rem; }
+.pay-skeleton__radio { width: 1.15rem; height: 1.15rem; border-radius: 999px; flex: 0 0 auto; }
+.pay-skeleton__icon { width: 1.6rem; height: 1.3rem; flex: 0 0 auto; border-radius: 0.25rem; }
+.pay-skeleton__label { width: 8rem; height: 0.9rem; }
+
+.pay-skeleton__summary { display: flex; flex-direction: column; gap: 0.85rem; }
+.pay-skeleton__line { height: 0.9rem; }
+.pay-skeleton__button { height: 3rem; border-radius: 999px; margin-top: 0.5rem; }
+
+@keyframes paySkeletonShimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pay-skeleton__back, .pay-skeleton__title, .pay-skeleton__sub, .pay-skeleton__label,
+  .pay-skeleton__icon, .pay-skeleton__radio, .pay-skeleton__line, .pay-skeleton__button {
+    animation: none;
+  }
+}
+
 /* ── Recomendaciones ── */
 .checkout-recos {
   margin-top: 4rem;

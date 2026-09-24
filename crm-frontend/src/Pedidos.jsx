@@ -82,9 +82,9 @@ const css = `
     display: flex; gap: 0.75rem; align-items: center; padding: 0.4rem 0;
     border-bottom: 1px solid var(--grey-100); font-size: 0.78rem;
   }
-  .ped-item img { width: 2.25rem; height: 3rem; object-fit: cover; background: var(--grey-100); }
-  .ped-item__name { flex: 1 1 auto; min-width: 0; }
-  .ped-item__name small { display: block; color: var(--grey-400); font-size: 0.7rem; }
+  .ped-item img { width: 2.25rem; height: 3rem; object-fit: cover; background: var(--grey-100); flex: 0 0 auto; }
+  .ped-item__name { flex: 1 1 auto; min-width: 0; font-size: 0.8rem; font-weight: 500; }
+  .ped-item__name small { display: block; color: var(--grey-400); font-size: 0.7rem; font-weight: 400; }
   .ped-swatch {
     width: 0.7rem; height: 0.7rem; border-radius: 50%; border: 1px solid rgba(0,0,0,.18);
     flex: 0 0 auto;
@@ -112,6 +112,38 @@ const css = `
     font-size: 0.8rem; cursor: pointer;
   }
   .ped-cash input { width: 1.05rem; height: 1.05rem; accent-color: #0b0b0b; cursor: pointer; }
+
+  /* ── Movil: la fila era una grid de 6 columnas fijas (min. ~30rem) que en
+     un telefono ni cabia — el nombre del cliente quedaba encimado con la
+     fecha y el telefono, y al expandir el detalle heredaba ese mismo ancho
+     minimo y se recortaba contra el borde (la pagina recorta el desborde
+     horizontal, no lo deja hacer scroll). Se apila en 3 lineas en vez de
+     forzar 6 columnas en una. ── */
+  @media (max-width: 700px) {
+    .ped-wrap { padding: 1rem 1rem 3rem; }
+    .ped-title { font-size: 0.95rem; }
+    .ped-title span { font-size: 0.75rem; }
+
+    .ped-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      row-gap: 0.35rem;
+      column-gap: 0.6rem;
+      padding: 0.8rem 0.9rem;
+    }
+    .ped-num { order: 1; }
+    .ped-total { order: 2; }
+    .ped-cliente { order: 3; flex: 1 1 100%; }
+    .ped-cell { order: 4; font-size: 0.72rem; }
+    .ped-badge { order: 5; margin-left: auto; }
+
+    .ped-detail { padding: 0 0.9rem 1rem; }
+    .ped-item, .ped-pago { flex-wrap: wrap; }
+    .ped-actions { gap: 0.4rem; }
+    .ped-actions .crm-btn { flex: 1 1 auto; }
+  }
 `
 
 const ESTADOS = [

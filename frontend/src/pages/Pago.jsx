@@ -32,6 +32,41 @@ const ICONOS = {
 const formatBs = (value) =>
   `${Number(value).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Bs`
 
+// Esqueleto animado: mismo tamano/espaciado que las cards reales (misma
+// clase .pay-option, .pay-list, etc.) para que no haya salto al cambiar.
+function PagoSkeleton({ filas = 4 }) {
+  return (
+    <main className="checkout-page">
+      <div className="checkout-layout">
+        <section className="checkout-main">
+          <div className="pay-skeleton__back" />
+          <div className="pay-skeleton__title" />
+          <div className="pay-skeleton__sub" />
+          <ul className="pay-list">
+            {Array.from({ length: filas }, (_, i) => (
+              <li key={i} className="pay-option pay-skeleton__option">
+                <div className="pay-skeleton__row">
+                  <span className="pay-skeleton__radio" />
+                  <span className="pay-skeleton__icon" />
+                  <span className="pay-skeleton__label" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <aside className="checkout-aside">
+          <div className="summary pay-skeleton__summary">
+            <div className="pay-skeleton__line" style={{ width: '40%' }} />
+            <div className="pay-skeleton__line" style={{ width: '90%' }} />
+            <div className="pay-skeleton__line" style={{ width: '70%' }} />
+            <div className="pay-skeleton__button" />
+          </div>
+        </aside>
+      </div>
+    </main>
+  )
+}
+
 function Copiar({ valor }) {
   const [copiado, setCopiado] = useState(false)
   if (!valor) return null
@@ -72,6 +107,7 @@ export default function Pago() {
   const [pedido, setPedido] = useState(null)
   const [config, setConfig] = useState({ tasa_bs: 0, metodos: [] })
   const [cargando, setCargando] = useState(true)
+  const [iconsReady, setIconsReady] = useState(false)
   const [error, setError] = useState('')
 
   const [metodo, setMetodo] = useState(null)
@@ -92,7 +128,29 @@ export default function Pago() {
       .finally(() => setCargando(false))
   }, [numero])
 
-  if (cargando) return <div className="page-state" />
+  // Los iconos de cada metodo (binance.webp, paypal.webp...) llegan de la red
+  // cada uno a su ritmo: antes la pantalla aparecia a trozos segun cual
+  // terminara primero. Se precargan todos y no se revela nada hasta que
+  // esten listos (o hayan fallado: nunca se cuelga esperando uno roto).
+  useEffect(() => {
+    if (cargando) return undefined
+    const urls = new Set(['/pay-icons/zelle.svg'])
+    for (const m of config.metodos) {
+      if (ICONOS[m.id]) urls.add(ICONOS[m.id].src)
+    }
+    let cancelado = false
+    Promise.allSettled(
+      [...urls].map(src => new Promise(resolve => {
+        const img = new Image()
+        img.onload = resolve
+        img.onerror = resolve
+        img.src = src
+      })),
+    ).then(() => { if (!cancelado) setIconsReady(true) })
+    return () => { cancelado = true }
+  }, [cargando, config.metodos])
+
+  if (cargando || !iconsReady) return <PagoSkeleton filas={config.metodos.length || 4} />
 
   if (error && !pedido) {
     return (
