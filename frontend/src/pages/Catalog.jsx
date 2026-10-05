@@ -31,6 +31,7 @@ const SORT_OPTIONS = [
   { value: 'nuevo', label: 'Lo más nuevo' },
 ]
 const DEFAULT_SORT = SORT_OPTIONS[0].value
+const SEMILLA_KEY = 'anothernpcshop:catalog-semilla'
 
 function dropNumber(producto) {
   const match = String(producto.drop || '').match(/\d+/)
@@ -67,10 +68,17 @@ export default function Catalog({ onReady }) {
   const activeSort   = SORT_OPTIONS.some(o => o.value === sortParam) ? sortParam : DEFAULT_SORT
   const [searchTerm, setSearchTerm] = useState('')
   const [showTopBtn, setShowTopBtn] = useState(false)
-  // Semilla nueva en cada visita; estable mientras la pagina siga abierta, para
-  // que el orden "mejor coincidencia" no sea siempre el mismo (insercion del
-  // catalogo) pero tampoco se reordene solo con cada filtro o favorito.
-  const [semilla] = useState(() => Math.floor(Math.random() * 2 ** 31))
+  // Semilla nueva por sesion de pestaña (no por montaje): si solo fuera por
+  // montaje, volver de la ficha de un producto remontaba el catalogo con una
+  // semilla distinta y el orden cambiaba — el producto que se habia abierto
+  // ya no estaba donde el scroll restaurado lo esperaba.
+  const [semilla] = useState(() => {
+    const guardada = sessionStorage.getItem(SEMILLA_KEY)
+    if (guardada !== null) return Number(guardada)
+    const nueva = Math.floor(Math.random() * 2 ** 31)
+    sessionStorage.setItem(SEMILLA_KEY, String(nueva))
+    return nueva
+  })
 
   const { user } = useAuth()
   const { isFavorite, toggleFavorite } = useFavorites(user)
@@ -115,13 +123,31 @@ export default function Catalog({ onReady }) {
   // La restauración ocurre antes de pintar el grid; de esta forma nunca se ve
   // el salto al scroll guardado. Avisamos al layout después para revelar toda
   // la ruta (nav, cinta y catálogo) en el mismo frame.
+  //
+  // Se centra la card del producto exacto (no un scrollY guardado): un
+  // scrollY crudo solo coincide si el layout es idéntico a como estaba antes
+  // de salir, y ademas deja el producto donde estuviera dentro del viewport
+  // (a veces mas arriba, a veces mas abajo), no centrado.
   useLayoutEffect(() => {
     if (loading || didRestoreScroll.current) return
 
     didRestoreScroll.current = true
 
     if (savedScroll.current !== null) {
-      window.scrollTo({ top: Number(savedScroll.current), behavior: 'auto' })
+      let datos = null
+      try { datos = JSON.parse(savedScroll.current) } catch { datos = null }
+      const objetivo = datos?.key
+        ? document.querySelector(`[data-product-key="${CSS.escape(datos.key)}"]`)
+        : null
+
+      if (objetivo) {
+        objetivo.scrollIntoView({ block: 'center', behavior: 'auto' })
+      } else {
+        // Respaldo: el producto ya no esta en la lista (cambio de stock,
+        // favoritos...) o es sesion vieja sin "key". Vuelve al scrollY tal cual.
+        window.scrollTo({ top: Number(datos?.y ?? savedScroll.current) || 0, behavior: 'auto' })
+      }
+
       sessionStorage.removeItem('catalog-scroll')
       onReady?.()
     }

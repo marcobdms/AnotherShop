@@ -39,10 +39,15 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
   const touchStartX = useRef(null)
   const isDragging = useRef(false)
 
+  // Misma clave que usa Catalog.jsx para el key={} del grid: identifica la
+  // card exacta (variantes de color comparten id de producto).
+  const productKey = producto.variante_color ? `${producto.id}-${producto.variante_color}` : producto.id
+
   function handleClick() {
     if (!isDragging.current) {
-      // Guardar scroll actual para restaurarlo al volver al catálogo
-      sessionStorage.setItem('catalog-scroll', String(window.scrollY))
+      // Guarda la card exacta (y el scroll como respaldo) para volver
+      // centrado en ella, no solo a la misma posicion Y de antes.
+      sessionStorage.setItem('catalog-scroll', JSON.stringify({ key: productKey, y: window.scrollY }))
       navigate(`/producto/${producto.id}`)
     }
   }
@@ -108,6 +113,7 @@ export default function ProductCard({ producto, isFavorite = false, onFavoriteCl
   return (
     <article
       className="product-card"
+      data-product-key={productKey}
       onClick={handleClick}
       onKeyDown={e => e.key === 'Enter' && handleClick()}
       onMouseEnter={handleMouseEnter}
